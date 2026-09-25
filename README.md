@@ -87,7 +87,7 @@ Needs Node 22.18+ (runs TypeScript directly; built-in SQLite) and the `sqlite3` 
 ```bash
 git clone https://github.com/ishamishra0408/Veto && cd Veto/veto
 npm install && npm run typecheck
-cd .. && bash veto/redproofs_p1.sh && bash veto/redproofs_p2.sh && bash veto/redproofs_p3.sh   # R16, R20 and live R19 need keys
+cd .. && bash veto/redproofs_p1.sh && bash veto/redproofs_p2.sh && bash veto/redproofs_p3.sh   # R16 and R20 need the Tinybird keys; R19's second half runs with Liquid running (Ollama or OpenRouter)
 bash veto/demo.sh                          # mock, offline, full arc
 ```
 

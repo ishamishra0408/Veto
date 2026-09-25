@@ -106,14 +106,14 @@ const facts = [{ pin_id: "facc55e34ae8", fact: "price of Bose QuietComfort Ultra
                { pin_id: "dd820457083a", fact: "price of Bose QuietComfort Ultra is now 278.79 USD" }];
 const r = checkClaims("Bose dropped from 327.99 USD [pin:facc55e34ae8] to 278.79 USD [pin:dd820457083a]. Bose will fall to 199.00 USD [pin:dd820457083a]. Competitors are cutting prices everywhere. Sony moved too [pin:0000aaaa1111].", facts);
 console.log(r.kept.length, r.dropped.length);')
-live19=""
+withLiquid19=""
 if [ -n "$OPENROUTER_API_KEY" ] || [ -n "$VETO_LIQUID_URL" ]; then
   VETO_STREAM=off $NODE veto/simulate.ts --drift >/dev/null 2>&1
-  live19=$(tail -1 veto/receipts.jsonl | $NODE -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));const ok=new Set(r.drifted_facts.flatMap(d=>[d.pin_id,d.new_hash.slice(0,12)]));const e=r.explanation??[];const cited=e.flatMap(s=>[...s.matchAll(/\[pin:([0-9a-f]+)\]/g)].map(m=>m[1]));console.log(e.length+" "+cited.every(c=>ok.has(c)))')
+  withLiquid19=$(tail -1 veto/receipts.jsonl | $NODE -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));const ok=new Set(r.drifted_facts.flatMap(d=>[d.pin_id,d.new_hash.slice(0,12)]));const e=r.explanation??[];const cited=e.flatMap(s=>[...s.matchAll(/\[pin:([0-9a-f]+)\]/g)].map(m=>m[1]));console.log(e.length+" "+cited.every(c=>ok.has(c)))')
 fi
-if [ "$r19" = "1 3" ] && { [ -z "$live19" ] || [ "${live19#* }" = true ]; }; then
-  echo "R19 PASS (checker kept 1/4 explanation sentences; live receipt explanation: ${live19:-not run} — cites only the drifted old/new facts)"
-else echo "R19 FAIL (unit=$r19 live=$live19)"; fail=1; fi
+if [ "$r19" = "1 3" ] && { [ -z "$withLiquid19" ] || [ "${withLiquid19#* }" = true ]; }; then
+  echo "R19 PASS (checker kept 1/4 explanation sentences; receipt explanation with Liquid running: ${withLiquid19:-not run} — cites only the drifted old/new facts)"
+else echo "R19 FAIL (unit=$r19 with Liquid running=$withLiquid19)"; fail=1; fi
 
 # R20 — T3 stream + T2 volatility: events reach Tinybird without the evidence sync, and history is queryable
 if [ -z "$TINYBIRD_TOKEN" ]; then echo "R20 SKIP (no TINYBIRD_TOKEN)"; else
