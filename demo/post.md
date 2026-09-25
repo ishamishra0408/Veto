@@ -10,7 +10,7 @@ For the tokens& form at tokensand.com/horizonagentshack/submit ("what you built 
 
 **The seam.** Nimble's web data is live and governed: source control chooses the evidence, grounding checks the evidence supports each value, confidence says how strongly, all while the agent is working. That stack ends when the run ends. Veto is the stage after it: it pins every fact with a content hash and a fetch timestamp, makes the agent cite pins instead of pages, and re-validates the pinned basis deterministically before anything ships. Nimble tells you the web changed. Veto tells you your report's basis changed, and refuses.
 
-**The mechanism.** Collect through the Nimble MCP server (Nimble plugin installed on screen). Pin `{fact, sha256, fetched_at}` per fact, but only after two independent extractors, the deterministic parser and Liquid's on-device extraction model, agree on the page; a disagreeing page is held. Reason against pins. Before ship, a pure function re-fetches, re-hashes, compares: CLEAN ships, DRIFTED refuses with a JSON receipt, UNREACHABLE refuses (fail closed, never a stale ship). Two counts prove it: `N facts pinned · M drifted-and-flagged · 0 shipped contradictions` and `K clean runs shipped · 0 false refusals`.
+**The mechanism.** Collect through the Nimble MCP server (Nimble plugin installed on screen). Pin `{fact, sha256, fetched_at}` per fact, but only after two independent extractors, the deterministic parser and Liquid's on-device extraction model, agree on the page; a disagreeing page is held. Reason against pins. Before ship, a pure function re-fetches, re-hashes, compares: CLEAN ships, DRIFTED refuses with a JSON receipt and a plain-English why, UNREACHABLE refuses (fail closed, never a stale ship). Then the agent self-corrects: the plan is a dependency graph from conclusions to pins, so a drift names exactly the conclusions it broke; Veto re-pins them, recomputes the recommendation, discloses the change as `[was-pin:]`, re-gates, and ships the truth. Two counts prove it: `N facts pinned · M drifted-and-flagged · 0 shipped contradictions` and `K clean runs shipped · 0 false refusals`.
 
 **Demo beats.** {{DEMO_VIDEO_LINK}} — Nimble fetch in the first minute, the cited report, the drift, the REFUSED banner and receipt, the counts.
 
@@ -23,7 +23,7 @@ Nimble MCP server (`https://mcp.nimbleway.com/mcp`, Streamable HTTP), the Nimble
 - The gate is this project's logic, application-level. Nothing in Nimble was changed and nothing here is Nimble behaviour.
 - The report writer is a Liquid LFM2.5 agent; the agent proposes, the deterministic gate disposes, and the agent is never inside the gate. On earlier live runs the model invented pin ids and borrowed prices; the checker dropped those claims before any draft (README, Result). {{REPORT_WRITER_LINE: "The recorded run's report was written by the agent" OR "The recorded run used the deterministic template fallback"}}
 - Evidence counts are served by a Tinybird pipe and are identical to the counts computed from the local files with no network (red proof R16). The local files are the source of truth.
-- No efficiency claims. Wall time of the full arc as measured on 2026-09-25: mock 0.21 s (R11), live about 97 s.
+- No efficiency claims. Wall time of the full arc as measured on 2026-09-25: live about 113 s (R11 bar is 180 s). 23 of 23 scripted red proofs pass.
 
 ## Pre-publish checklist
 - [ ] Demo video link live and shareable

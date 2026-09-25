@@ -74,50 +74,50 @@
         "containerId" : "8",
         "deploymentGroups" : [ "Default" ],
         "environment" : "Demo",
-        "id" : "100",
+        "id" : "105",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "81d2cb7d-4184-4d4e-89d5-f17bf42dcb62"
+          "structurizr.dsl.identifier" : "974f92c7-dfed-4010-a772-737b77aa0715"
         },
         "relationships" : [ {
           "description" : "chat/completions",
-          "destinationId" : "101",
-          "id" : "102",
-          "linkedRelationshipId" : "93",
-          "sourceId" : "100",
+          "destinationId" : "106",
+          "id" : "107",
+          "linkedRelationshipId" : "98",
+          "sourceId" : "105",
           "technology" : "HTTPS or localhost"
         }, {
           "description" : "initialize, tools/list, tools/call nimble_extract",
-          "destinationId" : "104",
-          "id" : "105",
-          "linkedRelationshipId" : "89",
-          "sourceId" : "100",
+          "destinationId" : "109",
+          "id" : "110",
+          "linkedRelationshipId" : "94",
+          "sourceId" : "105",
           "technology" : "JSON-RPC over Streamable HTTP"
         }, {
           "description" : "POST /v0/events, GET /v0/pipes/vault_evidence.json",
-          "destinationId" : "107",
-          "id" : "108",
-          "linkedRelationshipId" : "96",
-          "sourceId" : "100",
+          "destinationId" : "112",
+          "id" : "113",
+          "linkedRelationshipId" : "101",
+          "sourceId" : "105",
           "technology" : "HTTPS"
         } ],
         "tags" : "Container Instance"
       } ],
       "description" : "Everything local: the run, the SQLite file, the ledgers, the on-device models.",
       "environment" : "Demo",
-      "id" : "99",
+      "id" : "104",
       "instances" : "1",
       "name" : "Operator's laptop",
       "properties" : {
-        "structurizr.dsl.identifier" : "9b798146-7caf-44e4-9d06-971f2cc6b2d5"
+        "structurizr.dsl.identifier" : "cdc6c410-375b-4997-979d-fc1ca67ee850"
       },
       "softwareSystemInstances" : [ {
         "deploymentGroups" : [ "Default" ],
         "environment" : "Demo",
-        "id" : "101",
+        "id" : "106",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "6b27d410-5c6f-431a-959c-7952dfe7e4bc"
+          "structurizr.dsl.identifier" : "27335996-123d-4d5b-a769-16c65aa4a7bf"
         },
         "softwareSystemId" : "5",
         "tags" : "Software System Instance"
@@ -126,19 +126,19 @@
       "technology" : "macOS · Node 22 · Ollama"
     }, {
       "environment" : "Demo",
-      "id" : "103",
+      "id" : "108",
       "instances" : "1",
       "name" : "Nimble cloud",
       "properties" : {
-        "structurizr.dsl.identifier" : "3129b68b-79af-4339-ab5f-0ba8a84c0c0b"
+        "structurizr.dsl.identifier" : "7aefd508-bb94-414c-a1c1-53783e361293"
       },
       "softwareSystemInstances" : [ {
         "deploymentGroups" : [ "Default" ],
         "environment" : "Demo",
-        "id" : "104",
+        "id" : "109",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "c569357f-6193-4864-a979-e98bea77ab12"
+          "structurizr.dsl.identifier" : "d4f707af-2197-4b59-9758-e724a860c6d3"
         },
         "softwareSystemId" : "4",
         "tags" : "Software System Instance"
@@ -147,19 +147,19 @@
       "technology" : "SaaS"
     }, {
       "environment" : "Demo",
-      "id" : "106",
+      "id" : "111",
       "instances" : "1",
       "name" : "Tinybird cloud",
       "properties" : {
-        "structurizr.dsl.identifier" : "ca07e253-057d-4d9c-8b6d-9069206d45b3"
+        "structurizr.dsl.identifier" : "7a4644e0-5346-4944-8cfb-b9c4cefcd550"
       },
       "softwareSystemInstances" : [ {
         "deploymentGroups" : [ "Default" ],
         "environment" : "Demo",
-        "id" : "107",
+        "id" : "112",
         "instanceId" : 1,
         "properties" : {
-          "structurizr.dsl.identifier" : "e50b9877-e9a6-4a3f-b1c0-5e3c65ceceb0"
+          "structurizr.dsl.identifier" : "fb7e7c55-7485-46d1-bfc7-213160701655"
         },
         "softwareSystemId" : "6",
         "tags" : "Software System Instance"
@@ -176,26 +176,26 @@
       },
       "relationships" : [ {
         "description" : "Runs, mock or --real",
-        "destinationId" : "26",
-        "id" : "29",
+        "destinationId" : "27",
+        "id" : "30",
         "sourceId" : "1",
         "tags" : "Relationship"
       }, {
         "description" : "Runs, mock or --real",
         "destinationId" : "8",
-        "id" : "30",
-        "linkedRelationshipId" : "29",
+        "id" : "31",
+        "linkedRelationshipId" : "30",
         "sourceId" : "1"
       }, {
         "description" : "Runs, mock or --real",
         "destinationId" : "7",
-        "id" : "31",
-        "linkedRelationshipId" : "29",
+        "id" : "32",
+        "linkedRelationshipId" : "30",
         "sourceId" : "1"
       }, {
         "description" : "Runs before advancing a phase",
-        "destinationId" : "27",
-        "id" : "32",
+        "destinationId" : "28",
+        "id" : "33",
         "sourceId" : "1",
         "tags" : "Relationship"
       } ],
@@ -210,31 +210,31 @@
       "relationships" : [ {
         "description" : "Reads the refusal and its basis window from",
         "destinationId" : "17",
-        "id" : "33",
+        "id" : "34",
         "sourceId" : "2",
         "tags" : "Relationship"
       }, {
         "description" : "Reads the refusal and its basis window from",
         "destinationId" : "8",
-        "id" : "34",
-        "linkedRelationshipId" : "33",
+        "id" : "35",
+        "linkedRelationshipId" : "34",
         "sourceId" : "2"
       }, {
         "description" : "Reads the refusal and its basis window from",
         "destinationId" : "7",
-        "id" : "35",
-        "linkedRelationshipId" : "33",
+        "id" : "36",
+        "linkedRelationshipId" : "34",
         "sourceId" : "2"
       }, {
         "description" : "Recomputes a hash against",
         "destinationId" : "14",
-        "id" : "36",
+        "id" : "37",
         "sourceId" : "2",
         "tags" : "Relationship"
       }, {
         "description" : "Reads the counts from",
-        "destinationId" : "23",
-        "id" : "37",
+        "destinationId" : "24",
+        "id" : "38",
         "sourceId" : "2",
         "tags" : "Relationship"
       } ],
@@ -260,7 +260,7 @@
       "relationships" : [ {
         "description" : "Renders and extracts",
         "destinationId" : "3",
-        "id" : "91",
+        "id" : "96",
         "sourceId" : "4",
         "tags" : "Relationship"
       } ],
@@ -297,7 +297,7 @@
           "relationships" : [ {
             "description" : "initialize, tools/list, tools/call nimble_extract",
             "destinationId" : "4",
-            "id" : "88",
+            "id" : "93",
             "sourceId" : "9",
             "tags" : "Relationship",
             "technology" : "JSON-RPC over Streamable HTTP"
@@ -316,7 +316,7 @@
           "relationships" : [ {
             "description" : "Compares FetchResult keys from",
             "destinationId" : "9",
-            "id" : "52",
+            "id" : "53",
             "sourceId" : "10",
             "tags" : "Relationship"
           } ],
@@ -334,7 +334,7 @@
           "relationships" : [ {
             "description" : "chat/completions",
             "destinationId" : "5",
-            "id" : "92",
+            "id" : "97",
             "sourceId" : "11",
             "tags" : "Relationship",
             "technology" : "HTTPS or localhost"
@@ -353,13 +353,13 @@
           "relationships" : [ {
             "description" : "Canonicalises values with",
             "destinationId" : "9",
-            "id" : "72",
+            "id" : "77",
             "sourceId" : "12",
             "tags" : "Relationship"
           }, {
             "description" : "Asks the extraction model through",
             "destinationId" : "11",
-            "id" : "73",
+            "id" : "78",
             "sourceId" : "12",
             "tags" : "Relationship"
           } ],
@@ -377,7 +377,7 @@
           "relationships" : [ {
             "description" : "Asks the writer model through",
             "destinationId" : "11",
-            "id" : "74",
+            "id" : "79",
             "sourceId" : "13",
             "tags" : "Relationship"
           } ],
@@ -395,7 +395,7 @@
           "relationships" : [ {
             "description" : "Reads the FetchResult shape from",
             "destinationId" : "9",
-            "id" : "77",
+            "id" : "82",
             "sourceId" : "14",
             "tags" : "Relationship"
           } ],
@@ -413,31 +413,31 @@
           "relationships" : [ {
             "description" : "Fetches every page through",
             "destinationId" : "9",
-            "id" : "67",
+            "id" : "72",
             "sourceId" : "15",
             "tags" : "Relationship"
           }, {
             "description" : "Corroborates each page through",
             "destinationId" : "12",
-            "id" : "68",
+            "id" : "73",
             "sourceId" : "15",
             "tags" : "Relationship"
           }, {
             "description" : "Pins every fact in",
             "destinationId" : "14",
-            "id" : "69",
+            "id" : "74",
             "sourceId" : "15",
             "tags" : "Relationship"
           }, {
             "description" : "Asks for verified claims from",
             "destinationId" : "13",
-            "id" : "70",
+            "id" : "75",
             "sourceId" : "15",
             "tags" : "Relationship"
           }, {
             "description" : "Reads the Drift type from",
             "destinationId" : "16",
-            "id" : "71",
+            "id" : "76",
             "sourceId" : "15",
             "tags" : "Relationship"
           } ],
@@ -455,13 +455,13 @@
           "relationships" : [ {
             "description" : "Re-hashes and parses facts with",
             "destinationId" : "14",
-            "id" : "75",
+            "id" : "80",
             "sourceId" : "16",
             "tags" : "Relationship"
           }, {
             "description" : "Re-fetches through",
             "destinationId" : "9",
-            "id" : "76",
+            "id" : "81",
             "sourceId" : "16",
             "tags" : "Relationship"
           } ],
@@ -479,7 +479,7 @@
           "relationships" : [ {
             "description" : "Reads the Verdict type from",
             "destinationId" : "16",
-            "id" : "80",
+            "id" : "85",
             "sourceId" : "17",
             "tags" : "Relationship"
           } ],
@@ -497,43 +497,43 @@
           "relationships" : [ {
             "description" : "Gets the adapter from",
             "destinationId" : "9",
-            "id" : "60",
+            "id" : "65",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Builds the draft through",
             "destinationId" : "15",
-            "id" : "61",
+            "id" : "66",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Revalidates the cited basis through",
             "destinationId" : "16",
-            "id" : "62",
+            "id" : "67",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Reads cited pin ids with",
             "destinationId" : "14",
-            "id" : "63",
+            "id" : "68",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Runs the checker over the explanation with",
             "destinationId" : "13",
-            "id" : "64",
+            "id" : "69",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Appends a refusal to",
             "destinationId" : "17",
-            "id" : "65",
+            "id" : "70",
             "sourceId" : "18",
             "tags" : "Relationship"
           }, {
             "description" : "Emits run and check events through",
-            "destinationId" : "24",
-            "id" : "66",
+            "destinationId" : "25",
+            "id" : "71",
             "sourceId" : "18",
             "tags" : "Relationship"
           } ],
@@ -551,22 +551,46 @@
           "relationships" : [ {
             "description" : "Wraps",
             "destinationId" : "9",
-            "id" : "78",
+            "id" : "83",
             "sourceId" : "19",
             "tags" : "Relationship"
           }, {
             "description" : "Targets a cited fact with",
             "destinationId" : "14",
-            "id" : "79",
+            "id" : "84",
             "sourceId" : "19",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
           "technology" : "TypeScript"
         }, {
-          "description" : "18:00 fetch and pin, overnight draft, 21:00 competitor drops 15 percent, 06:00 gate.",
+          "description" : "The multi-step plan P1 to P8 persisted to plan.json: a dependency graph from conclusions to pins, so a drift breaks exactly the conclusions citing a changed pin.",
           "documentation" : { },
           "id" : "20",
+          "name" : "Planner",
+          "properties" : {
+            "structurizr.dsl.identifier" : "planner",
+            "code" : "veto/planner.ts"
+          },
+          "relationships" : [ {
+            "description" : "Reads the Conclusion type from",
+            "destinationId" : "15",
+            "id" : "60",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads the Drift type from",
+            "destinationId" : "16",
+            "id" : "61",
+            "sourceId" : "20",
+            "tags" : "Relationship"
+          } ],
+          "tags" : "Element,Component",
+          "technology" : "TypeScript"
+        }, {
+          "description" : "18:00 fetch and pin, overnight draft, 21:00 the anchor competitor drops 15 percent, 06:00 gate, then self-correct: impact, re-pin, recompute, disclose, re-gate, ship.",
+          "documentation" : { },
+          "id" : "21",
           "name" : "Villain scenario",
           "properties" : {
             "structurizr.dsl.identifier" : "scenario",
@@ -575,26 +599,38 @@
           "relationships" : [ {
             "description" : "Gets the adapter from",
             "destinationId" : "9",
-            "id" : "53",
-            "sourceId" : "20",
+            "id" : "54",
+            "sourceId" : "21",
             "tags" : "Relationship"
           }, {
             "description" : "Drafts and decides through",
             "destinationId" : "18",
-            "id" : "54",
-            "sourceId" : "20",
+            "id" : "55",
+            "sourceId" : "21",
             "tags" : "Relationship"
           }, {
             "description" : "Wraps the world with PriceShift from",
             "destinationId" : "19",
-            "id" : "55",
-            "sourceId" : "20",
+            "id" : "56",
+            "sourceId" : "21",
             "tags" : "Relationship"
           }, {
             "description" : "Counts cited pins with",
             "destinationId" : "14",
-            "id" : "56",
-            "sourceId" : "20",
+            "id" : "57",
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Marks each step and the drift's impact in",
+            "destinationId" : "20",
+            "id" : "58",
+            "sourceId" : "21",
+            "tags" : "Relationship"
+          }, {
+            "description" : "Reads the last build's conclusions, anchor and recommendation from",
+            "destinationId" : "15",
+            "id" : "59",
+            "sourceId" : "21",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -602,7 +638,7 @@
         }, {
           "description" : "--clean, --drift, --outage worlds for the red proofs.",
           "documentation" : { },
-          "id" : "21",
+          "id" : "22",
           "name" : "Simulator",
           "properties" : {
             "structurizr.dsl.identifier" : "simulate",
@@ -611,20 +647,20 @@
           "relationships" : [ {
             "description" : "Gets the adapter from",
             "destinationId" : "9",
-            "id" : "57",
-            "sourceId" : "21",
+            "id" : "62",
+            "sourceId" : "22",
             "tags" : "Relationship"
           }, {
             "description" : "Drafts and decides through",
             "destinationId" : "18",
-            "id" : "58",
-            "sourceId" : "21",
+            "id" : "63",
+            "sourceId" : "22",
             "tags" : "Relationship"
           }, {
             "description" : "Wraps the world with PriceShift or Outage from",
             "destinationId" : "19",
-            "id" : "59",
-            "sourceId" : "21",
+            "id" : "64",
+            "sourceId" : "22",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -632,7 +668,7 @@
         }, {
           "description" : "Every [pin:] and [was-pin:] in a report resolves to an untampered row, or exit 1.",
           "documentation" : { },
-          "id" : "22",
+          "id" : "23",
           "name" : "Pin verifier",
           "properties" : {
             "structurizr.dsl.identifier" : "verify",
@@ -641,8 +677,8 @@
           "relationships" : [ {
             "description" : "Resolves each citation in",
             "destinationId" : "14",
-            "id" : "81",
-            "sourceId" : "22",
+            "id" : "86",
+            "sourceId" : "23",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -650,7 +686,7 @@
         }, {
           "description" : "North star, counter and gate p95 computed from pins.db, receipts.jsonl and runs.jsonl; Tinybird must agree or local wins.",
           "documentation" : { },
-          "id" : "23",
+          "id" : "24",
           "name" : "Evidence counts",
           "properties" : {
             "structurizr.dsl.identifier" : "evidence",
@@ -659,32 +695,32 @@
           "relationships" : [ {
             "description" : "Counts pins in",
             "destinationId" : "14",
-            "id" : "82",
-            "sourceId" : "23",
+            "id" : "87",
+            "sourceId" : "24",
             "tags" : "Relationship"
           }, {
             "description" : "Sums drifted facts from",
             "destinationId" : "17",
-            "id" : "83",
-            "sourceId" : "23",
+            "id" : "88",
+            "sourceId" : "24",
             "tags" : "Relationship"
           }, {
             "description" : "Reads runs.jsonl from",
             "destinationId" : "18",
-            "id" : "84",
-            "sourceId" : "23",
+            "id" : "89",
+            "sourceId" : "24",
             "tags" : "Relationship"
           }, {
             "description" : "Builds the event list with",
-            "destinationId" : "24",
-            "id" : "85",
-            "sourceId" : "23",
+            "destinationId" : "25",
+            "id" : "90",
+            "sourceId" : "24",
             "tags" : "Relationship"
           }, {
             "description" : "Reads the pipe through",
-            "destinationId" : "25",
-            "id" : "86",
-            "sourceId" : "23",
+            "destinationId" : "26",
+            "id" : "91",
+            "sourceId" : "24",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -692,7 +728,7 @@
         }, {
           "description" : "Fire-and-forget event posts to Tinybird as they happen; a dropped event is repaired by the next sync.",
           "documentation" : { },
-          "id" : "24",
+          "id" : "25",
           "name" : "Event emitter",
           "properties" : {
             "structurizr.dsl.identifier" : "stream",
@@ -700,15 +736,15 @@
           },
           "relationships" : [ {
             "description" : "Formats timestamps with",
-            "destinationId" : "25",
-            "id" : "87",
-            "sourceId" : "24",
+            "destinationId" : "26",
+            "id" : "92",
+            "sourceId" : "25",
             "tags" : "Relationship"
           }, {
             "description" : "POST /v0/events",
             "destinationId" : "6",
-            "id" : "98",
-            "sourceId" : "24",
+            "id" : "103",
+            "sourceId" : "25",
             "tags" : "Relationship,Asynchronous",
             "technology" : "HTTPS, fire-and-forget"
           } ],
@@ -717,7 +753,7 @@
         }, {
           "description" : "Ingests events and reads the vault_evidence pipe; never inside the gate.",
           "documentation" : { },
-          "id" : "25",
+          "id" : "26",
           "name" : "Tinybird read path",
           "properties" : {
             "structurizr.dsl.identifier" : "tinybirdClient",
@@ -726,8 +762,8 @@
           "relationships" : [ {
             "description" : "POST /v0/events, GET /v0/pipes/vault_evidence.json",
             "destinationId" : "6",
-            "id" : "95",
-            "sourceId" : "25",
+            "id" : "100",
+            "sourceId" : "26",
             "tags" : "Relationship",
             "technology" : "HTTPS"
           } ],
@@ -736,7 +772,7 @@
         }, {
           "description" : "One command: reset, night 1 clean, night 2 villain, evidence.",
           "documentation" : { },
-          "id" : "26",
+          "id" : "27",
           "name" : "Demo runner",
           "properties" : {
             "structurizr.dsl.identifier" : "demo",
@@ -744,15 +780,15 @@
           },
           "relationships" : [ {
             "description" : "Runs night 1 (--clean) and night 2 through",
-            "destinationId" : "20",
-            "id" : "38",
-            "sourceId" : "26",
+            "destinationId" : "21",
+            "id" : "39",
+            "sourceId" : "27",
             "tags" : "Relationship"
           }, {
             "description" : "Prints the counts through",
-            "destinationId" : "23",
-            "id" : "39",
-            "sourceId" : "26",
+            "destinationId" : "24",
+            "id" : "40",
+            "sourceId" : "27",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -760,7 +796,7 @@
         }, {
           "description" : "R1 to R22: adversarial checks that the mechanism cannot be fooled.",
           "documentation" : { },
-          "id" : "27",
+          "id" : "28",
           "name" : "Red proofs",
           "properties" : {
             "structurizr.dsl.identifier" : "proofs",
@@ -768,75 +804,75 @@
           },
           "relationships" : [ {
             "description" : "Runs the clean, drift and outage worlds through",
-            "destinationId" : "21",
-            "id" : "40",
-            "sourceId" : "27",
+            "destinationId" : "22",
+            "id" : "41",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Drafts through",
             "destinationId" : "15",
-            "id" : "41",
-            "sourceId" : "27",
+            "id" : "42",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Greps and calls",
             "destinationId" : "16",
-            "id" : "42",
-            "sourceId" : "27",
+            "id" : "43",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Verifies citations through",
-            "destinationId" : "22",
-            "id" : "43",
-            "sourceId" : "27",
+            "destinationId" : "23",
+            "id" : "44",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Ships a forged report through",
             "destinationId" : "18",
-            "id" : "44",
-            "sourceId" : "27",
+            "id" : "45",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Checks the adapter seam in",
             "destinationId" : "9",
-            "id" : "45",
-            "sourceId" : "27",
+            "id" : "46",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Runs the claim checker in",
             "destinationId" : "13",
-            "id" : "46",
-            "sourceId" : "27",
+            "id" : "47",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Wraps adapters with",
             "destinationId" : "19",
-            "id" : "47",
-            "sourceId" : "27",
+            "id" : "48",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Runs the villain through",
-            "destinationId" : "20",
-            "id" : "48",
-            "sourceId" : "27",
+            "destinationId" : "21",
+            "id" : "49",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Tampers a temp copy of",
             "destinationId" : "14",
-            "id" : "49",
-            "sourceId" : "27",
+            "id" : "50",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Runs",
             "destinationId" : "10",
-            "id" : "50",
-            "sourceId" : "27",
+            "id" : "51",
+            "sourceId" : "28",
             "tags" : "Relationship"
           }, {
             "description" : "Compares pipe and local counts through",
-            "destinationId" : "23",
-            "id" : "51",
-            "sourceId" : "27",
+            "destinationId" : "24",
+            "id" : "52",
+            "sourceId" : "28",
             "tags" : "Relationship"
           } ],
           "tags" : "Element,Component",
@@ -844,7 +880,7 @@
         }, {
           "description" : "The cite-pins rule in Nimble's Agent Skills format; describes only what is built.",
           "documentation" : { },
-          "id" : "28",
+          "id" : "29",
           "name" : "Agent Skill",
           "properties" : {
             "structurizr.dsl.identifier" : "skill",
@@ -863,22 +899,22 @@
         "relationships" : [ {
           "description" : "initialize, tools/list, tools/call nimble_extract",
           "destinationId" : "4",
-          "id" : "89",
-          "linkedRelationshipId" : "88",
+          "id" : "94",
+          "linkedRelationshipId" : "93",
           "sourceId" : "8",
           "technology" : "JSON-RPC over Streamable HTTP"
         }, {
           "description" : "chat/completions",
           "destinationId" : "5",
-          "id" : "93",
-          "linkedRelationshipId" : "92",
+          "id" : "98",
+          "linkedRelationshipId" : "97",
           "sourceId" : "8",
           "technology" : "HTTPS or localhost"
         }, {
           "description" : "POST /v0/events, GET /v0/pipes/vault_evidence.json",
           "destinationId" : "6",
-          "id" : "96",
-          "linkedRelationshipId" : "95",
+          "id" : "101",
+          "linkedRelationshipId" : "100",
           "sourceId" : "8",
           "technology" : "HTTPS"
         } ],
@@ -895,22 +931,22 @@
       "relationships" : [ {
         "description" : "initialize, tools/list, tools/call nimble_extract",
         "destinationId" : "4",
-        "id" : "90",
-        "linkedRelationshipId" : "88",
+        "id" : "95",
+        "linkedRelationshipId" : "93",
         "sourceId" : "7",
         "technology" : "JSON-RPC over Streamable HTTP"
       }, {
         "description" : "chat/completions",
         "destinationId" : "5",
-        "id" : "94",
-        "linkedRelationshipId" : "92",
+        "id" : "99",
+        "linkedRelationshipId" : "97",
         "sourceId" : "7",
         "technology" : "HTTPS or localhost"
       }, {
         "description" : "POST /v0/events, GET /v0/pipes/vault_evidence.json",
         "destinationId" : "6",
-        "id" : "97",
-        "linkedRelationshipId" : "95",
+        "id" : "102",
+        "linkedRelationshipId" : "100",
         "sourceId" : "7",
         "technology" : "HTTPS"
       } ],
@@ -919,7 +955,7 @@
   },
   "name" : "Veto",
   "properties" : {
-    "structurizr.inspection.error" : "67",
+    "structurizr.inspection.error" : "71",
     "structurizr.inspection.info" : "0",
     "structurizr.inspection.ignore" : "0",
     "structurizr.inspection.warning" : "0"
@@ -1037,6 +1073,10 @@
         "id" : "28",
         "x" : 0,
         "y" : 0
+      }, {
+        "id" : "29",
+        "x" : 0,
+        "y" : 0
       } ],
       "externalContainerBoundariesVisible" : false,
       "key" : "Modules",
@@ -1046,13 +1086,15 @@
         "structurizr.tooltips" : "true"
       },
       "relationships" : [ {
-        "id" : "29"
+        "id" : "100"
       }, {
-        "id" : "32"
+        "id" : "103"
+      }, {
+        "id" : "30"
       }, {
         "id" : "33"
       }, {
-        "id" : "36"
+        "id" : "34"
       }, {
         "id" : "37"
       }, {
@@ -1158,11 +1200,17 @@
       }, {
         "id" : "88"
       }, {
+        "id" : "89"
+      }, {
+        "id" : "90"
+      }, {
+        "id" : "91"
+      }, {
         "id" : "92"
       }, {
-        "id" : "95"
+        "id" : "93"
       }, {
-        "id" : "98"
+        "id" : "97"
       } ]
     } ],
     "configuration" : {
@@ -1285,15 +1333,15 @@
         "structurizr.tooltips" : "true"
       },
       "relationships" : [ {
-        "id" : "30"
+        "id" : "101"
       }, {
-        "id" : "34"
+        "id" : "31"
       }, {
-        "id" : "89"
+        "id" : "35"
       }, {
-        "id" : "93"
+        "id" : "94"
       }, {
-        "id" : "96"
+        "id" : "98"
       } ],
       "softwareSystemId" : "7"
     } ],
@@ -1309,23 +1357,11 @@
       },
       "description" : "Everything runs on the operator's laptop; Nimble and Tinybird are called over HTTPS.",
       "elements" : [ {
-        "id" : "99",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "100",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "101",
-        "x" : 0,
-        "y" : 0
-      }, {
-        "id" : "103",
-        "x" : 0,
-        "y" : 0
-      }, {
         "id" : "104",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "105",
         "x" : 0,
         "y" : 0
       }, {
@@ -1333,7 +1369,19 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "107",
+        "id" : "108",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "109",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "111",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "112",
         "x" : 0,
         "y" : 0
       } ],
@@ -1342,11 +1390,11 @@
       "name" : "Deployment View: Veto - Demo",
       "order" : 7,
       "relationships" : [ {
-        "id" : "102"
+        "id" : "107"
       }, {
-        "id" : "105"
+        "id" : "110"
       }, {
-        "id" : "108"
+        "id" : "113"
       } ],
       "softwareSystemId" : "7"
     } ],
@@ -1399,15 +1447,15 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "20",
+        "id" : "21",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "24",
+        "id" : "25",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "26",
+        "id" : "27",
         "x" : 0,
         "y" : 0
       } ],
@@ -1420,67 +1468,67 @@
       },
       "relationships" : [ {
         "description" : "bash veto/demo.sh",
-        "id" : "29",
+        "id" : "30",
         "order" : "1",
         "response" : false
       }, {
         "description" : "scenario.ts --clean",
-        "id" : "38",
+        "id" : "39",
         "order" : "2",
         "response" : false
       }, {
         "description" : "draft(adapter)",
-        "id" : "54",
+        "id" : "55",
         "order" : "3",
         "response" : false
       }, {
         "description" : "buildReport(): fetch five pages",
-        "id" : "61",
+        "id" : "66",
         "order" : "4",
         "response" : false
       }, {
         "description" : "fetch(url) x5",
-        "id" : "67",
+        "id" : "72",
         "order" : "5",
         "response" : false
       }, {
         "description" : "tools/call nimble_extract (--real)",
-        "id" : "88",
+        "id" : "93",
         "order" : "6",
         "response" : false
       }, {
         "description" : "corroborate(): parser and Liquid agree",
-        "id" : "68",
+        "id" : "73",
         "order" : "7",
         "response" : false
       }, {
         "description" : "pinResult(): five facts per page",
-        "id" : "69",
+        "id" : "74",
         "order" : "8",
         "response" : false
       }, {
         "description" : "agentAnalysis(): JSON claims, checked",
-        "id" : "70",
+        "id" : "75",
         "order" : "9",
         "response" : false
       }, {
         "description" : "decide(text, world)",
-        "id" : "54",
+        "id" : "55",
         "order" : "10",
         "response" : false
       }, {
         "description" : "revalidate(): re-fetch, re-hash, compare",
-        "id" : "62",
+        "id" : "67",
         "order" : "11",
         "response" : false
       }, {
         "description" : "fetch(url) x5, again",
-        "id" : "76",
+        "id" : "81",
         "order" : "12",
         "response" : false
       }, {
         "description" : "emit(run CLEAN)",
-        "id" : "66",
+        "id" : "71",
         "order" : "13",
         "response" : false
       } ]
@@ -1494,7 +1542,7 @@
         "rankSeparation" : 500,
         "vertices" : false
       },
-      "description" : "Night 2: a competitor price drops 15 percent after the draft cited it; DRIFTED, REFUSED, receipt with explanation.",
+      "description" : "Night 2: the anchor competitor's price drops 15 percent after the draft cited it; DRIFTED, REFUSED with a receipt, then impact, re-pin, recompute, disclose, re-gate, ship.",
       "elementId" : "8",
       "elements" : [ {
         "id" : "1",
@@ -1529,7 +1577,7 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "23",
+        "id" : "21",
         "x" : 0,
         "y" : 0
       }, {
@@ -1537,7 +1585,11 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "26",
+        "id" : "25",
+        "x" : 0,
+        "y" : 0
+      }, {
+        "id" : "27",
         "x" : 0,
         "y" : 0
       } ],
@@ -1550,58 +1602,73 @@
       },
       "relationships" : [ {
         "description" : "bash veto/demo.sh",
-        "id" : "29",
+        "id" : "30",
         "order" : "1",
         "response" : false
       }, {
         "description" : "scenario.ts",
-        "id" : "38",
+        "id" : "39",
         "order" : "2",
         "response" : false
       }, {
         "description" : "draft(adapter)",
-        "id" : "54",
+        "id" : "55",
         "order" : "3",
         "response" : false
       }, {
         "description" : "buildReport(): fetch, corroborate, pin, claims",
-        "id" : "61",
+        "id" : "66",
         "order" : "4",
         "response" : false
       }, {
         "description" : "new PriceShift(adapter, cited price, x0.85)",
-        "id" : "55",
+        "id" : "56",
         "order" : "5",
         "response" : false
       }, {
         "description" : "decide(text, shifted world)",
-        "id" : "54",
+        "id" : "55",
         "order" : "6",
         "response" : false
       }, {
         "description" : "revalidate(): re-fetch through the shifted world",
-        "id" : "62",
+        "id" : "67",
         "order" : "7",
         "response" : false
       }, {
         "description" : "fetch(url) x5",
-        "id" : "76",
+        "id" : "81",
         "order" : "8",
         "response" : false
       }, {
         "description" : "appendReceipt(DRIFTED, explanation)",
-        "id" : "65",
+        "id" : "70",
         "order" : "9",
         "response" : false
       }, {
-        "description" : "emit(run REFUSED, checks)",
-        "id" : "66",
+        "description" : "impactOf(): the conclusions citing the drifted pin",
+        "id" : "58",
         "order" : "10",
         "response" : false
       }, {
-        "description" : "evidence.ts: N pinned, M drifted, 0 shipped contradictions",
-        "id" : "39",
+        "description" : "draft again: re-pin the changed facts, recompute, disclose [was-pin:]",
+        "id" : "66",
         "order" : "11",
+        "response" : false
+      }, {
+        "description" : "revalidate() again: CLEAN",
+        "id" : "67",
+        "order" : "12",
+        "response" : false
+      }, {
+        "description" : "emit(run REFUSED then re-based SHIPPED, checks)",
+        "id" : "71",
+        "order" : "13",
+        "response" : false
+      }, {
+        "description" : "evidence.ts: N pinned, M drifted, 0 shipped contradictions",
+        "id" : "40",
+        "order" : "14",
         "response" : false
       } ]
     }, {
@@ -1637,11 +1704,11 @@
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "21",
+        "id" : "22",
         "x" : 0,
         "y" : 0
       }, {
-        "id" : "27",
+        "id" : "28",
         "x" : 0,
         "y" : 0
       } ],
@@ -1654,32 +1721,32 @@
       },
       "relationships" : [ {
         "description" : "bash veto/redproofs_p2.sh (R5)",
-        "id" : "32",
+        "id" : "33",
         "order" : "1",
         "response" : false
       }, {
         "description" : "simulate.ts --outage",
-        "id" : "40",
+        "id" : "41",
         "order" : "2",
         "response" : false
       }, {
         "description" : "draft(adapter), then decide(text, Outage(adapter))",
-        "id" : "58",
+        "id" : "63",
         "order" : "3",
         "response" : false
       }, {
         "description" : "revalidate(): first fetch rejects",
-        "id" : "62",
+        "id" : "67",
         "order" : "4",
         "response" : false
       }, {
         "description" : "fetch(url) throws",
-        "id" : "76",
+        "id" : "81",
         "order" : "5",
         "response" : false
       }, {
         "description" : "appendReceipt(UNREACHABLE, error)",
-        "id" : "65",
+        "id" : "70",
         "order" : "6",
         "response" : false
       } ]
@@ -1728,15 +1795,15 @@
         "structurizr.tooltips" : "true"
       },
       "relationships" : [ {
-        "id" : "31"
+        "id" : "102"
       }, {
-        "id" : "35"
+        "id" : "32"
       }, {
-        "id" : "90"
+        "id" : "36"
       }, {
-        "id" : "94"
+        "id" : "95"
       }, {
-        "id" : "97"
+        "id" : "99"
       } ],
       "softwareSystemId" : "7"
     } ]

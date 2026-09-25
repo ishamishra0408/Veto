@@ -93,7 +93,12 @@ workspace "Veto" "A deterministic ship-time gate for agent reports: pin facts by
                         "code" "veto/worlds.ts"
                     }
                 }
-                scenario = component "Villain scenario" "18:00 fetch and pin, overnight draft, 21:00 competitor drops 15 percent, 06:00 gate." "TypeScript" {
+                planner = component "Planner" "The multi-step plan P1 to P8 persisted to plan.json: a dependency graph from conclusions to pins, so a drift breaks exactly the conclusions citing a changed pin." "TypeScript" {
+                    properties {
+                        "code" "veto/planner.ts"
+                    }
+                }
+                scenario = component "Villain scenario" "18:00 fetch and pin, overnight draft, 21:00 the anchor competitor drops 15 percent, 06:00 gate, then self-correct: impact, re-pin, recompute, disclose, re-gate, ship." "TypeScript" {
                     properties {
                         "code" "veto/scenario.ts"
                     }
@@ -168,6 +173,10 @@ workspace "Veto" "A deterministic ship-time gate for agent reports: pin facts by
         scenario -> ship "Drafts and decides through"
         scenario -> worlds "Wraps the world with PriceShift from"
         scenario -> pins "Counts cited pins with"
+        scenario -> planner "Marks each step and the drift's impact in"
+        scenario -> report "Reads the last build's conclusions, anchor and recommendation from"
+        planner -> report "Reads the Conclusion type from"
+        planner -> gate "Reads the Drift type from"
         simulate -> adapters "Gets the adapter from"
         simulate -> ship "Drafts and decides through"
         simulate -> worlds "Wraps the world with PriceShift or Outage from"
@@ -269,8 +278,8 @@ workspace "Veto" "A deterministic ship-time gate for agent reports: pin facts by
             autoLayout lr 500 400
         }
 
-        /* THE VILLAIN NIGHT. One cited price moves 15 percent; the gate refuses and writes the receipt. */
-        dynamic cli "Refuse" "Night 2: a competitor price drops 15 percent after the draft cited it; DRIFTED, REFUSED, receipt with explanation." {
+        /* THE VILLAIN NIGHT. The anchor price moves 15 percent; the gate refuses, the plan re-bases, the truth ships. */
+        dynamic cli "Refuse" "Night 2: the anchor competitor's price drops 15 percent after the draft cited it; DRIFTED, REFUSED with a receipt, then impact, re-pin, recompute, disclose, re-gate, ship." {
             properties {
                 "structurizr.tooltips" "true"
             }
@@ -283,7 +292,10 @@ workspace "Veto" "A deterministic ship-time gate for agent reports: pin facts by
             ship -> gate "revalidate(): re-fetch through the shifted world"
             gate -> adapters "fetch(url) x5"
             ship -> receipts "appendReceipt(DRIFTED, explanation)"
-            ship -> stream "emit(run REFUSED, checks)"
+            scenario -> planner "impactOf(): the conclusions citing the drifted pin"
+            ship -> report "draft again: re-pin the changed facts, recompute, disclose [was-pin:]"
+            ship -> gate "revalidate() again: CLEAN"
+            ship -> stream "emit(run REFUSED then re-based SHIPPED, checks)"
             demo -> evidence "evidence.ts: N pinned, M drifted, 0 shipped contradictions"
             autoLayout lr 500 400
         }

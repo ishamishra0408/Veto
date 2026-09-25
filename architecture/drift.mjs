@@ -140,6 +140,6 @@ if (IS_MAIN) {
   if (r.state === 'UNEVALUABLE') { console.log(`UNEVALUABLE  ${r.why}`); process.exit(3); }
   console.log(`  drift · ${r.components} components · ${r.files} source files · shared: ${[...SHARED].join(', ')}`);
   for (const f of r.findings) console.log(`    ${f.rule.padEnd(10)} ${f.where}\n               ${f.why}`);
-  console.log(`  ${r.state}${r.findings.length ? ` — ${r.findings.length} finding(s): edit architecture/shipgate/workspace.dsl in the same change` : ''}`);
+  console.log(`  ${r.state}${r.findings.length ? ` — ${r.findings.length} finding(s): edit architecture/veto/workspace.dsl in the same change` : ''}`);
   process.exit(r.findings.length ? 1 : 0);
 }
