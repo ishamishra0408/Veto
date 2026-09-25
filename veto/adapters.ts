@@ -56,6 +56,7 @@ class MockAdapter extends FetchAdapter {
 
 type Json = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 const trace = (msg: string) => process.stderr.write(`\x1b[36m[nimble mcp]\x1b[0m ${msg}\n`);
+const short = (t: string) => t.split(/[,(]| - /)[0].trim().split(/\s+/).slice(0, 4).join(" "); // display only
 // G1: every MCP request is also persisted, one JSON line each (committed as evidence for a live run).
 export const MCP_TRACE = new URL("./mcp-trace.jsonl", import.meta.url);
 const persist = (row: Record<string, unknown>) => { try { appendFileSync(MCP_TRACE, JSON.stringify(row) + "\n"); } catch { /* never block a fetch */ } };
@@ -183,10 +184,10 @@ class NimbleMCPAdapter extends FetchAdapter {
       clientInfo: { name: "pinned-evidence-veto", version: "0.1.0" },
     });
     await this.rpc("notifications/initialized", {}, true);
-    trace(`session ${this.session ?? "(stateless)"} · server ${info?.serverInfo?.name ?? "?"} ${info?.serverInfo?.version ?? ""}`);
+    trace(`session ${this.session ? "✓" : "(stateless)"} · ${info?.serverInfo?.name ?? "server"} ${info?.serverInfo?.version ?? ""}`.trimEnd());
     const { tools } = await this.rpc("tools/list", {});
     const names: string[] = tools.map((t: Json) => t.name);
-    trace(`tools/list → ${names.join(", ")}`);
+    trace(`tools/list → ${names.length} tools (Veto uses nimble_extract, nimble_search)`);
     const want = process.env.NIMBLE_EXTRACT_TOOL ?? "nimble_extract";
     if (!names.includes(want)) throw new Error(`Nimble MCP has no tool "${want}" (set NIMBLE_EXTRACT_TOOL). Available: ${names.join(", ")}`);
     return want;
@@ -213,12 +214,12 @@ class NimbleMCPAdapter extends FetchAdapter {
       ...JSON.parse(process.env.NIMBLE_EXTRACT_ARGS ?? "{}"),
     };
     const t0 = Date.now();
-    trace(`tools/call ${tool} ${url} (country=${args.country})`);
+    trace(`tools/call ${tool} ${url.replace(/^https?:\/\/(www\.)?/, "")}`);
     const result = await this.rpc("tools/call", { name: tool, arguments: args });
     if (result?.isError) throw new Error(`${tool} failed for ${url}: ${JSON.stringify(result.content).slice(0, 200)}`);
     const r = toFetchResult(url, result, new Date().toISOString());
     this.rawByUrl.set(url, markdownOf(result));
-    trace(`  ← ${Date.now() - t0}ms · ${r.title} · $${r.price.toFixed(2)} · ${r.stock}`);
+    trace(`  ← ${Date.now() - t0}ms · ${short(r.title)} · $${r.price.toFixed(2)} · ${r.stock}`);
     return r;
   }
 }

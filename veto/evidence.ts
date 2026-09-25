@@ -60,7 +60,7 @@ try {
 // T2: history across every live run (Tinybird only — local state resets with each demo).
 try {
   const titles = new Map((db.prepare("SELECT source_url, fact_text FROM pins WHERE fact_text LIKE 'title of %'").all() as { source_url: string; fact_text: string }[])
-    .map((r) => [r.source_url, r.fact_text.split(" is ").slice(1).join(" is ").split(/[,(-]/)[0].trim().slice(0, 32)]));
+    .map((r) => [r.source_url, r.fact_text.split(" is ").slice(1).join(" is ").split(/[,(]| - /)[0].trim().split(/\s+/).slice(0, 4).join(" ")]));
   const vol = (await volatility()).filter((v) => v.drifts > 0).slice(0, 3);
   if (vol.length) console.log(`volatility (all live runs, Tinybird): ${vol.map((v) => `${titles.get(v.url) ?? v.url.split("/").pop()} ${v.field} ${v.drifts}/${v.checks}`).join(" · ")}`);
 } catch { /* offline: volatility needs history only Tinybird keeps */ }

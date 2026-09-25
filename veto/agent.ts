@@ -122,7 +122,7 @@ export async function agentAnalysis(basis: BasisFact[]): Promise<ClaimCheck | nu
   }
   const facts = [...byProduct].map(([p, xs]) => `${p}: ${xs.join("; ")}`).join("\n");
   const t0 = Date.now();
-  trace(`${AGENT_MODEL.replace(/^hf\.co\/LiquidAI\//, "")} (${LIQUID_WHERE}) · reasoning over ${basis.length} pinned facts`);
+  trace(`${AGENT_MODEL.replace(/^hf\.co\/LiquidAI\//, "").replace(/-GGUF:.*$/, "")} (${LIQUID_WHERE}) · reasoning over ${basis.length} pinned facts`);
   try {
     const raw = await liquidChat(
       "You are a retail pricing analyst. Use ONLY the pinned facts. Each fact is followed by its [pin:...] id. " +
@@ -134,7 +134,8 @@ export async function agentAnalysis(basis: BasisFact[]): Promise<ClaimCheck | nu
     const text = rendered.map((x) => { const r = repairCitations(x, basis); repaired += r.added; return r.sentence; }).join(" ");
     const check = checkClaims(text, basis);
     trace(`  ← ${Date.now() - t0}ms · ${check.kept.length} claim(s) verified · ${check.dropped.length} dropped · ${repaired} citation(s) repaired deterministically`);
-    for (const d of check.dropped) trace(`    dropped (${d.reason}): ${d.sentence.slice(0, 90)}`);
+    for (const d of check.dropped.slice(0, 2)) trace(`    dropped (${d.reason}): ${d.sentence.replace(/\s*\[pin:[^\]]*\]/g, "").slice(0, 60)}…`);
+    if (check.dropped.length > 2) trace(`    … +${check.dropped.length - 2} more dropped`);
     return check;
   } catch (e) {
     trace(`  unavailable (${(e as Error).message}) — deterministic template only`);

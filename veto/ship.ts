@@ -79,7 +79,11 @@ async function announce(v: Verdict, confirm: Awaited<ReturnType<typeof confirmDr
   else console.log(`  ${v.error}`);
   for (const w of why?.kept ?? []) console.log(`  ${ansi("1")}WHY:${ansi("0")} ${w}`);
   if (confirm.length) console.log(`  confirm fetch: ${confirm.map((c) => `${c.field} ${c.class}`).join(", ")}`);
-  console.log(`RECEIPT: ${JSON.stringify(receipt)}`);
+  // Compact on screen; the full receipt is the JSON line in receipts.jsonl (VETO_VERBOSE=1 prints it here too).
+  const bw = receipt.basis_window;
+  const cls = confirm.length ? ` · confirm: ${["moved", "flap", "moving", "unknown"].map((c) => [c, confirm.filter((x) => x.class === c).length] as const).filter(([, n]) => n).map(([c, n]) => `${n} ${c}`).join(", ")}` : "";
+  console.log(process.env.VETO_VERBOSE === "1" ? `RECEIPT: ${JSON.stringify(receipt)}` :
+    `RECEIPT → receipts.jsonl: ${v.status} · ${v.status === "DRIFTED" ? `${v.drifted.length} drifted fact(s)` : "error recorded"} · ${receipt.pin_hashes.length} pin hashes · basis ${bw ? `${bw.from.slice(11, 19)}–${bw.to.slice(11, 19)}Z` : "n/a"}${cls}`);
   return receipt;
 }
 

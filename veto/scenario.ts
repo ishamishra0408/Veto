@@ -10,6 +10,7 @@ import { decide, draft } from "./ship.ts";
 import { citedPriceTarget, PageDown, PriceShift } from "./worlds.ts";
 import { citedPinIds } from "./pins.ts";
 const ansi = (c: string) => (process.stdout.isTTY ? `\x1b[${c}m` : ""); // color only on a terminal
+const short = (t: string) => t.split(/[,(]| - /)[0].trim().split(/\s+/).slice(0, 4).join(" "); // display only
 
 const clean = process.argv.includes("--clean");
 const rebase = process.argv.includes("--rebase");
@@ -29,7 +30,7 @@ const plan = new Plan(
     { id: "P7", kind: "observe", title: "06:00 gate: re-fetch, re-hash, compare" },
     { id: "P8", kind: "correct", title: "self-correct: impact → re-pin → recompute → disclose → re-gate" },
   ]);
-plan.mark("P1", "done", "needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings");
+plan.mark("P1", "done", "title · price · stock · rating · seller per competitor → comparables → anchor → recommendation");
 
 say("18:00 T0", `fetching ${pageUrls().length} competitor pages via ${base.name}; pinning every fact` +
   (losePage ? ` (simulated: ${pageUrls()[2].split("/").pop()} is unreachable)` : ""));
@@ -72,15 +73,15 @@ if (verdict.status === "DRIFTED") {
     rows.set(line, [...(rows.get(line) ?? []), d]);
   }
   for (const [line, ds] of rows) {
-    let shown = line;
-    for (const d of ds) shown = shown.replace(`[pin:${d.pin_id}]`, `${ansi("1;33")}[pin:${d.pin_id}]${ansi("0")}`);
-    console.log(`  ${shown}`);
-    for (const d of ds) console.log(`  ↳ pinned ${d.field} ${d.old_value}; live at 6am: ${ansi("1;31")}${d.new_value}${ansi("0")}.`);
+    const cells = line.split("|");
+    const who = cells.length > 3 ? short(cells[2].replace(/\s*\[pin:[^\]]*\]/g, "")) : "a cited claim";
+    console.log(`  ${who}:`);
+    for (const d of ds) console.log(`    ↳ ${ansi("1;33")}[pin:${d.pin_id}]${ansi("0")} ${d.field}: pinned ${d.old_value} → live at 6am ${ansi("1;31")}${d.new_value}${ansi("0")}`);
   }
   console.log("  Shipping this = pricing against a ghost.");
   const imp = impactOf(conclusions0, verdict.drifted);
   plan.impact = imp;
-  console.log(`\n${ansi("1;34")}[plan impact]${ansi("0")} drift breaks ${imp.affected.length} of ${conclusions0.length} conclusions: ${imp.affected.map((a) => a.label).join(", ") || "none"}; ${imp.unaffected} still hold`);
+  console.log(`\n${ansi("1;34")}[plan impact]${ansi("0")} drift breaks ${imp.affected.length} of ${conclusions0.length} conclusions: ${[...new Set(imp.affected.map((a) => a.label.split(":")[0].trim()))].join(", ") || "none"}; ${imp.unaffected} still hold`);
 }
 }
 const { verdict, shipped, rebased } = await decide(text, world, { mode: clean ? (live ? "live" : "clean") : "drift", rebase,
@@ -91,7 +92,7 @@ if (verdict.status === "CLEAN") plan.mark("P8", "skipped", "nothing to correct")
 else if (rebased) {
   plan.recommendation.after = lastBuild.recommended;
   const r = plan.recommendation;
-  plan.mark("P8", "done", `re-fetched only the drifted page(s), reused the rest from pins, recomputed${r.before !== r.after ? ` recommendation $${r.before?.toFixed(2)} → $${r.after?.toFixed(2)}` : " (recommendation unchanged)"}, disclosed as [was-pin:], re-gated CLEAN, shipped`);
+  plan.mark("P8", "done", `re-fetched only the drifted pages · ${r.before !== r.after ? `recommendation $${r.before?.toFixed(2)} → $${r.after?.toFixed(2)}` : "recommendation unchanged"} · disclosed as [was-pin:] · re-gated CLEAN · shipped`);
 } else plan.mark("P8", rebase ? "failed" : "skipped", rebase ? "re-base could not reach a clean basis" : "not requested (--rebase) — refused, receipt written");
 // Villain night succeeds only if the drift was caught (REFUSED) and, when asked, corrected (re-based and shipped).
 process.exit(clean ? (shipped ? 0 : 2) : verdict.status !== "CLEAN" && (!rebase || rebased) ? 0 : 1);

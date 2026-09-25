@@ -9,6 +9,8 @@ export type Extractor = (snippet: string) => Promise<Extracted>;
 export interface Corroboration { status: "agreed" | "held" | "unavailable"; mismatches: string[]; detail: string }
 
 const trace = (msg: string) => process.stderr.write(`\x1b[35m[liquid extract]\x1b[0m ${msg}\n`);
+const short = (t: string) => t.split(/[,(]| - /)[0].trim().split(/\s+/).slice(0, 4).join(" "); // display only
+const modelName = () => EXTRACT_MODEL.replace(/^hf\.co\/LiquidAI\//, "").replace(/-GGUF:.*$/, "");
 
 // The model gets the lines around the product facts, not 170k chars of page chrome.
 export function snippetOf(md: string): string {
@@ -48,20 +50,20 @@ export function agree(r: FetchResult, m: Extracted): string[] {
 }
 
 export async function corroborate(r: FetchResult, raw: string, extractor: Extractor = liquidExtract): Promise<Corroboration> {
-  const label = r.title.slice(0, 40);
+  const label = short(r.title);
   try {
     const m = await extractor(snippetOf(raw));
     const mismatches = agree(r, m);
     if (mismatches.length) {
-      trace(`HELD ${label} — parser and ${EXTRACT_MODEL.replace(/^hf\.co\/LiquidAI\//, "")} disagree: ${mismatches.join("; ")}`);
+      trace(`HELD ${label} — parser and ${modelName()} disagree: ${mismatches.join("; ")}`);
       return { status: "held", mismatches, detail: mismatches.join("; ") };
     }
-    trace(`agreed ${label} (5/5 fields · ${EXTRACT_MODEL.replace(/^hf\.co\/LiquidAI\//, "")}, ${LIQUID_WHERE})`);
+    trace(`agreed ${label} · 5/5 fields · ${modelName()} (${LIQUID_WHERE})`);
     return { status: "agreed", mismatches: [], detail: "5/5 fields" };
   } catch (e) {
     // Corroboration is an extra check on ingest; if the model is unavailable the parser's facts are pinned as
     // before and the run says so. The gate is unaffected either way.
-    trace(`unavailable for ${label} (${(e as Error).message.slice(0, 60)}) — parser only`);
+    trace(`unavailable for ${label} (${(e as Error).message.slice(0, 50)}) — parser only`);
     return { status: "unavailable", mismatches: [], detail: (e as Error).message };
   }
 }
