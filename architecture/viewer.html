@@ -1,0 +1,1173 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Architecture Viewer</title>
+<meta name="ui-states" content="rail-shut,rail-open,rail-UNEVALUABLE">
+<!-- states: the rail is `shut` at rest and `open` while hovered or holding keyboard focus ·
+     `rail-UNEVALUABLE` is the third and the honest one: the exported model could not be read here,
+     so the tree is missing and says why rather than showing nothing -->
+<!-- design-system: design.md · macrostructure: Workbench (one chrome frame around one canvas) -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Google+Sans+Text:wght@400;500&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* ── THE PALETTE IS MEASURED, NOT PICKED ──────────────────────────────────────────────────────
+     Read from the operator's own NotebookLM mindmap on 2026-09-04. The page body reported
+     `rgb(26, 29, 34)` from computed style; the node and edge colours were read from a zoomed capture
+     because the mindmap renders inside a cross-origin iframe whose DOM is closed to a reader. Those
+     four are pixel reads and are marked as such — a value nobody can re-derive should say so.
+
+     WHAT THE MEASUREMENT ACTUALLY FOUND, and it is not what it looked like. White on the branch
+     slate is about 8.9:1 — comfortably past AA. The complaint "white text on gray fill is poor
+     visibility" is real, but the failing pair is the BOX against the CANVAS: #434950 on #1A1D22 is
+     roughly 1.9:1, so the card barely separates from the ground and the eye reads the whole plate as
+     low contrast. So this file raises SURFACE separation and hue, and leaves text where it was. */
+  :root {
+    --canvas:      #14171C;   /* measured #1A1D22, darkened one step to buy the lift below */
+    --surface:     #272C34;
+    --surface-2:   #333A44;   /* branch node: was #434950 at 1.9:1 on ground, now 2.6:1 */
+    --root:        #5A5C7A;   /* measured slate-violet #565873 */
+    --leaf:        #35473C;   /* measured green from the expanded branch */
+    --edge:        #A5A9F0;   /* measured periwinkle */
+    --ink:         #F1F3F4;
+    --ink-2:       #A9B2BD;
+    --hairline:    #3A424D;
+    --accent:      #A5A9F0;
+    --s1: 6px; --s2: 12px; --s3: 20px;
+    --t1: 12px; --t2: 14px; --t3: 16px;
+    --shut: 52px; --open: 272px;
+    color-scheme: dark;
+  }
+  /* THE THEME TOGGLE WAS REMOVED ON THE OPERATOR'S RULING, AND THE LIGHT PALETTE DID NOT GO WITH IT.
+     It answers the operating system now instead of a button: a reader whose machine is set to light
+     still gets a page built for light, and nobody has to find a control to get it. The violet and
+     the periwinkle survive as hues; the greys are rebuilt from a warm neutral so the ink stays dark
+     and the surfaces still separate — the defect this palette exists to fix. */
+  @media (prefers-color-scheme: light) {
+    :root {
+      --canvas:    #F2F1EE;
+      --surface:   #FFFFFF;
+      --surface-2: #E7E5E0;
+      --root:      #6F72A0;
+      --leaf:      #DCE8DF;
+      --edge:      #5F63C4;
+      --ink:       #1B1D22;
+      --ink-2:     #565C66;
+      --hairline:  #D3D0C9;
+      --accent:    #5F63C4;
+      color-scheme: light;
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0; background: var(--canvas); color: var(--ink);
+    font: 400 var(--t3)/1.5 "Google Sans Text", system-ui, -apple-system, sans-serif;
+    /* THE LAYOUT NO LONGER COUNTS ITS CHILDREN, and that is the fix rather than the number.
+       This was `grid-template-rows: auto auto 1fr` from when the page had a header, an order bar and
+       a main. Merging the order bar into the header left the count behind: main landed in an AUTO
+       track sized by its tallest item — the rail — the leftover 1fr track was an empty strip of
+       canvas, and opening the rail grew the tree, grew the track and pushed the page past the
+       viewport. That is the black space at the bottom. Measured before the fix: the track list
+       resolved to `55px 570px 0px` against two children.
+
+       Correcting it to `auto 1fr` would have been the same bug waiting for the next child. A track
+       list is a promise about how many children exist, made in the stylesheet, kept in the markup,
+       and checked by nothing. A column flex makes the promise unnecessary: the header takes its
+       content height, main takes the rest, and adding or removing a sibling cannot silently create
+       an empty strip because there are no tracks to fall out of step with. */
+    display: flex; flex-direction: column; height: 100vh;
+  }
+
+  header {
+    display: flex; align-items: baseline; gap: var(--s2); flex-wrap: wrap;
+    padding: var(--s2) var(--s3); border-bottom: 1px solid var(--hairline); background: var(--surface);
+  }
+  /* THE NAME IS ITS OWN ZONE. Once the order line moved up beside it, the project name and the
+     sentence about the current view ran together as one strip of text and the eye had nothing to
+     anchor on. A hairline and a wider gap separate the two without adding a second bar back. */
+  header h1 {
+    font: 500 var(--t3)/1.3 "Google Sans Text", system-ui, sans-serif; margin: 0;
+    padding-right: var(--s3); border-right: 1px solid var(--hairline); align-self: stretch;
+    display: flex; align-items: center; white-space: nowrap;
+  }
+
+  /* ONE BUTTON RECIPE, AND THE PROBE IS WHY. core/doc/design-probe.mjs read an earlier draft of this
+     page as "4 button(s), 2 variants — diverge on backgroundColor, color, borderStyle, borderWidth,
+     borderColor, borderRadius, paddingRight, fontFamily, fontWeight". Nine properties apart is not a
+     variant, it is a second design. Every button here binds this recipe; the variants change only
+     width, min-height and padding-left, none of which the probe counts as part of a recipe, so a
+     size difference can never quietly become a second idea of what a button is. */
+  .btn {
+    display: inline-flex; align-items: center; gap: var(--s1);
+    min-height: 36px; padding: 0 var(--s2);
+    background: var(--surface-2); color: var(--ink); border: 1px solid var(--hairline);
+    border-radius: 999px; font: 500 var(--t2)/1 "Google Sans Text", system-ui, sans-serif; cursor: pointer;
+  }
+  .btn:hover { border-color: var(--accent); color: var(--accent); }
+  .btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn--quiet { min-height: 30px; }
+  .btn--row { width: 100%; min-height: 34px; justify-content: flex-start; text-align: left; }
+
+  /* min-height: 0 is what lets a flex child shrink below its content, which is what keeps the rail's
+     own scrollbar inside the rail instead of growing the page. */
+  main { flex: 1 1 auto; display: grid; grid-template-columns: var(--shut) 1fr; min-height: 0; background: var(--canvas); }
+  iframe { width: 100%; height: 100%; border: 0; display: block; background: var(--canvas); }
+
+  /* ── THE RAIL: SHUT, AND OPEN ON APPROACH ─────────────────────────────────────────────────────
+     IT OVERLAYS RATHER THAN PUSHES. A rail that widened the layout would re-lay-out the diagram
+     under every passing cursor, which is the one thing a reader studying a diagram cannot tolerate.
+     Pinned is the exception and there it pushes on purpose: pinning is a decision to keep it, so the
+     canvas narrows once rather than on every hover.
+
+     ITS CONTENT STOPS AT CONTAINERS, on the operator's ruling: components are read in the picture,
+     not in a list. That is also the C4 grain — a container is the last level worth naming out of
+     context, while a component only means something inside the container that holds it. */
+  .rail {
+    position: relative; z-index: 5; width: var(--shut);
+    border-right: 1px solid var(--hairline); background: var(--surface);
+    padding: var(--s2) var(--s1); overflow-x: hidden; overflow-y: auto; min-height: 0;
+    display: flex; flex-direction: column; gap: var(--s2);
+    transition: width .16s ease, box-shadow .16s ease;
+  }
+  .rail:hover, .rail:focus-within { width: var(--open); box-shadow: 14px 0 28px rgba(0,0,0,.34); }
+  @media (prefers-color-scheme: light) {
+    .rail:hover, .rail:focus-within { box-shadow: 14px 0 28px rgba(31,29,24,.14); }
+  }
+  .rail h2 {
+    margin: 0; padding: 0 var(--s1); white-space: nowrap;
+    font: 500 var(--t1)/1.3 "Google Sans Text", system-ui, sans-serif;
+    letter-spacing: .06em; text-transform: uppercase; color: var(--ink-2);
+  }
+  /* A SHUT RAIL SHOWS NO BUTTONS, ONLY DOTS. Clipping a pill to 52px left half a control hanging off
+     the edge with two letters of its label — the shape said "press me" and the text said nothing, so
+     the rail read as broken chrome rather than as a closed drawer. Shut, every row drops its fill,
+     its border and its label and becomes the dot alone: a column of positions, one lit. The rows
+     keep their height and their order, so opening reveals labels rather than rearranging a list
+     under the cursor, and the inline padding-left that indents the tree is overridden here — it is
+     depth in a tree nobody can see yet, and it would push the dots off centre. */
+  .rail:not(:hover):not(:focus-within) h2,
+  .rail:not(:hover):not(:focus-within) .note { opacity: 0; }
+  .rail:not(:hover):not(:focus-within) .btn {
+    background: transparent; border-color: transparent;
+  }
+  .rail:not(:hover):not(:focus-within) .btn,
+  .rail:not(:hover):not(:focus-within) .leaf {
+    justify-content: center; padding-left: 0 !important; padding-right: 0;
+  }
+  .rail:not(:hover):not(:focus-within) .caret,
+  .rail:not(:hover):not(:focus-within) .rowtext { display: none; }
+  .rail ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 3px; }
+  /* THE NAME OUTRANKS THE TECHNOLOGY WHEN THE ROW RUNS OUT OF ROOM, and it did not: with the kind
+     label unshrinkable, "Single-Page Application · JavaScript and Angular" rendered as the
+     technology alone and the container had no name at all. A row that drops its subject to keep its
+     adjective is worse than a row that truncates. The kind now shrinks five times faster and both
+     ends ellipsise, so the name is the last thing to go. */
+  .rowtext { flex: 1 1 auto; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .kind { flex: 0 5 auto; min-width: 0; max-width: 46%; overflow: hidden; text-overflow: ellipsis;
+          color: var(--ink-2); font-size: var(--t1); white-space: nowrap; }
+  .rail:not(:hover):not(:focus-within) .kind { display: none; }
+
+  /* THE DOT IS THE WHOLE RAIL WHILE IT IS SHUT, so it carries state rather than decorating it:
+     filled violet is the view on screen, hollow violet is a level you can open, and hollow grey is
+     a bottom. Three states, one shape, readable at 52px.
+
+     THE BOTTOM DOT WAS GREEN AND IS NOT ANY MORE, because the diagram's palette took green for a
+     different meaning on 2026-09-04: there, green is "not ours". One colour cannot mean "nothing
+     below this" in the rail and "we did not build this" in the picture beside it — a reader would
+     be right either way and wrong half the time. Descent is now said in the violet family alone,
+     by fill, and ownership is said in hue, by the diagram. */
+  .dot { width: 9px; height: 9px; border-radius: 50%; flex: none; border: 1.5px solid var(--edge); }
+  .dot--here { background: var(--edge); }
+  .dot--leaf { border-color: var(--ink-2); background: transparent; opacity: .7; }
+
+  /* A FEATURE TRACE HAS TO POP, and it could not be given its own button: every button on this page
+     binds one recipe, and a second background or weight would be a second design the probe would be
+     right to refuse. So the difference is carried by the parts INSIDE the row — a square marker
+     rather than a round one, and a chip that names the kind — none of which the recipe covers.
+     A trace is not a level: the rest of the rail is structure, and this is a story through it. */
+  .dot--flow { border-radius: 2px; background: var(--edge); border-color: var(--edge); transform: rotate(45deg); }
+  .dot--env { border-radius: 2px; background: transparent; border-color: var(--edge); }
+  /* ── THE DECISION PANEL ──────────────────────────────────────────────────────────────────────
+     Checkpoint 12's first preregistered death fired: the static export drops every decision,
+     workspace-scoped and element-scoped alike, while workspace.json carries them in full. So the
+     reasoning is read from the file that has it and shown here.
+
+     IT IS A PANEL RATHER THAN A TOOLTIP because an ADR is paragraphs, not a phrase — the tooltip
+     this page already softens tops out at 320px for two short lines. */
+  .adr {
+    position: absolute; right: 18px; top: 96px; bottom: 18px; width: min(460px, 45vw);
+    background: #22262c; border: 1px solid #39404a; border-radius: 12px;
+    box-shadow: 0 18px 48px rgba(0,0,0,.5); overflow: auto; padding: 18px 20px; z-index: 5;
+  }
+  .adr[hidden] { display: none; }
+  /* THE CLOSE BUTTON IS ABSOLUTE, SO THE TITLE HAS TO KNOW IT IS THERE. Without this the heading
+     runs under it and a decision reads "1. Each queue and topic is a container; the mes ... bus is
+     not" — the one line a reader needs whole. */
+  .adr h2 { margin: 0 0 2px; padding-right: 76px; font-size: 15px; line-height: 1.35; }
+  .adr .adr-meta { color: #97a1b0; font-size: 12px; margin-bottom: 14px; }
+  .adr h3 { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #b9bdf5; margin: 16px 0 4px; }
+  .adr p { margin: 0 0 10px; font-size: 13px; line-height: 1.55; color: #dfe4ea; }
+  .adr .adr-close { position: absolute; top: 12px; right: 14px; }
+  .adr code { background: #2b3038; padding: 1px 5px; border-radius: 4px; font-size: 12px; }
+  .chip {
+    flex: none; margin-left: auto; padding: 1px 7px; border-radius: 999px;
+    background: color-mix(in srgb, var(--edge) 18%, transparent);
+    color: var(--edge); font-size: 11px; letter-spacing: .04em; text-transform: uppercase;
+  }
+  .rail:not(:hover):not(:focus-within) .chip { display: none; }
+
+  /* A LEAF IS NOT A BROKEN BUTTON, so it is not drawn as one. A disabled control would promise a
+     descent the artifact cannot make; this is a line of text and, below, its reason. */
+  .leaf { display: flex; align-items: center; gap: var(--s1); min-height: 34px; padding: 0 var(--s2); color: var(--ink-2); font-size: var(--t2); }
+  .caret { flex: none; width: 10px; color: var(--ink-2); font-size: 10px; transition: transform .14s ease; }
+  .caret--open { transform: rotate(90deg); }
+  /* THE ORDER BAR. A static view has no order and cannot say so on its own — the operator looked at
+     a component view, saw six sentences, and asked where to start and which order to follow. The
+     rail already knew the answer: it lists the traces over these same elements. The canvas did not,
+     and the canvas is what a reader is looking at. This says it there, and it is generated from the
+     export like everything else, so any repo's static views get it. */
+  .orderbar {
+    display: flex; align-items: center; gap: var(--s2); flex-wrap: wrap;
+    margin: 0; min-width: 0; flex: 1 1 auto;
+    color: var(--ink-2); font-size: var(--t2);
+  }
+  .orderbar[hidden] { display: none; }
+  .orderbar b { color: var(--ink); font-weight: 500; }
+  .orderbar .step { color: var(--ink); font-weight: 500; }
+  .orderbar kbd {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 20px; height: 20px; padding: 0 5px; margin: 0 2px;
+    background: var(--surface-2); color: var(--ink); border: 1px solid var(--hairline);
+    border-bottom-width: 2px; border-radius: 4px; font: 500 11px/1 "IBM Plex Mono", ui-monospace, monospace;
+  }
+  .note { color: var(--ink-2); font-size: var(--t1); line-height: 1.45; padding: 0 var(--s1); white-space: normal; }
+  .note strong { color: var(--ink); font-weight: 500; }
+  @media (prefers-reduced-motion: reduce) { .rail, .caret { transition: none; } }
+</style>
+</head>
+<body data-rail="shut">
+  <!-- ONE BAR, NOT THREE. The title, the order line and the layer notice were three stacked strips
+       eating 96px before the diagram started, on a plate that is mostly diagram. The operator's
+       ruling was to move the order line up beside the name; the layer notice is gone entirely, and
+       the rail's own `on` chip is now the only place a live layer is announced. -->
+  <header>
+    <h1 data-title>Architecture</h1>
+    <p class="orderbar" data-orderbar hidden></p>
+  </header>
+
+  <main>
+    <nav class="rail" aria-label="Diagram levels">
+      <div>
+        <h2>Levels</h2>
+        <ul data-tree></ul>
+      </div>
+      <p class="note" data-note hidden></p>
+    </nav>
+    <!-- allowfullscreen, because the renderer advertises f and an iframe withholds it by default.
+         A wrapper that quietly removes a capability the export has is the worst kind of wrapper:
+         the reader presses the key the welcome panel told them about and concludes the tool is
+         broken, when it is this file. Both spellings are given — the attribute for older engines,
+         the allow= policy for current ones. -->
+    <iframe title="Architecture diagrams" allowfullscreen allow="fullscreen"></iframe>
+    <aside class="adr" data-adr hidden aria-label="Architecture decision"></aside>
+  </main>
+
+<script>
+  (() => {
+    const body   = document.body;
+    const frame  = document.querySelector('iframe');
+    const treeEl = document.querySelector('[data-tree]');
+    const noteEl = document.querySelector('[data-note]');
+
+    /* THE PIN WAS REMOVED ON THE OPERATOR'S RULING, and its stored preference went with it rather
+       than lingering as a key nothing reads. Open on approach is the whole interaction now: hover,
+       or tab into the rail, which is what keyboard readers get in place of the pin. */
+
+    /* ── THE TREE IS BUILT FROM THE EXPORTED WORKSPACE, EVERY TIME ───────────────────────────────
+       Nothing about this bank is typed into this file. Point the page at a different workspace.json
+       and it draws that system's levels instead, which is the whole point: the alternative is a list
+       of names living in the wrapper that drifts from the model the first time the DSL changes, and
+       drifts INVISIBLY — the rail would go on offering a descent the diagram no longer has. */
+    const unevaluable = (why) => {
+      body.dataset.railState = 'UNEVALUABLE';
+      noteEl.hidden = false;
+      noteEl.innerHTML = '<strong>Levels UNEVALUABLE.</strong> ' + why +
+        ' The diagram still works and double-click still descends; only this list is missing.';
+    };
+
+    /* WHAT A CONTAINER IS, READ OFF THE WORKSPACE'S OWN STYLES. The rail listed seven containers as
+       seven identical rows, and the one thing a reader of a message-driven diagram needs at a glance
+       — which of these is a queue — was in the second column, where "Container · Amazon SQS" truncates
+       to "Con...". A chip says it instead.
+
+       IT IS DERIVED, NOT TYPED. The obvious implementation is a list of words like "queue" and "topic"
+       in this file, and that would be a SECOND home for the vocabulary checks/pubsub.mjs already owns
+       — two lists that agree until the day one is edited. What this reads instead is the styles block
+       the export carries, which is generated from architecture/theme.json: a container the theme draws
+       as a pipe IS a channel, by the theme's own ruling, and any repo that styles its channels that
+       way gets the chip without telling this file anything. */
+    /* THE CHIP SAYS THE TAG, NOT THE SHAPE, and that distinction is the difference between a rail
+       that reports the model and one that reports this file's guesses about it. Mapping Pipe to the
+       word "queue" labelled "Statement events topic" as a QUEUE — true of the shape, wrong about the
+       thing. The tag that supplied the shape is the model's own word for what this is, so a repo
+       declaring separate Queue and Topic tags gets both words for free and this theme's single
+       Channel tag reads CHANNEL. */
+    const SHAPES_WORTH_A_CHIP = ['Pipe', 'Cylinder'];
+    function chipFor(ws, el) {
+      const rows = ws.views?.configuration?.styles?.elements ?? [];
+      let chip = null;
+      for (const tag of String(el.tags ?? '').split(',').map((t) => t.trim()).filter(Boolean)) {
+        const row = rows.find((r) => r.tag === tag);
+        if (row && SHAPES_WORTH_A_CHIP.includes(row.shape)) chip = tag.toLowerCase();
+      }
+      return chip;
+    }
+
+    function index(ws) {
+      const views = [];
+      for (const v of ws.views.systemContextViews ?? []) views.push({ key: v.key, level: 'context',    scope: v.softwareSystemId });
+      for (const v of ws.views.containerViews  ?? []) views.push({ key: v.key, level: 'containers', scope: v.softwareSystemId });
+      for (const v of ws.views.componentViews  ?? []) views.push({ key: v.key, level: 'components', scope: v.containerId });
+      /* DYNAMIC VIEWS ARE VIEWS TOO, and the rail could not reach one. Measured 2026-09-04: opening
+         viewer.html#SignIn rendered the trace and left the rail showing a single folded row with no
+         current marker, because the tree was built from three view kinds and there are four. Every
+         repo with a feature trace would have had a rail that cannot reach it — a gap in the machine,
+         not in this bank's diagram. A dynamic view hangs off whatever it is scoped to. */
+      /* A ROW PRINTS THE TITLE AND SAYS THE DESCRIPTION ON HOVER. The first draft printed the
+         description, and a trace described in a sentence became a row truncated at its verb —
+         measured 2026-09-07 on the factory: two rows opening "How any RAT attack runs: a spec
+         becomes a probe row, the loop runs its criterion, the verdict is amended onto" and nothing
+         after. The DSL has a title keyword for this; a view without one falls back to its key,
+         which is short by construction, never to the sentence. */
+      for (const v of ws.views.dynamicViews ?? []) views.push({ key: v.key, level: 'flow', scope: v.elementId, title: v.title || v.key, hint: v.description || '', elements: new Set((v.elements ?? []).map((e) => e.id)) });
+      /* DEPLOYMENT VIEWS ARE VIEWS TOO, and the rail could not reach one — measured on the bank's
+         Development plate, which rendered correctly while the rail showed a single folded row. A
+         deployment view is scoped to a software system and named by its ENVIRONMENT, so two of them
+         over one system are two different answers to "where does this run", not two levels. */
+      for (const v of ws.views.deploymentViews ?? []) views.push({ key: v.key, level: 'deployment', scope: v.softwareSystemId, title: v.environment || v.key });
+      const viewFor = (level, scope) => views.find((v) => v.level === level && v.scope === scope)?.key ?? null;
+      const flowsFor = (scope) => views.filter((v) => v.level === 'flow' && v.scope === scope);
+      const deploysFor = (scope) => views.filter((v) => v.level === 'deployment' && v.scope === scope);
+      /* Which traces walk the elements THIS view draws — by element overlap, not by scope, because a
+         trace scoped to a container still explains half of the container view above it. */
+      const staticElements = new Map();
+      /* THE LANDSCAPE IS A STATIC VIEW TOO. Without it in this list the strip said "no trace covers
+         these elements yet" on the one plate every system-level trace covers. */
+      for (const k of ['systemLandscapeViews', 'systemContextViews', 'containerViews', 'componentViews']) {
+        for (const v of ws.views[k] ?? []) staticElements.set(v.key, new Set((v.elements ?? []).map((e) => e.id)));
+      }
+      const tracesOver = (key) => {
+        const els = staticElements.get(key);
+        if (!els) return [];
+        return views.filter((v) => v.level === 'flow' && [...(v.elements ?? [])].filter((id) => els.has(id)).length >= 2);
+      };
+
+      /* THE SHAPE IS THE MODEL'S, NOT ONE INVENTED HERE: a system, the view of its containers, and
+         each container. It stops there on the ruling that components are read in the picture. */
+      /* THE NAMES COME OFF THE ELEMENTS, which is the same place the renderer's own picker reads
+         them, so the rail cannot offer a layer the diagram does not have. */
+      /* EVERY DECISION, and the element each one governs. Read here so the rail and the panel
+         share one list rather than each finding its own. */
+      ADRS = [];
+      const takeAdrs = (holder, owner) => {
+        for (const d of holder?.documentation?.decisions ?? []) {
+          ADRS.push({ ...d, id: String(d.id), elementId: owner ? String(owner.id) : null, elementName: owner ? owner.name : null });
+        }
+      };
+      takeAdrs(ws, null);
+      for (const p of ws.model?.people ?? []) takeAdrs(p, p);
+      for (const s of ws.model?.softwareSystems ?? []) {
+        takeAdrs(s, s);
+        for (const c of s.containers ?? []) { takeAdrs(c, c); for (const k of c.components ?? []) takeAdrs(k, k); }
+      }
+
+      const roots = [];
+      const flowRow = (f) => ({ name: f.title || f.key, hint: f.hint, kind: 'Feature trace', view: f.key, children: [] });
+      /* THE LANDSCAPE IS THE TOP RUNG, and the rail could not reach it. Measured 2026-09-07 on the
+         factory: the workspace opened on its landscape view, and the rail — built from systems
+         downward — had no row for the plate on screen and no current marker, so the first thing a
+         reader saw was a picture the navigation denied existed. A trace scoped to nothing (the DSL's
+         `dynamic *`) hangs here too, because it crosses systems and belongs to none. */
+      const landscape = (ws.views.systemLandscapeViews ?? [])[0] ?? null;
+      const unscoped = views.filter((v) => v.level === 'flow' && !v.scope);
+      if (landscape) {
+        roots.push({ name: landscape.title || landscape.key, hint: landscape.description || '', kind: 'System landscape', view: landscape.key,
+          children: unscoped.map(flowRow) });
+      }
+      for (const s of ws.model.softwareSystems ?? []) {
+        const containers = s.containers ?? [];
+        const containerView = viewFor('containers', s.id);
+        const contextView = viewFor('context', s.id);
+        if (!contextView && !containerView) continue;          // a system nobody drew
+        /* THE ROW SAYS WHICH RUNG IT OPENS. A system with a context view opens on its neighbours;
+           one drawn only from the inside opens on its containers, and the kind says so rather than
+           letting the reader find out from the plate. */
+        const node = { name: s.name, kind: contextView ? 'Software System · neighbours' : 'Software System · containers', view: contextView || containerView, children: [] };
+        for (const f of flowsFor(s.id)) node.children.push(flowRow(f));
+        /* A TRACE SCOPED TO NOTHING WITH NO LANDSCAPE TO HANG FROM still has to be reachable; the
+           first system carries it, and only when there is no landscape row. */
+        if (!landscape && roots.length === 0) for (const f of unscoped) node.children.push(flowRow(f));
+        /* WHY, beside the levels rather than under them: a decision is not a deeper view of the
+           system, it is the reason the system looks like this. Workspace-scoped records sit at the
+           top; one governing an element also appears on that element's own row. */
+        if (ADRS.length) node.children.push({
+          name: 'Why', kind: ADRS.length + ' decision' + (ADRS.length === 1 ? '' : 's'), view: null,
+          children: ADRS.map((d) => ({ name: d.id + '. ' + d.title, kind: 'Decision', decision: d, view: null, children: [] })),
+        });
+        /* NO LAYERS BRANCH. The rationale is always on, so there is nothing to switch. */
+        const deploys = deploysFor(s.id);
+        if (deploys.length) node.children.push({ name: 'Deployed', kind: deploys.length + ' environment' + (deploys.length === 1 ? '' : 's'), view: null,
+          children: deploys.map((v) => ({ name: v.title || v.key, kind: 'Environment', view: v.key, children: [] })) });
+        if (containerView) {
+          node.children.push({
+            name: 'Containers',
+            kind: containers.length + ' container' + (containers.length === 1 ? '' : 's'),
+            view: containerView,
+            children: containers.map((c) => ({
+              name: c.name,
+              chip: chipFor(ws, c),
+              kind: 'Container' + (c.technology ? ' · ' + c.technology : ''),
+              view: viewFor('components', c.id),
+              children: [
+                ...flowsFor(c.id).map(flowRow),
+                /* THE DECISION IS REACHED FROM THE ELEMENT IT GOVERNS, which is the half of
+                   checkpoint 12 the static export dropped. */
+                ...ADRS.filter((d) => d.elementId === String(c.id)).map((d) => ({ name: d.id + '. ' + d.title, kind: 'Decision', decision: d, view: null, children: [] })),
+              ],
+            })),
+          });
+        }
+        roots.push(node);
+      }
+      return { roots, tracesOver };
+    }
+
+    /* THE WRAPPER OWNS THE ADDRESS BAR. It did not, and that made a whole class of link impossible:
+       viewer.html#Components landed on the context view because the iframe carried a hardcoded
+       fragment and the page's own was never read. A diagram nobody can link to at the level they are
+       reading is a diagram nobody can cite in a pull request.
+
+       IT NO LONGER OWNS THE PROJECT NAME, which is the other half. This file named one bank in three
+       places — its title, its iframe source and its fetch — so copying it into another repo meant
+       editing HTML, and the copy would then drift from the model beside it. The project comes from
+       ?w=<dir>, or from architecture/index.json when the query says nothing, and the heading comes
+       from the workspace's own name. Nothing about any one system is written here now. */
+    let SITE = null;
+    /* THE OPENING VIEW COMES FROM THE MODEL, NOT FROM A LITERAL. This line used to read
+       `|| 'SystemContext'` — one bank's view key, typed into a file whose own comment three
+       paragraphs up claims "nothing about any one system is written here now". It was not true, and
+       the cost was exact: the payments workspace names its context view "Context", so the iframe was
+       sent to #SystemContext, the renderer logged "A view must be specified", and the canvas came up
+       blank beside a rail that had loaded correctly. Every repo whose first view is not spelled the
+       bank's way would have opened on nothing. */
+    const ASKED = (location.hash || '').replace(/^#/, '') || null;
+
+    /** Every view key this workspace actually has, in the order a reader should meet them. */
+    function viewKeys(ws) {
+      const out = [];
+      /* THE LANDSCAPE COMES FIRST, because it is the top of the ladder and the rail now says so; it
+         used to sit last here, which was invisible while no workspace drew one alongside context views
+         and opened the factory on production's neighbours the day it did. */
+      for (const k of ['systemLandscapeViews', 'systemContextViews', 'containerViews', 'componentViews', 'dynamicViews', 'deploymentViews']) {
+        for (const v of ws.views?.[k] ?? []) out.push(v.key);
+      }
+      return out;
+    }
+
+    /* THE CANVAS COLOUR IS THE VIEWER'S, NOT THE MODEL'S, which is why it is set here and not in the
+       DSL: Structurizr's styles block colours ELEMENTS, and the ground they sit on belongs to the
+       renderer, which paints #111111 in dark mode. Pure black is not the ground the operator asked
+       for and it is not what their reference uses. Every element colour stays in the DSL, versioned
+       with the model; only this one property, which the DSL has no key for, lives in the wrapper.
+       Same-origin makes it reachable, and a failure to reach it is cosmetic — the diagram is
+       readable either way, so this must never be the thing that breaks the page. */
+    const TINT = '#1F2226';
+    const tint = () => {
+      try {
+        const d = frame.contentDocument;
+        if (!d || !d.head || d.getElementById('arch-tint')) return;
+        const s = d.createElement('style');
+        s.id = 'arch-tint';
+        /* The second rule repaints the BOUNDARY plates. The renderer fills them #111111 in dark mode,
+           which was invisible against a black canvas and became a dark rectangle once the canvas was
+           lifted — a shape with no meaning, on a diagram where every other fill now carries one. It
+           is matched by its literal fill because that is the only handle the export gives. */
+        s.textContent = 'html,body,#diagram,#diagram-viewport,#diagram-canvas,.joint-paper-background{background:' + TINT + ' !important}'
+                      + '#diagram-canvas [fill="#111111"]{fill:' + TINT + ' !important}';
+        d.head.appendChild(s);
+      } catch { /* not reachable from here: the tint is the only thing lost */ }
+    };
+    /* ── THE TOOLTIP IS THE RENDERER'S, AND ITS SHAPE IS OURS ────────────────────────────────────
+       Perspectives put a tooltip on screen for the first time, and the operator's reading of it was
+       "hover boxes too big and edges too sharp". Measured on #tooltip in the exported site:
+       max-width 33% — which on a 1600px screen is a 528px slab for two short lines — a 5px radius,
+       a 2px hard border and no shadow, so it sits ON the diagram rather than above it.
+
+       IT IS INJECTED RATHER THAN FORKED. The alternative is editing the exported site, which is
+       regenerated by the CLI on every export and would lose the edit silently — the worst kind of
+       fix, because the diagram would look right until someone re-exported. The iframe is same-origin
+       by construction, so the wrapper can hand the site a stylesheet and the export stays pristine.
+
+       IT IS IDEMPOTENT, and that is not defensive habit: the site rewrites its own document when the
+       view changes, so this runs again on every load and on the tick. */
+    const SOFTEN_ID = 'drawing-office-tooltip';
+    const SOFTEN = `
+      /* WIDE, BECAUSE THE PAYLOAD IS ROWS. A perspective value is now three labelled lines — the gap,
+         the comparison, and what the addition makes possible — and at 320px each of them wrapped four
+         times and the labels stopped reading as a column. The renderer escapes HTML in that value, so
+         a real <table> is not available; what IS available is \n, which it turns into <br/>, and
+         white-space: pre-wrap, which keeps the padding that lines the second column up. */
+      #tooltip {
+        max-width: 900px !important;
+        border-radius: 12px !important;
+        border-width: 1px !important;
+        padding: 14px 16px !important;
+        box-shadow: 0 10px 30px rgba(0,0,0,.45), 0 2px 6px rgba(0,0,0,.3) !important;
+        font-size: 10px !important;
+        line-height: 1.6 !important;
+      }
+      #tooltip p { margin: 0 0 6px 0 !important; }
+      #tooltip p:last-child { margin-bottom: 0 !important; }
+      #tooltip b { font-weight: 600 !important; letter-spacing: .01em; }
+      /* THE LENSES ARE THE WRAPPER'S OWN MARKUP (composeLenses), so headings are bold at write time
+         and no observer re-marks them after the fact. */
+      #tooltip .do-lens-name { margin-top: 10px !important; font-weight: 700 !important; text-transform: uppercase; letter-spacing: .06em; font-size: 9px !important; opacity: .8; }
+      #tooltip .do-lens { white-space: pre-wrap !important; }
+    `;
+
+    function soften() {
+      try {
+        const doc = frame.contentDocument;
+        if (!doc || doc.getElementById(SOFTEN_ID)) return;
+        const s = doc.createElement('style');
+        s.id = SOFTEN_ID;
+        s.textContent = SOFTEN;
+        (doc.head || doc.documentElement).append(s);
+      } catch { /* a cross-origin site keeps its own tooltip; the diagram is unaffected */ }
+    }
+    frame.addEventListener('load', soften);
+
+    frame.addEventListener('load', tint);
+
+    const goto = (key) => { try { frame.contentWindow.location.hash = key; } catch { frame.src = SITE + '#' + key; } };
+
+    /* ── DECISIONS: THE WHY, READ FROM THE FILE THAT STILL HAS IT ────────────────────────────────
+       Chapter 12: the C4 views "show the outcome of the decision-making process. The diagrams don't
+       tell you why those decisions were made." Measured 2026-09-04: `!adrs` puts every record into
+       workspace.json — workspace-scoped and nested under the element it governs — and the static
+       export drops all of it, so the site alone cannot answer why. This page reads workspace.json
+       already, for the rail, so the records are one field away.
+
+       THE RENDERING IS DELIBERATELY SMALL. An ADR is Nygard's four headings and prose paragraphs;
+       what a reader needs is the headings and the words, not a markdown engine. Anything richer
+       would be a second renderer to keep, and this file already refuses to carry a second design. */
+    let ADRS = [];
+    const adrPanel = document.querySelector('[data-adr]');
+
+    const esc = (s) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    function adrHtml(d) {
+      const lines = String(d.content ?? '').split('\n');
+      const out = [];
+      let para = [];
+      const flush = () => { if (para.length) { out.push('<p>' + esc(para.join(' ')) + '</p>'); para = []; } };
+      for (const line of lines) {
+        const h = line.match(/^#{2,3}\s+(.*)$/);
+        if (h) { flush(); out.push('<h3>' + esc(h[1]) + '</h3>'); continue; }
+        if (/^#\s+/.test(line)) continue;            // the title, already in the heading
+        if (/^Date:/i.test(line)) continue;          // already in the meta line
+        if (!line.trim()) { flush(); continue; }
+        para.push(line.trim());
+      }
+      flush();
+      return out.join('');
+    }
+
+    function showAdr(d) {
+      adrPanel.innerHTML = '';
+      const close = document.createElement('button');
+      close.type = 'button'; close.className = 'btn btn--quiet adr-close'; close.textContent = 'Close';
+      close.addEventListener('click', () => { adrPanel.hidden = true; });
+      const h = document.createElement('h2');
+      h.textContent = d.id + '. ' + d.title;
+      const meta = document.createElement('div');
+      meta.className = 'adr-meta';
+      /* THE SCOPE IS PART OF THE RECORD. A decision about one container and a decision about the
+         whole workspace are different claims, and the panel says which without the reader guessing
+         from the rail row they happened to click. */
+      meta.textContent = [d.status || 'no status', d.elementName ? 'governs ' + d.elementName : 'governs the whole workspace',
+                          d.date ? String(d.date).slice(0, 10) : null].filter(Boolean).join(' · ');
+      const body = document.createElement('div');
+      body.innerHTML = adrHtml(d);
+      adrPanel.append(close, h, meta, body);
+      adrPanel.hidden = false;
+      adrPanel.scrollTop = 0;
+    }
+
+    /* PERSPECTIVES WORK OFFLINE, measured 2026-09-04 against a preregistered claim that they would
+       be cloud-only. What changed since is how they are reached: the rail used to list them as
+       switchable layers, and the operator's ruling is that the reasoning should just be there. */
+    /* THE FIRST DRAFT ARMED A "RATIONALE" LAYER ALWAYS ON, on the reading that setPerspective sets
+       the renderer's filter without dimming, so the reasoning would be on every hover with no rail
+       row to switch. THAT READING WAS WRONG, AND THE WAY IT WAS WRONG DIMMED EVERY PLATE. setPerspective
+       does not dim the plate already on screen — that much was measured — but the NEXT render
+       honours the filter: elementMatchesFilter and relationshipMatchesFilter read filter.perspective
+       while a view is drawn, and every element and every relationship carrying no value for it is
+       shaded into the canvas. A layer armed once and left on therefore dimmed every view drawn after
+       it. Measured 2026-09-07 on the factory: six externals and all thirty-odd arrows on the
+       production plate as ghosts; the landscape, the three context views and the loop entirely
+       grey; HR dark under "Insight", which none of its containers has.
+
+       THE ROOT OF IT IS A BORROWED MECHANISM. The wrapper wanted one thing — the values a box
+       carries should reach its hover — and reached for the renderer's perspective FILTER to get it,
+       because the filter is what makes the renderer pass a perspective to its tooltip. But the
+       filter is chapter 12's LAYER: a comparison that dims non-carriers by design. Using a
+       comparison as a delivery channel made dimming an unavoidable side effect of every render, and
+       the comment that claimed otherwise had been checked on the one plate where every box carried
+       the value. A per-plate arming rule (the previous draft) only moved the dimming to plates with
+       mixed coverage; it did not remove the borrowed mechanism.
+
+       WHAT STANDS NOW. The wrapper never arms a layer. It wraps the site's tooltip method once per
+       load, lets the renderer draw the plain tooltip, and appends every perspective the element
+       carries — in the order the MODEL declares under drawing-office.lenses, then any others by
+       name. The renderer's own p picker still arms a layer on request, and that dimming is the
+       reader's choice. The site declares its tooltip as a top-level const, a global binding that is
+       not a window property, so it is reached through the frame's own global scope. */
+    const LENSES_PROPERTY = 'drawing-office.lenses';
+    const LENS_MARK = 'doComposed';
+    const lensOrder = () => String(WS?.properties?.[LENSES_PROPERTY] ?? WS?.model?.properties?.[LENSES_PROPERTY] ?? '')
+      .split(',').map((s) => s.trim()).filter(Boolean);
+    const lensesOf = (element) => {
+      const order = lensOrder();
+      const rank = (p) => { const i = order.indexOf(p.name); return i < 0 ? order.length : i; };
+      return [...(element?.perspectives ?? [])].sort((a, b) => rank(a) - rank(b) || String(a.name).localeCompare(String(b.name)));
+    };
+    /* A heading is a line that is not empty and does not start with the bullet marker — the same
+       rule checks/perspectives.mjs uses to decide which lines it measures. */
+    const lensHtml = (lenses) => lenses.map((p) => {
+      const body = String(p.description ?? '').split('\n')
+        .map((line) => { const t = line.trim(); const e = esc(line); return !t || t.startsWith('·') ? e : '<b>' + e + '</b>'; })
+        .join('<br />');
+      return '<p class="do-lens-name">' + esc(p.name) + '</p><p class="do-lens">' + body + '</p>';
+    }).join('');
+    function composeLenses() {
+      let w, t;
+      try { w = frame.contentWindow; t = w.eval('tooltip'); } catch { return; }
+      if (!t || typeof t.showTooltipForElement !== 'function' || t[LENS_MARK]) return;
+      const original = t.showTooltipForElement;
+      t.showTooltipForElement = function (element, style, x, y, header) {
+        /* THE HEADER IS FORCED ON, and the renderer's own source is why. structurizr-tooltip.js
+           makes `header` total: truthy fills the name, the type, the parent and the description and
+           un-hides #tooltipHeader; falsy calls tooltipHeader.addClass('hidden') and fills nothing
+           but the tags. On hover the renderer passes FALSE — measured 2026-09-19, the live call is
+           (element, style, 403, 261, false, undefined) — so a hover produced a large empty plate
+           carrying two tag chips and nothing that named the box it came from. A reader called that
+           broken and was right.
+
+           IT IS WORSE ON A MODEL THAT HAS PERSPECTIVES, not better: this wrapper appends the lens
+           rows underneath, so the reader got lens text with no element name above it. The wrapper
+           owns this call and the header is what a hover is FOR, so it says true. `header` stays in
+           the signature because the renderer still passes it and swallowing an argument silently is
+           how the next person loses one. */
+        original.call(this, element, style, x, y, true, undefined);
+        try {
+          const box = w.document.getElementById('tooltipAdditionalContent');
+          const lenses = lensesOf(element);
+          if (box && lenses.length) box.innerHTML = lensHtml(lenses);
+        } catch { /* the plain tooltip stands */ }
+      };
+      t[LENS_MARK] = true;
+    }
+    const currentKey = () => { try { return (frame.contentWindow.location.hash || '').replace(/^#/, '') || null; } catch { return null; } };
+    /* replaceState, not a hash assignment: writing location.hash would push a history entry for every
+       descent and fire this page's own hashchange, and the two would then chase each other. */
+    const mirror = (key) => { if (key && key !== (location.hash || '').replace(/^#/, '')) { try { history.replaceState(null, '', '#' + key); } catch { /* ignore */ } } };
+
+    const open = new Set();       // which branches are unfolded, keyed by their path through the tree
+    let ROOTS = [], here = null, TRACES = () => [], WS = null;
+    const orderbar = document.querySelector('[data-orderbar]');
+
+    /* ── THE WALK ────────────────────────────────────────────────────────────────────────────────
+       A trace is a sequence, and a reader wants to be taken along it rather than hunt a wide plate
+       for "3". N moves forward, B moves back, Escape ends it. On each step the camera frames that
+       step's two elements and everything not yet reached is dimmed.
+
+       WHY THE CAMERA IS OURS. The viewer exposes centreSelectedElements(), and measured against this
+       page it moved neither the layer transform nor the scroll position — at a zoom where the whole
+       diagram already fits there is nothing to centre. So the walk reads the rendered rectangles
+       itself and scrolls to them, which works at any zoom and needs nothing but the DOM.
+
+       WHY ELEMENTS ARE FOUND BY NAME. The SVG's model-id is a JointJS cell id, not the workspace
+       element id, so the two cannot be joined directly. The name is in the group's text, and
+       matching on it is the same handle this repo's navigation probe already uses. */
+    let WALK = null;
+
+    const groupsIn = () => { try { return [...frame.contentDocument.querySelectorAll('#diagram-canvas g[model-id]')]; } catch { return []; } };
+
+    /* THE RENDERER WRITES NON-BREAKING SPACES AND THE MODEL WRITES ORDINARY ONES. Every label in the
+       SVG is built from tspans whose spaces are &nbsp; — U+00A0 — so "Session store" from the model
+       never matches "Session\u00A0store" on the canvas. The symptom was silent and total: the walk
+       lit its relationship, dimmed both of the elements it was meant to be showing, and the element
+       heads printed identically in a log because the two characters look the same. Both sides are
+       folded to plain spaces before any comparison. */
+    const flat = (s) => String(s ?? '').replace(/[\u00A0\u2007\u202F\s]+/g, ' ').trim();
+    const groupFor = (name) => groupsIn().find((g) => flat(g.textContent).startsWith(flat(name)));
+
+    /* Ordered steps for one trace, each carrying the NAMES of the two elements it joins: the export
+       gives a step a relationship id, and the model gives that id a source and a destination. */
+    function stepsOf(ws, key) {
+      const view = (ws?.views?.dynamicViews ?? []).find((v) => v.key === key);
+      if (!view) return [];
+      const name = new Map(), rel = new Map();
+      const take = (o) => {
+        name.set(String(o.id), o.name);
+        for (const r of o.relationships ?? []) rel.set(String(r.id), { from: String(o.id), to: String(r.destinationId) });
+      };
+      for (const p of ws.model?.people ?? []) take(p);
+      for (const s of ws.model?.softwareSystems ?? []) {
+        take(s);
+        for (const c of s.containers ?? []) { take(c); for (const k of c.components ?? []) take(k); }
+      }
+      const ex = EXAMPLE_ON.has(key) ? examplesOf(ws, key) : null;
+      return [...(view.relationships ?? [])]
+        .sort((a, b) => Number(a.order) - Number(b.order))
+        .map((s) => { const r = rel.get(String(s.id)); return r ? { from: name.get(r.from), to: name.get(r.to), description: (ex && ex.byHop.get(String(s.order))) || s.description } : null; })
+        .filter(Boolean);
+    }
+
+    /* ── A TRACE TOLD TWICE: THE GENERAL STATEMENT AND ONE WORKED EXAMPLE ───────────────────────
+       The operator's ruling, 2026-09-07: an arrow labelled "a spec of four fields" says what kind
+       of thing crosses it, and a reader who has never seen one still cannot picture it. The first
+       answer was a second dynamic view carrying the real values, and the rail then showed two rows
+       that said the same nine things in two registers. So the example rides on the same view: the
+       model declares drawing-office.example.<hop> per arrow and drawing-office.example for the
+       instance's name, and E swaps every label on the plate between the two registers.
+
+       WHY THE RENDERER'S OWN WORKSPACE IS EDITED. The static site draws a dynamic view's arrow
+       labels from view.relationships[i].description in the object structurizr.workspace holds;
+       changeView() returns early for the view already on screen, and refresh() redraws the current
+       one. So the swap writes the other register into that object and asks for a redraw. The
+       general text is never lost, because the wrapper's own copy of the export (WS) is the source
+       of truth for it and every apply is computed from WS, never from the last apply.
+
+       THE HOP NUMBER IS THE JOIN, not the relationship id: one model relationship can appear on a
+       trace twice, and order is what the DSL keeps unique. checks/hop-examples.mjs refuses an
+       example whose hop no arrow has, and a view where only some hops carry one, so a plate never
+       shows the two registers mixed. */
+    const EXAMPLE_PROPERTY = 'drawing-office.example';
+    const EXAMPLE_PREFIX = 'drawing-office.example.';
+    const EXAMPLE_ON = new Set();      // trace keys the reader has switched to the example register
+    function examplesOf(ws, key) {
+      const view = (ws?.views?.dynamicViews ?? []).find((v) => v.key === key);
+      const props = view?.properties ?? {};
+      const byHop = new Map();
+      for (const [k, v] of Object.entries(props)) if (k.startsWith(EXAMPLE_PREFIX)) byHop.set(String(Number(k.slice(EXAMPLE_PREFIX.length))), String(v));
+      if (!byHop.size) return null;
+      return { name: String(props[EXAMPLE_PROPERTY] ?? 'the example'), byHop };
+    }
+    /* Write the register the reader asked for into the renderer's view, and redraw only if a label
+       actually changed: this runs on every tick, and a redraw per tick would fight the reader's own
+       zoom and scroll. A frame reload puts the renderer back to the general register; the next tick
+       puts the reader's choice back. */
+    function applyRegister(key) {
+      let live;
+      try { live = frame.contentWindow.structurizr.workspace.findViewByKey(key); } catch { return; }
+      const general = (WS?.views?.dynamicViews ?? []).find((v) => v.key === key);
+      if (!live || !general || !Array.isArray(live.relationships)) return;
+      const ex = examplesOf(WS, key);
+      const on = EXAMPLE_ON.has(key) && !!ex;
+      let changed = false;
+      for (const r of live.relationships) {
+        const g = (general.relationships ?? []).find((x) => String(x.order) === String(r.order));
+        const want = on ? (ex.byHop.get(String(r.order)) ?? g?.description ?? '') : (g?.description ?? '');
+        if (r.description !== want) { r.description = want; changed = true; }
+      }
+      if (!changed || currentKey() !== key) return;
+      try { frame.contentWindow.structurizr.diagram.refresh(); } catch { /* the next tick tries again */ }
+      /* A redraw replaces every group on the canvas, so a walk in progress re-frames its step. */
+      if (WALK && WALK.key === key) { WALK.steps = stepsOf(WS, key); showStep(); }
+    }
+    function toggleRegister(key) {
+      if (!examplesOf(WS, key)) return false;
+      if (EXAMPLE_ON.has(key)) EXAMPLE_ON.delete(key); else EXAMPLE_ON.add(key);
+      applyRegister(key);
+      return true;
+    }
+
+    /* Frame the current step: dim what has not been reached, then move onto its two elements. Two
+       passes, because a rectangle read before the scroll is a rectangle in the old frame — the first
+       sizes the zoom, the second lands the position. */
+    /* THE ORDER OF THESE THREE PHASES IS THE WHOLE FIX. zoomTo() makes JointJS re-render, which
+       REPLACES the group nodes — so a dim pass written before the zoom styles elements that no
+       longer exist, and the walk came up with all seventeen groups dimmed including the two it was
+       supposed to be lighting. Camera first, settle, then dim what is on the canvas NOW. Every
+       phase re-queries; nothing holds a node across a render. */
+    async function showStep() {
+      if (!WALK) return;
+      const d = frame.contentDocument;
+      const dg = frame.contentWindow.structurizr && frame.contentWindow.structurizr.diagram;
+      const cur = WALK.steps[WALK.at];
+      const vp = d.querySelector('#diagram-viewport') || d.querySelector('#diagram');
+      sayOrder(WALK.key);
+
+      if (vp && dg) {
+        const boxOf = () => {
+          const r = [cur.from, cur.to].map(groupFor).filter(Boolean).map((g) => g.getBoundingClientRect());
+          if (r.length < 2) return null;
+          return { left: Math.min(...r.map((b) => b.left)), right: Math.max(...r.map((b) => b.right)),
+                   top: Math.min(...r.map((b) => b.top)), bottom: Math.max(...r.map((b) => b.bottom)) };
+        };
+        const first = boxOf();
+        if (first) {
+          /* Fit the pair with room around it: framed edge to edge it reads as a crop rather than a
+             camera move, and the surrounding context is what makes a walk legible. */
+          const layer = d.querySelector('.joint-layers');
+          const m = (layer && layer.getAttribute('transform') || '').match(/matrix\(([0-9.]+)/);
+          const scale = m ? Number(m[1]) : 1;
+          const w = Math.max(1, (first.right - first.left) / scale * 1.7);
+          const h = Math.max(1, (first.bottom - first.top) / scale * 1.7);
+          try { dg.zoomTo(Math.max(0.15, Math.min(2.2, Math.min(vp.clientWidth / w, vp.clientHeight / h)))); } catch { /* leave the zoom as found */ }
+          await new Promise((r) => setTimeout(r, 120));
+          const after = boxOf();
+          if (after) {
+            vp.scrollLeft += (after.left + after.right) / 2 - vp.clientWidth / 2;
+            vp.scrollTop += (after.top + after.bottom) / 2 - vp.clientHeight / 2;
+          }
+        }
+      }
+
+      const reached = new Set();
+      for (let i = 0; i <= WALK.at; i++) { reached.add(WALK.steps[i].from); reached.add(WALK.steps[i].to); }
+      for (const g of groupsIn()) {
+        const t = flat(g.textContent);
+        const kind = g.getAttribute('data-type') || '';
+        /* A boundary and the diagram's own caption are never dimmed: they are the page, not a step. */
+        if (/boundary|diagramTitle|diagramDescription|diagramMetadata/i.test(kind)) continue;
+        const lit = /^link$/i.test(kind)
+          ? Number((t.match(/^(\d+):/) || [])[1]) <= WALK.at + 1
+          : [...reached].some((n) => n && t.startsWith(flat(n)));
+        g.style.transition = 'opacity .25s ease';
+        g.style.opacity = lit ? '1' : '0.12';
+      }
+    }
+
+    function walkTo(n) {
+      if (!WALK) return;
+      /* IT STOPS AT BOTH ENDS RATHER THAN WRAPPING. A sequence that loops from the last step back to
+         the first with no seam tells the reader the chain is a cycle, which for a kill chain is a
+         lie about the system. */
+      WALK.at = Math.max(0, Math.min(WALK.steps.length - 1, n));
+      showStep();
+    }
+
+    function startWalk(key) {
+      const steps = stepsOf(WS, key);
+      if (!steps.length) return;
+      WALK = { key, steps, at: 0 };
+      showStep();
+    }
+
+    function endWalk() {
+      if (!WALK) return;
+      for (const g of groupsIn()) g.style.opacity = '1';
+      try { frame.contentWindow.structurizr.diagram.zoomFitContent(); } catch { /* the view may have gone */ }
+      WALK = null;
+    }
+
+    /* THE KEYS ARE BOUND IN BOTH DOCUMENTS. Focus is usually inside the diagram — that is where a
+       reader clicks — so a listener on the wrapper alone would stop working after the first click.
+       N and B were chosen because the viewer already binds c w h i t d m f p, space and the arrows. */
+    function onKey(e) {
+      if (e.metaKey || e.ctrlKey || e.altKey) return;
+      const k = String(e.key).toLowerCase();
+      if (k !== 'n' && k !== 'b' && k !== 'e' && k !== 'escape') return;
+      const onTrace = !!here && ROOTS.some(function look(n) { return (n.kind === 'Feature trace' && n.view === here) || n.children.some(look); });
+      if (!onTrace) return;
+      if (k === 'escape') { endWalk(); sayOrder(here); e.preventDefault(); return; }
+      /* E is the register, and it is inert on a trace that declares no example — the strip says so
+         by not offering it, rather than the key doing nothing in silence. */
+      if (k === 'e') { if (toggleRegister(here)) { sayOrder(here); e.preventDefault(); } return; }
+      if (!WALK || WALK.key !== here) startWalk(here);
+      else walkTo(WALK.at + (k === 'n' ? 1 : -1));
+      e.preventDefault();
+    }
+    addEventListener('keydown', onKey);
+    frame.addEventListener('load', () => { try { frame.contentDocument.addEventListener('keydown', onKey); } catch { /* the wrapper's own listener still serves */ } });
+
+    /* A STATIC VIEW SAYS IT HAS NO ORDER, and names the ones that do. On a trace it says where to
+    /* THE LAYER NOTICE IS GONE, on the operator's ruling that they do not want to see it.
+       IT WAS BUILT FOR A REAL DEFECT and that defect returns: a layer left on across a view
+       change dims most of a plate, and the first time it happened the operator asked what had
+       happened to the colours. What answers it now is the rail's own  chip, which is only
+       visible while the rail is open — so the trade is a quieter header for a state that is one
+       hover away instead of always on screen. Recorded here rather than argued: the notice can
+       come back by restoring sayLayer and its one call in sayOrder. */
+
+    /* ONE PLACE THE LAYER IS ANNOUNCED, because three was the defect it was written to fix.
+       The strip has three branches — a walk in progress, a trace not yet walked, a static view — and
+       the first draft of this notice called sayLayer at the end of each. That is the same two-writers
+       shape that let the queue chip reach only half the rail: a fourth branch, added later by someone
+       who has not read this comment, would silently stop announcing the layer. So the branches only
+       FILL the strip, and this wrapper prepends the notice once, on the one path all of them take. */
+    function sayOrder(key) {
+      if (!key) { orderbar.hidden = true; return; }
+      fillOrder(key);
+    }
+
+    function fillOrder(key) {
+      const isFlow = ROOTS.some(function walk(n) { return (n.kind === 'Feature trace' && n.view === key) || n.children.some(walk); });
+      if (isFlow) {
+        orderbar.hidden = false;
+        orderbar.textContent = '';
+        const mk = (text, fn) => { const b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn--quiet'; b.textContent = text; b.addEventListener('click', fn); orderbar.append(b); return b; };
+        if (WALK && WALK.key === key) {
+          const s = WALK.steps[WALK.at];
+          const label = document.createElement('span');
+          label.innerHTML = '<span class="step">Step ' + (WALK.at + 1) + ' of ' + WALK.steps.length + '</span> · ';
+          label.append(document.createTextNode(s.from + ' → ' + s.to + ': ' + s.description));
+          orderbar.append(label);
+          mk('Back', () => walkTo(WALK.at - 1)).disabled = WALK.at === 0;
+          mk('Next', () => walkTo(WALK.at + 1)).disabled = WALK.at === WALK.steps.length - 1;
+          mk('Show all', () => { endWalk(); sayOrder(key); });
+          const keys = document.createElement('span');
+          keys.innerHTML = '<kbd>N</kbd> next <kbd>B</kbd> back <kbd>esc</kbd> all';
+          orderbar.append(keys);
+        } else {
+          const lead = document.createElement('span');
+          lead.innerHTML = '<b>This one is ordered.</b> Walk it a step at a time: ';
+          orderbar.append(lead);
+          mk('Start the walk', () => startWalk(key));
+          const keys = document.createElement('span');
+          keys.innerHTML = '<kbd>N</kbd> starts it too';
+          orderbar.append(keys);
+        }
+        /* THE REGISTER IS ANNOUNCED ONCE, on the path both branches take, for the same reason the
+           layer notice was: a third branch added later must not be able to forget it. */
+        const ex = examplesOf(WS, key);
+        if (ex) {
+          const on = EXAMPLE_ON.has(key);
+          const reg = document.createElement('span');
+          reg.innerHTML = ' · <b>' + (on ? 'Told as the example' : 'Told in general') + '</b>' + (on ? ': ' + esc(ex.name) : '');
+          orderbar.append(reg);
+          mk(on ? 'Show the general statement' : 'Show the example', () => { toggleRegister(key); sayOrder(key); });
+          const kb = document.createElement('span');
+          kb.innerHTML = '<kbd>E</kbd> swaps';
+          orderbar.append(kb);
+        }
+        return;
+      }
+      const t = TRACES(key);
+      orderbar.hidden = false;
+      orderbar.textContent = '';
+      const lead = document.createElement('span');
+      lead.innerHTML = t.length
+        ? '<b>No order here.</b> This view is structure. For a sequence over these elements: '
+        : '<b>No order here.</b> This view is structure, and no trace covers these elements yet.';
+      orderbar.append(lead);
+      t.forEach((v, i) => {
+        if (i) orderbar.append(document.createTextNode(' · '));
+        const b = document.createElement('button');
+        b.type = 'button'; b.className = 'btn btn--quiet';
+        b.textContent = v.key;
+        b.addEventListener('click', () => goto(v.key));
+        orderbar.append(b);
+      });
+    }
+
+    function draw() {
+      treeEl.textContent = '';
+      /* A BRANCH THAT CONTAINS WHERE YOU ARE IS OPEN, not merely the row that IS where you are.
+         Measured 2026-09-04: at the containers view the tree rendered two rows, because the only
+         node unfolded was the one whose own view matched — and the container view sits one level
+         BELOW the system, whose row was therefore folded shut over it. A tree that hides your
+         position is worse than no tree: it says the level you are reading does not exist. */
+      /* THE PATH TO WHERE YOU ARE, and no wider than that: a branch is on the path when it or one of
+         its descendants is the view on screen. A row's OWN view being the current one does not open
+         its children — standing on the container diagram does not mean you asked to see every
+         container listed, and the reader can click for that. */
+      const holdsHere = (n) => n.children.some((c) => (!!c.view && c.view === here) || holdsHere(c));
+      /* ONE LABEL FOR BOTH KINDS OF ROW, and it is one function because it was two.
+         A row with children is built in one branch below and a leaf in the other, and each built its
+         own name and kind spans — so the queue chip, added to the first, was invisible on exactly the
+         rows that carry it: every container is a leaf. The chip appeared on the trace row and nowhere
+         else, and the rail went on calling a queue "Container · Amazon SQS", truncated to "Con...".
+         Nothing about a row's label depends on whether it has children, so nothing about it should
+         be written twice. */
+      const label = (node) => {
+        const text = document.createElement('span');
+        text.className = 'rowtext';
+        text.textContent = node.name;
+        /* THE RAIL IS 272px AND NAMES ARE NOT, so a truncated row must still be readable somewhere.
+           A view's description rides here too: the row prints the title, the hover says the rest. */
+        text.title = node.name + (node.hint ? ' — ' + node.hint : '') + (node.kind ? ' — ' + node.kind : '');
+
+        const isFlow = node.kind === 'Feature trace';
+        const isEnv = node.kind === 'Environment';
+        const chip = isFlow ? 'trace' : isEnv ? 'deploy'
+          : node.decision ? 'why'
+          : node.chip || null;
+        const kind = document.createElement('span');
+        kind.className = chip ? 'chip' : 'kind';
+        kind.textContent = chip || node.kind;
+        return [text, kind];
+      };
+
+      const add = (node, depth, path) => {
+        const id = path + '/' + node.name;
+        const isHere = !!node.view && node.view === here;
+        /* PROGRESSIVE DISCLOSURE, AND THE SECOND LINE IS WHY IT WAS NOT. An auto-unfold used to be
+           WRITTEN INTO `open`, which turned a transient "you are looking at this" into permanent
+           state — so a branch the reader never touched stayed unfolded for the rest of the session,
+           and every branch that had ever held the current view accumulated. On the payments model
+           that meant the trace, all three decisions and all seven containers on screen at once,
+           which is a list rather than a rail.
+
+           Two states now, and only one of them is remembered. `open` holds branches the reader
+           CLICKED. The path to the view on screen is computed fresh on every draw and never stored,
+           so it closes behind you when you navigate away. Everything else stays folded. */
+        const unfolded = node.children.length > 0 && (open.has(id) || holdsHere(node));
+        const pad = (12 + depth * 12) + 'px';
+
+        /* A ROW WITH CHILDREN AND NO VIEW OF ITS OWN still has to fold and unfold — otherwise a
+           container with a feature trace beneath it and no component diagram would swallow the
+           trace, which is the same class of defect as the rail not knowing flows at all. */
+        /* A DECISION ROW HAS NEITHER A VIEW NOR CHILDREN and must still be a button. Without this
+           it renders as an inert leaf — present in the rail, naming a real record, and doing
+           nothing when clicked, which is worse than not listing it. */
+        if (node.view || node.children.length || node.decision) {
+          const b = document.createElement('button');
+          b.type = 'button'; b.className = 'btn btn--row'; b.style.paddingLeft = pad;
+          if (isHere) b.setAttribute('aria-current', 'true');
+          if (node.children.length) b.setAttribute('aria-expanded', String(unfolded));
+
+          const caret = document.createElement('span');
+          caret.className = 'caret' + (unfolded ? ' caret--open' : '');
+          caret.setAttribute('aria-hidden', 'true');
+          caret.textContent = node.children.length ? '▸' : '';
+
+          const dot = document.createElement('span');
+          dot.className = 'dot' + (isHere ? ' dot--here' : '') + (node.kind === 'Feature trace' ? ' dot--flow' : '') + (node.kind === 'Environment' ? ' dot--env' : '');
+          dot.setAttribute('aria-hidden', 'true');
+
+          const [text, kind] = label(node);
+
+          b.append(caret, dot, text, kind);
+          /* ONE GESTURE, TWO EFFECTS, deliberately: the row opens its view and unfolds its branch
+             together. A separate caret control would be a second button shape, and the probe would
+             be right to call that a second design. */
+          b.addEventListener('click', () => {
+            if (node.children.length) { if (open.has(id) && !isHere) open.delete(id); else open.add(id); }
+            if (node.decision) showAdr(node.decision);
+            if (node.view) goto(node.view);
+            draw();
+          });
+          const li = document.createElement('li'); li.append(b); treeEl.append(li);
+        } else {
+          const li = document.createElement('li');
+          li.className = 'leaf'; li.style.paddingLeft = pad;
+          const gap = document.createElement('span'); gap.className = 'caret'; gap.setAttribute('aria-hidden', 'true');
+          const dot = document.createElement('span'); dot.className = 'dot dot--leaf'; dot.setAttribute('aria-hidden', 'true');
+          const [text, kind] = label(node);
+          li.append(gap, dot, text, kind); treeEl.append(li);
+        }
+        if (unfolded) for (const c of node.children) add(c, depth + 1, id);
+      };
+      for (const r of ROOTS) add(r, 0, '');
+
+      /* THE GREEN DOTS NEED A SENTENCE, or a reader reasonably concludes the viewer is broken when
+         double-clicking one does nothing. Measured 2026-09-04: Backend descends and Single-Page
+         Application does not, and the difference is the model, not the control. */
+      const leaves = treeEl.querySelectorAll('.leaf').length;
+      noteEl.hidden = leaves === 0;
+      if (leaves) noteEl.innerHTML = '<strong>A grey dot is a bottom.</strong> The model declares nothing beneath those, so double-clicking one stays put — the model answering, not the viewer failing. In the diagram, colour says something else: violet is ours and lightens with depth, green is not ours.';
+    }
+
+    (async () => {
+      /* ONE DIRECTORY IS PICKED, AND THE REASON IS SAID OUT LOUD when it cannot be. index.json is
+         generated by checks/diagram-contrast.mjs --index, because a page fetched over HTTP cannot
+         list a directory and a list typed here would be a second home for what the filesystem
+         already knows. */
+      let project = new URLSearchParams(location.search).get('w');
+      if (!project) {
+        try {
+          const idx = await (await fetch('index.json')).json();
+          project = idx.projects?.[0]?.dir ?? null;
+        } catch { /* answered below, by name */ }
+      }
+      if (!project) {
+        unevaluable('No project was named. Pass ?w=<directory>, or generate architecture/index.json with: node checks/diagram-contrast.mjs --index.');
+        return;
+      }
+      SITE = project + '/site/index.html';
+
+      /* THE FRAME IS POINTED AFTER THE MODEL IS READ, and that ordering is the fix rather than an
+         accident of style: the opening view is a fact about this workspace, so it cannot be known
+         before the workspace is. */
+      let ws;
+      try {
+        const res = await fetch(project + '/workspace.json');
+        if (!res.ok) { unevaluable('The export for ' + project + ' answered ' + res.status + '.'); return; }
+        ws = await res.json();
+        /* THE FRAME'S URL CARRIES THE MODEL'S OWN AGE, and without it a re-export is invisible.
+           MEASURED 2026-09-05: the operator re-exported, reloaded, and still got the previous
+           bundle. `python -m http.server` sends Last-Modified and NO ETag and NO Cache-Control, so
+           the browser caches site/workspace.js heuristically; and because this page navigates the
+           frame by changing its HASH, the document is never re-fetched at all. Reloading the
+           wrapper reloads the wrapper — the frame's script came from cache, so the rail (built from
+           the json just fetched) offered a view the running bundle had never heard of, and the
+           plate went blank. Fresh model, stale page, and nothing said so.
+           The token is the json's own Last-Modified: same export, same URL, cache still works;
+           new export, new URL, and the frame cannot serve yesterday's diagram. */
+        const stamp = res.headers.get('last-modified') || ws.lastModifiedDate || '';
+        if (stamp) SITE += '?v=' + encodeURIComponent(String(stamp).replace(/[^0-9A-Za-z]+/g, ''));
+      } catch (e) {
+        /* THE FILE PROTOCOL IS THE COMMON CASE OF THIS, and it is a fact about how the page was
+           opened, not about the model. Saying "no levels found" here would be a lie. */
+        unevaluable('workspace.json could not be fetched (' + (e.message || 'blocked') + '), which is what happens when this page is opened from disk rather than served.');
+        return;
+      }
+      /* A HASH NAMING A VIEW THIS WORKSPACE DOES NOT HAVE is the same blank canvas by another
+         route — a stale link, or a fragment copied between two projects. It opens on the first view
+         and SAYS so, because a wrapper that silently redirects teaches its reader that the link
+         worked. */
+      const keys = viewKeys(ws);
+      let start = ASKED;
+      if (!start) start = keys[0] ?? null;
+      else if (!keys.includes(start)) {
+        noteEl.hidden = false;
+        noteEl.innerHTML = '<strong>' + start + ' is not a view here.</strong> This workspace draws ' +
+          (keys.length ? keys.join(', ') : 'no views at all') + '. Opened on ' + (keys[0] ?? 'nothing') + ' instead.';
+        start = keys[0] ?? null;
+      }
+      if (!start) { unevaluable('This workspace declares no views, so there is nothing to open.'); return; }
+      frame.src = SITE + '#' + start;
+
+      const ix = index(ws);
+      ROOTS = ix.roots;
+      TRACES = ix.tracesOver;
+      WS = ws;
+      /* The heading is the workspace's own name, so the picture and its title cannot disagree. */
+      if (ws.name) { document.querySelector('[data-title]').textContent = ws.name; document.title = ws.name; }
+      body.dataset.railState = 'ready';
+      const tick = () => {
+        soften(); tint();
+        /* COMPOSED ON EVERY TICK, not only on load: the site rebuilds its tooltip object when the
+           document reloads, and a hover that worked on the first view and not the second would look
+           exactly like a tooltip that works sometimes — which is how the layer arrived here. */
+        composeLenses();
+        /* THE REGISTER IS RE-APPLIED ON EVERY TICK for the same reason: the frame
+           reloads with the export's labels, and a choice that survived the first reload and not the
+           second would look like a key that works sometimes. */
+        if (here && EXAMPLE_ON.has(here)) applyRegister(here);
+        const k = currentKey(); if (k !== here) { if (WALK && WALK.key !== k) endWalk(); here = k; mirror(k); draw(); sayOrder(k); } };
+      frame.addEventListener('load', tick);
+      tick(); draw();
+      /* A POLL, not only a hashchange listener: the diagram changes its own hash when a box is
+         double-clicked, and a listener attached to the frame's window is lost on every reload. */
+      setInterval(tick, 400);
+    })();
+  })();
+</script>
+</body>
+</html>

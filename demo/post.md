@@ -23,7 +23,7 @@ Nimble MCP server (`https://mcp.nimbleway.com/mcp`, Streamable HTTP), the Nimble
 - The gate is this project's logic, application-level. Nothing in Nimble was changed and nothing here is Nimble behaviour.
 - The report writer is a Liquid LFM2.5 agent; the agent proposes, the deterministic gate disposes, and the agent is never inside the gate. On earlier live runs the model invented pin ids and borrowed prices; the checker dropped those claims before any draft (README, Result). {{REPORT_WRITER_LINE: "The recorded run's report was written by the agent" OR "The recorded run used the deterministic template fallback"}}
 - Evidence counts are served by a Tinybird pipe and are identical to the counts computed from the local files with no network (red proof R16). The local files are the source of truth.
-- No efficiency claims. Wall time of the full arc as measured on 2026-09-25: live about 113 s (R11 bar is 180 s). 23 of 23 scripted red proofs pass.
+- No efficiency claims. Wall time of the full two-night live arc as measured on 2026-09-25: 260 s; the recorded night-2 run is about 2 min. 30 scripted red proofs pass. The recorded run's counts: 29 facts pinned · 1 drifted-and-flagged · 0 shipped contradictions (evidence/live-run-2026-09-25-demo).
 
 ## Pre-publish checklist
 - [ ] Demo video link live and shareable
@@ -31,4 +31,4 @@ Nimble MCP server (`https://mcp.nimbleway.com/mcp`, Streamable HTTP), the Nimble
 - [ ] Every screenshot a real run, or labelled mockup
 - [ ] Every citation URL opened live today
 - [ ] Team names and contact emails in the form
-- [ ] Working website line filled or removed: {{PAGES_URL}}
+- [x] Working website: https://ishamishra0408.github.io/Veto/architecture/veto/site/
