@@ -33,6 +33,8 @@ const local: Counts = {
 console.log(`north star: ${local.pinned} facts pinned · ${local.drifted_flagged} drifted-and-flagged · ${local.shipped_contradictions} shipped contradictions`);
 console.log(`counter: ${local.clean_shipped} clean runs shipped · ${local.false_refusals} false refusals`);
 // Live runs with no injection have no ground truth; a refusal there is the real world moving, reported separately.
+const selfCorrected = runs.filter((r) => r.verdict === "REFUSED" && r.rebased && r.shipped).length;
+if (selfCorrected) console.log(`self-correct: ${selfCorrected} refusal(s) re-planned, re-pinned and shipped with the change disclosed`);
 console.log(`guardrail: gate p95 ${local.gate_p95_ms} ms over ${runs.length} run(s)`);
 if (local.unforced_refusals) console.log(`live: ${local.unforced_refusals} unforced drift refusal(s) — nothing injected, the real page changed`);
 

@@ -2,11 +2,13 @@
 
 **Everyone demos what their agent remembers. We demo what ours refuses.**
 
+**Veto is the ship lock at the end of any long-horizon agent's cycle:** whatever the agent produces — a report, a PR, a plan — cites pinned facts, and Veto won't let it ship if they've moved. It refuses, re-plans, and ships the truth.
+
 **An AI pricing agent fetches competitor prices at 6pm, works overnight, and ships a report at 6am. If a price moved at 9pm, the report recommends matching a price that no longer exists. The model did everything right. The data moved. Veto stops that report before it ships.**
 
 **Live data:** Nimble MCP (`nimble_extract`) on 5 real Amazon product pages · **one command:** `bash veto/demo.sh --real`
 
-**Result:** **0 shipped contradictions** · injected drift caught on every run · Amazon changed a pinned fact **on its own** (nothing injected) on most live runs, and Veto refused · a second, on-device Liquid extractor corroborated **10 of 10** live pages before pinning · 22 of 22 scripted red proofs pass
+**Result:** **0 shipped contradictions** · injected drift caught on every run · Amazon changed a pinned fact **on its own** (nothing injected) on most live runs, and Veto refused · a second, on-device Liquid extractor corroborated **10 of 10** live pages before pinning · 23 of 23 scripted red proofs pass
 
 ## The problem
 
@@ -17,6 +19,21 @@ Grounding checks a claim while the agent writes it. Nothing checks it again when
 The mature-domain mirror is *Mata v. Avianca* (2023): the brief cited six cases; none existed. Nobody checked the citations at the moment they were relied on.
 
 ## What it does
+
+The agent runs a multi-step plan and every step is logged to `plan.json`:
+
+| Step | Kind | What happens |
+|---|---|---|
+| P1 | plan | Decompose the goal ("recommend a price that undercuts the cheapest comparable competitor by 3%") into the facts it needs and the conclusions that follow |
+| P2 | act | Collect the competitor pages through Nimble MCP |
+| P3 | observe | Two extractors must agree before a fact is pinned; held pages re-plan the comparable set |
+| P4–P5 | reason | Comparables → anchor → recommended price — every conclusion records the pins it rests on |
+| P6 | act | Draft the report |
+| P7 | observe | The gate re-fetches and re-hashes every cited fact |
+| P8 | correct | **Impact analysis** — a drift breaks exactly the conclusions that cite the changed pin (the rest still hold) → re-pin → recompute → disclose as `[was-pin:]` → re-gate → ship |
+
+Because the plan is a dependency graph from conclusions to pins, the agent never re-reads its history to recover: it carries 25 small pins, and a change tells it precisely which conclusions to redo.
+
 
 1. **Collect** — the agent fetches each page through Nimble's MCP server (`initialize → tools/list → tools/call nimble_extract`), US storefront, all pages in parallel.
 2. **Pin** — every fact (title, price, stock, rating, seller) is stored with its sha256 and fetch time. The hash is the pin's identity, like a git object. **Two independent extractors must agree first:** the deterministic parser and Liquid's extraction model (`LFM2-1.2B-Extract`, running **on-device** via Ollama) each read the page; if they disagree, the page is held — nothing from it is pinned or cited.
@@ -32,7 +49,7 @@ It decides on the **pinned basis**, not on the latest page: re-fetching alone re
 | Run | World between fetch and ship | Verdict | Receipt |
 |---|---|---|---|
 | Mock, night 1 | unchanged | **CLEAN** — ships | — |
-| Mock, night 2 | competitor price −15% (injected) | **REFUSED** (DRIFTED) | old ≠ new hash |
+| Mock, night 2 | the anchor competitor's price −15% (injected) | **REFUSED** (DRIFTED) → **re-planned, re-based, SHIPPED** — recommendation $126.09 → $107.18 | old ≠ new hash |
 | Mock, outage | every fetch fails | **REFUSED** (UNREACHABLE) — `report.md` byte-identical | error recorded |
 | Live, night 1 (×4) | **nothing injected** — Amazon changed price / stock / seller on its own | **REFUSED** (DRIFTED), 4 of 4 | [`evidence/`](evidence/live-run-2026-09-25) |
 | Live, night 2 (×4) | −15% injected on top of live data | **REFUSED** (DRIFTED), 4 of 4 | [`evidence/`](evidence/live-run-2026-09-25) |
@@ -63,6 +80,7 @@ Every claim above is a red proof — an adversarial test that the mechanism cann
 | R20 | Stream events, no sync | all 25 per-fact checks reach Tinybird; volatility ranks the drifted fact |
 | R21 | Ship a report citing the injected fact (broken gate) | counted as a shipped contradiction — the north star can't hide it |
 | R22 | Launder claims through citation repair | invented price, cross-product price, one-sided comparison all dropped |
+| R23 | Drift the anchor competitor's price | exactly the conclusions citing it break; the recommendation is recomputed; the re-based report verifies |
 
 ## Run locally
 
@@ -99,7 +117,7 @@ veto/            Veto (TypeScript, Node 22)
   liquid.ts         one Liquid client: on-device (Ollama) or OpenRouter
   gate.ts           deterministic revalidation — no model inside
   ship.ts           the only writer of report.md; receipts.ts, evidence.ts
-  scenario.ts       6pm → 9pm → 6am villain; simulate.ts, worlds.ts
+  scenario.ts       the multi-step plan: 6pm → 9pm → 6am villain → self-correct; planner.ts, simulate.ts, worlds.ts
   skill/SKILL.md    cite-pins rule as an Agent Skill (Nimble format)
   tinybird/         datasource + pipes: evidence counts, gate p95, fact volatility; stream.ts = live events
   redproofs_p*.sh   the red proofs
