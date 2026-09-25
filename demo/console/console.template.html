@@ -1,0 +1,317 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veto console</title>
+<meta name="description" content="A read-only evidence console: pins, receipts, the plan and the counts, every value from a committed artifact.">
+<meta name="ui-states" content="verifying,pins,refused,rebased,unreachable,clean,runs,loading,empty,error">
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* Hallmark · pre-emit critique: P4 H4 E4 S4 R5 V3
+   genre: modern-minimal · theme: Cobalt (cool paper, one cobalt signal, hairlines, mono readouts) · macrostructure: Workbench
+   audience = the judge as verifier · use = inspect one refusal and its basis · tone = technical (inferred from the handoff, stated not asked)
+   deviation from Cobalt, on purpose: the recording is dark, so the dark scheme is the default and the light scheme is the theme's own paper. Both are designed. */
+:root {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, monospace;
+  --color-paper: oklch(98.5% 0.004 250);
+  --color-paper-2: oklch(96% 0.006 250);
+  --color-ink: oklch(22% 0.02 258);
+  --color-ink-2: oklch(36% 0.018 257);
+  --color-ink-3: oklch(45% 0.016 257);
+  --color-rule: oklch(88% 0.008 250);
+  --color-rule-2: oklch(80% 0.01 250);
+  --color-accent: oklch(50% 0.20 256);
+  --color-accent-ink: oklch(99% 0 0);
+  --color-accent-soft: oklch(50% 0.20 256 / 0.12);
+  --color-refuse: oklch(48% 0.19 27);
+  --color-refuse-soft: oklch(48% 0.19 27 / 0.12);
+  --color-ok: oklch(46% 0.15 150);
+  --color-ok-soft: oklch(46% 0.15 150 / 0.14);
+  --color-hold: oklch(52% 0.16 70);
+  --color-hold-soft: oklch(52% 0.16 70 / 0.16);
+  --color-focus: oklch(50% 0.20 256);
+  --size-1: 0.75rem; --size-2: 0.875rem; --size-3: 1rem; --size-4: 1.25rem; --size-5: 1.75rem; --size-6: 2.5rem;
+  --space-1: 8px; --space-2: 8px; --space-3: 16px; --space-4: 16px; --space-5: 24px; --space-6: 32px; --space-7: 48px;
+  --radius-1: 6px; --radius-2: 10px;
+  --motion: 160ms cubic-bezier(0.16, 1, 0.3, 1);
+  color-scheme: light;
+}
+:root[data-theme="dark"], :root:not([data-theme="light"]) {
+  --color-paper: oklch(20% 0.016 260);
+  --color-paper-2: oklch(23% 0.018 260);
+  --color-ink: oklch(97% 0.006 250);
+  --color-ink-2: oklch(84% 0.01 250);
+  --color-ink-3: oklch(68% 0.012 252);
+  --color-rule: oklch(32% 0.016 260);
+  --color-rule-2: oklch(40% 0.018 260);
+  --color-accent: oklch(72% 0.17 256);
+  --color-accent-ink: oklch(18% 0.02 260);
+  --color-accent-soft: oklch(72% 0.17 256 / 0.16);
+  --color-refuse: oklch(70% 0.19 27);
+  --color-refuse-soft: oklch(70% 0.19 27 / 0.16);
+  --color-ok: oklch(76% 0.16 150);
+  --color-ok-soft: oklch(76% 0.16 150 / 0.16);
+  --color-hold: oklch(80% 0.15 70);
+  --color-hold-soft: oklch(80% 0.15 70 / 0.18);
+  --color-focus: oklch(78% 0.16 256);
+  color-scheme: dark;
+}
+:root[data-theme="light"] { color-scheme: light; }
+*, *::before, *::after { box-sizing: border-box; }
+html, body { overflow-x: clip; }
+html { -webkit-text-size-adjust: 100%; }
+body { margin: 0; background: var(--color-paper); color: var(--color-ink-2); font: 400 var(--size-3)/1.5 var(--font-body); }
+h1, h2, h3 { font-family: var(--font-display); font-weight: 600; letter-spacing: -0.02em; color: var(--color-ink); margin: 0; text-wrap: balance; font-style: normal; }
+h1 { font-size: var(--size-5); line-height: 1.15; }
+h2 { font-size: var(--size-4); line-height: 1.25; }
+h3 { font-size: var(--size-3); line-height: 1.3; }
+p { margin: 0; max-width: 65ch; }
+a { color: var(--color-ink); text-decoration: underline; text-decoration-color: var(--color-rule-2); text-underline-offset: 3px; transition: text-decoration-color var(--motion); }
+a:hover { text-decoration-color: var(--color-accent); }
+:focus-visible { outline: 2px solid var(--color-focus); outline-offset: 2px; border-radius: var(--radius-1); }
+.mono { font-family: var(--font-mono); }
+.eyebrow { font: 500 var(--size-1)/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-3); }
+.eyebrow b { color: var(--color-accent); font-weight: 500; }
+/* nav: full-width bar, one hairline, wordmark left, frame links, ⌘K right */
+.nav { position: sticky; top: 0; z-index: 3; display: flex; align-items: center; gap: var(--space-4); padding: var(--space-3) var(--space-5); border-bottom: 1px solid var(--color-rule); background: color-mix(in oklch, var(--color-paper) 88%, transparent); backdrop-filter: blur(8px); min-height: 56px; }
+.wordmark { font: 600 var(--size-4)/1 var(--font-display); color: var(--color-ink); letter-spacing: -0.02em; text-decoration: none; display: inline-flex; align-items: center; gap: var(--space-2); border-bottom: 2px solid transparent; transition: border-color var(--motion); }
+.wordmark:hover { border-bottom-color: var(--color-accent); text-decoration: underline; text-decoration-color: var(--color-accent); text-underline-offset: 4px; }
+.wordmark i { width: 10px; height: 10px; border-radius: 2px; background: var(--color-accent); display: inline-block; }
+.frames { display: flex; gap: var(--space-1); margin-inline-start: var(--space-4); overflow-x: auto; scrollbar-width: none; }
+.frames a { font: 500 var(--size-2)/1 var(--font-body); color: var(--color-ink-3); text-decoration: none; padding: var(--space-2) var(--space-3); border-radius: var(--radius-1); border: 1px solid transparent; white-space: nowrap; min-height: 32px; display: inline-flex; align-items: center; transition: color var(--motion), border-color var(--motion), background var(--motion), transform var(--motion); }
+.frames a:hover { color: var(--color-ink); border-color: var(--color-rule-2); transform: translateY(-1px); text-decoration: underline; text-underline-offset: 4px; text-decoration-color: var(--color-accent); }
+.frames a[aria-current="page"] { color: var(--color-accent); border-color: var(--color-rule-2); background: var(--color-paper-2); }
+.nav .right { margin-inline-start: auto; display: flex; gap: var(--space-2); align-items: center; }
+.kbd-btn { font: 500 var(--size-1)/1 var(--font-mono); letter-spacing: 0.04em; color: var(--color-ink-2); background: var(--color-paper); border: 1px solid var(--color-rule-2); border-radius: var(--radius-1); padding: 0 var(--space-3); min-height: 32px; min-width: 44px; cursor: pointer; transition: border-color var(--motion), color var(--motion); }
+.kbd-btn:hover { border-color: var(--color-accent); color: var(--color-ink); transform: translateY(-1px); box-shadow: 0 1px 0 var(--color-accent); }
+.kbd-btn:active { transform: translateY(1px); }
+main { padding: var(--space-5); max-width: 1440px; margin: 0 auto; }
+.head { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-4); align-items: end; margin-bottom: var(--space-5); }
+.head .pills { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.pill { font: 500 var(--size-1)/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 8px; border-radius: var(--radius-1); border: 1px solid var(--color-rule-2); color: var(--color-ink-2); background: var(--color-paper-2); display: inline-flex; align-items: center; gap: 8px; min-height: 32px; }
+.pill i { width: 7px; height: 7px; border-radius: 50%; background: currentColor; display: inline-block; }
+.pill.gate { border-width: 2px; }
+.pill.refused { color: var(--color-refuse); border-color: var(--color-refuse); background: var(--color-refuse-soft); }
+.pill.clean, .pill.rebased { color: var(--color-ok); border-color: var(--color-ok); background: var(--color-ok-soft); }
+.pill.verifying { color: var(--color-accent); border-color: var(--color-accent); background: var(--color-accent-soft); }
+.pill.mock { color: var(--color-hold); border-color: var(--color-hold); background: var(--color-hold-soft); }
+.pill.live { color: var(--color-ok); }
+.grid { display: grid; gap: var(--space-4); grid-template-columns: repeat(12, minmax(0, 1fr)); }
+.card { border: 1px solid var(--color-rule); border-radius: var(--radius-2); padding: var(--space-5); background: var(--color-paper); min-width: 0; }
+.card.graphite { background: var(--color-paper-2); }
+.span-3 { grid-column: span 3; } .span-4 { grid-column: span 4; } .span-5 { grid-column: span 5; } .span-7 { grid-column: span 7; } .span-8 { grid-column: span 8; } .span-12 { grid-column: span 12; }
+.metric .n { font: 600 var(--size-6)/1 var(--font-display); letter-spacing: -0.03em; color: var(--color-ink); margin: var(--space-2) 0; }
+.metric .n.accent { color: var(--color-accent); } .metric .n.ok { color: var(--color-ok); } .metric .n.refuse { color: var(--color-refuse); }
+.metric .sub { font-size: var(--size-2); color: var(--color-ink-3); }
+table { width: 100%; border-collapse: collapse; font-size: var(--size-2); }
+th { text-align: left; font: 500 var(--size-1)/1 var(--font-mono); letter-spacing: 0.06em; text-transform: uppercase; color: var(--color-ink-3); padding: var(--space-2) var(--space-2) var(--space-3); border-bottom: 1px solid var(--color-rule); }
+td { padding: 8px var(--space-2); border-bottom: 1px solid var(--color-rule); vertical-align: top; overflow-wrap: anywhere; }
+tr:last-child td { border-bottom: 0; }
+td.mono, .code { font-family: var(--font-mono); font-size: var(--size-1); color: var(--color-ink-3); }
+tr.repin td:first-child { box-shadow: inset 3px 0 0 var(--color-hold); }
+.dl { display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: var(--space-1) var(--space-4); font-family: var(--font-mono); font-size: var(--size-1); }
+.dl dt { color: var(--color-ink-3); } .dl dd { margin: 0; color: var(--color-ink-2); overflow-wrap: anywhere; }
+.was { text-decoration: line-through; color: var(--color-ink-3); }
+.now { color: var(--color-refuse); font-weight: 500; }
+.tag { font: 500 var(--size-1)/1 var(--font-mono); letter-spacing: 0.04em; }
+.tag.unforced { color: var(--color-ok); } .tag.injected { color: var(--color-hold); }
+.fact { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--space-2) var(--space-4); padding: var(--space-2) 0; border-top: 1px solid var(--color-rule); }
+.fact:first-of-type { border-top: 0; }
+.why { border-left: 2px solid var(--color-accent); padding-left: var(--space-3); font-size: var(--size-2); color: var(--color-ink-2); margin-top: var(--space-3); }
+.tl { list-style: none; margin: 0; padding: 0; }
+.tl li { display: grid; grid-template-columns: 16px 88px minmax(0, 1fr) auto; gap: var(--space-3); align-items: baseline; padding: 8px 0; border-bottom: 1px solid var(--color-rule); font-size: var(--size-2); }
+.tl li:last-child { border-bottom: 0; }
+.tl .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--color-ok); align-self: center; } .tl .dot.bad { background: var(--color-refuse); }
+.tl .t { font-family: var(--font-mono); font-size: var(--size-1); color: var(--color-ink-3); }
+.tl .r { font-family: var(--font-mono); font-size: var(--size-1); color: var(--color-ink-3); white-space: nowrap; }
+.steps { list-style: none; margin: 0; padding: 0; }
+.steps li { display: grid; grid-template-columns: 24px 40px 72px minmax(0, 1fr); gap: var(--space-3); padding: var(--space-2) 0; border-top: 1px solid var(--color-rule); }
+.steps li:first-child { border-top: 0; }
+.steps .ic { font-family: var(--font-mono); } .steps .ic.done { color: var(--color-ok); } .steps .ic.failed { color: var(--color-refuse); } .steps .ic.replanned { color: var(--color-hold); } .steps .ic.skipped { color: var(--color-ink-3); }
+.steps .id { font-family: var(--font-mono); font-size: var(--size-1); color: var(--color-ink-3); } .steps .kind { font-size: var(--size-1); color: var(--color-ink-3); }
+.steps .title { color: var(--color-ink); font-weight: 500; } .steps .detail { font-size: var(--size-2); color: var(--color-ink-3); }
+.footnote { font-size: var(--size-2); color: var(--color-ink-3); margin-top: var(--space-4); }
+.state-note { border: 1px dashed var(--color-rule-2); border-radius: var(--radius-2); padding: var(--space-5); color: var(--color-ink-2); }
+/* raw artifact: the judge's own affordance in every frame, so no state is inert */
+details.raw { margin-top: var(--space-4); border-top: 1px solid var(--color-rule); padding-top: var(--space-2); }
+details.raw summary { cursor: pointer; font: 500 var(--size-2)/1.4 var(--font-body); color: var(--color-ink-2); min-height: 32px; display: list-item; list-style: disclosure-closed inside; padding: var(--space-1) 0; transition: color var(--motion); text-decoration: underline; text-decoration-color: var(--color-rule-2); text-underline-offset: 4px; }
+details.raw summary::marker { color: var(--color-accent); }
+details.raw[open] summary { list-style: disclosure-open inside; }
+details.raw summary:hover { color: var(--color-ink); text-decoration-color: var(--color-accent); }
+details.raw pre { margin: var(--space-2) 0 0; padding: var(--space-3); background: var(--color-paper-2); border: 1px solid var(--color-rule); border-radius: var(--radius-1); font: 400 var(--size-1)/1.5 var(--font-mono); color: var(--color-ink-2); overflow: auto; max-height: 40vh; }
+footer { border-top: 1px solid var(--color-rule); padding: var(--space-4) var(--space-5); font: 400 var(--size-2)/1.4 var(--font-body); color: var(--color-ink-3); display: flex; gap: var(--space-4); flex-wrap: wrap; }
+/* ⌘K palette: the frame switcher */
+.palette { position: fixed; inset: 0; z-index: 10; display: none; align-items: flex-start; justify-content: center; padding-top: 12vh; background: oklch(10% 0.01 260 / 0.5); }
+.palette[open] { display: flex; }
+.palette .box { width: min(560px, calc(100vw - 32px)); background: var(--color-paper); border: 1px solid var(--color-rule-2); border-radius: var(--radius-2); box-shadow: 0 1px 2px oklch(24% 0.02 258 / 0.08); overflow: hidden; }
+.palette input { width: 100%; border: 0; border-bottom: 1px solid var(--color-rule); background: transparent; color: var(--color-ink); font: 400 var(--size-3)/1 var(--font-mono); padding: var(--space-4); min-height: 48px; }
+.palette input:focus-visible { outline-offset: -2px; border-radius: 0; }
+.palette ul { list-style: none; margin: 0; padding: var(--space-2); max-height: 50vh; overflow: auto; }
+.palette li button { width: 100%; text-align: left; display: flex; justify-content: space-between; gap: var(--space-3); align-items: center; padding: var(--space-2) var(--space-3); border: 0; border-radius: var(--radius-1); background: transparent; color: var(--color-ink-2); font: 400 var(--size-2)/1.2 var(--font-body); cursor: pointer; min-height: 40px; }
+.palette li button:hover, .palette li button[aria-selected="true"] { background: var(--color-paper-2); color: var(--color-ink); }
+.palette li button kbd { font: 500 var(--size-1)/1 var(--font-mono); color: var(--color-ink-3); }
+@media (max-width: 900px) { .span-3, .span-4, .span-5, .span-7, .span-8 { grid-column: span 12; } .head { grid-template-columns: minmax(0, 1fr); } .tl li { grid-template-columns: 14px 72px minmax(0, 1fr); } .tl .r { grid-column: 3; white-space: normal; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+</style>
+</head>
+<body>
+<nav class="nav" aria-label="Frames">
+  <a class="wordmark" href="#refused"><i aria-hidden="true"></i>Veto</a>
+  <div class="frames" id="frames"></div>
+  <div class="right">
+    <button class="kbd-btn" id="theme" type="button" aria-label="Switch colour scheme">dark</button>
+    <button class="kbd-btn" id="cmdk" type="button" aria-label="Open the frame palette">⌘K</button>
+  </div>
+</nav>
+<main id="main"></main>
+<footer><span>read-only · the console triggers nothing</span><span id="built" class="mono"></span><span>the gate contains no model</span></footer>
+<div class="palette" id="palette" role="dialog" aria-modal="true" aria-label="Jump to a frame">
+  <div class="box"><input id="pal-q" type="search" placeholder="jump to a frame…" aria-label="Filter frames" autocomplete="off"><ul id="pal-list"></ul></div>
+</div>
+<script id="veto-data" type="application/json">/*__DATA__*/</script>
+<script>
+(() => {
+  const D = JSON.parse(document.getElementById('veto-data').textContent);
+  const esc = (s) => String(s ?? '').replace(/ — /g, ' · ').replace(/ – /g, ' · ').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+  const raw = (label, obj) => `<details class="raw"><summary>${esc(label)}</summary><pre>${esc(JSON.stringify(obj, null, 2))}</pre></details>`;
+  const clean = (s) => String(s ?? '').replace(/\\/g, '');
+  const hh = (iso) => (iso || '').slice(11, 19);
+  const ms3 = (iso) => (iso || '').slice(11, 23) + 'Z';
+  const valueOf = (f) => clean(f.includes(' is ') ? f.split(' is ').slice(1).join(' is ') : f);
+  const fieldOf = (f) => f.split(' of ')[0];
+  const short = (pins, url) => { const t = pins.find((p) => p.source_url === url && fieldOf(p.fact_text) === 'title'); return t ? valueOf(t.fact_text).replace(/,/g, ' ').split(/\s+/).slice(0, 3).join(' ') : url; };
+  const line = (ev, key) => (ev.find((l) => l.startsWith(key)) || '').split(':').slice(1).join(':').trim();
+  const session = (ev) => ((ev.find((l) => l.includes('(session ')) || '').split('(session ')[1] || '—').replace(')', '');
+  const pill = (cls, text) => `<span class="pill ${cls}"><i aria-hidden="true"></i>${esc(text)}</span>`;
+  const head = (title, sub, env, gate) => `<div class="head"><div><h1>${esc(title)}</h1><p class="footnote" style="margin-top:8px">${esc(sub)}</p></div><div class="pills">${pill(env === 'mock' ? 'mock' : 'live', env === 'mock' ? 'MOCK · fixtures' : 'LIVE · amazon.com · US/EN')}${pill('gate ' + gate.toLowerCase(), gate)}</div></div>`;
+  const metric = (label, n, sub, cls = '') => `<div class="card metric span-3"><div class="eyebrow">${esc(label)}</div><div class="n ${cls}">${esc(n)}</div><div class="sub">${esc(sub)}</div></div>`;
+  const L = D.live, M = D.mock, P = D.plan;
+  const ev = L.evidence, sess = session(ev);
+  const ns = line(ev, 'north star').split(' · '), ct = line(ev, 'counter').split(' · ');
+  const b1 = new Set((L.receipts[0] || {}).pin_hashes || []), b2 = new Set((L.receipts[1] || {}).pin_hashes || []);
+  const inj = (L.runs.find((r) => r.injected) || {}).injected || null;
+  let derived = false, injD = inj;
+  if (!injD) for (const df of ((L.receipts.at(-1) || {}).drifted_facts || [])) { const r = parseFloat(df.new_value) / parseFloat(df.old_value); if (df.field === 'price' && Math.abs(r - 0.85) < 0.002) { injD = { url: df.source_url, field: 'price' }; derived = true; } }
+  const isInj = (df) => injD && df.source_url === injD.url && df.field === injD.field;
+  const F = {};
+  // 1 · VERIFYING — the traced MCP session
+  F.verifying = () => {
+    const tr = L.trace; if (!tr.length) return '<div class="state-note">No mcp-trace.jsonl in this evidence folder.</div>';
+    const firstList = tr.findIndex((r) => r.method === 'tools/list');
+    const calls = tr.slice(firstList + 1).filter((r) => r.method === 'tools/call').slice(0, 5);
+    const rows = tr.slice(0, firstList + 1).concat(calls);
+    const ms = calls.map((r) => r.ms);
+    return head('Overview', `session ${sess} · night 1 · the 18:00 fetch as traced in ${L.dir}/mcp-trace.jsonl`, 'live', 'VERIFYING')
+      + `<div class="grid">${metric('Pages fetched', calls.length, 'tools/call nimble_extract')}${metric('Facts to pin', L.pins.length, 'sha256 · fetched_at')}${metric('Extract latency', `${(Math.min(...ms) / 1000).toFixed(1)}–${(Math.max(...ms) / 1000).toFixed(1)} s`, 'to the full body, per call', 'accent')}${metric('MCP calls this run', tr.filter((r) => r.method === 'tools/call').length, tr.every((r) => [200, 202].includes(r.http)) ? 'two sessions · all HTTP 200' : 'see trace')}
+      <div class="card span-8"><div class="eyebrow">Live MCP session · <b>mcp.nimbleway.com/mcp</b> · Streamable HTTP</div><ul class="tl" style="margin-top:16px">${rows.map((r) => `<li><span class="dot ${[200, 202].includes(r.http) ? '' : 'bad'}" aria-hidden="true"></span><span class="t">${esc(hh(r.ts))}</span><span>${esc(r.method)}${r.tool ? ' ' + esc(r.tool) : ''}${r.url ? ' → ' + esc(short(L.pins, r.url)) : ''}</span><span class="r">HTTP ${esc(r.http)} · ${esc(r.ms)} ms</span></li>`).join('')}</ul></div>
+      <div class="card graphite span-4"><h2>Gate status</h2><p style="margin-top:16px">${pill('gate verifying', 'VERIFYING')}</p><p style="margin-top:16px">${L.pins.length} facts pinned, draft in progress. The 06:00 gate has not run yet.</p><h3 style="margin-top:24px">Next</h3><ol style="margin:8px 0 0 16px;padding:0;font-size:var(--size-2)"><li>re-fetch every cited source</li><li>re-hash each fact</li><li>compare to the pin: CLEAN, DRIFTED or UNREACHABLE</li></ol>${raw('raw: the first 8 rows of mcp-trace.jsonl', rows)}</div></div>`;
+  };
+  // 2 · PINS — with the basis each pin belongs to
+  F.pins = () => {
+    const pins = [...L.pins].sort((a, b) => (a.fetched_at + a.source_url).localeCompare(b.fetched_at + b.source_url));
+    const counts = {}; for (const p of L.pins) counts[fieldOf(p.fact_text)] = (counts[fieldOf(p.fact_text)] || 0) + 1;
+    const basis = (p) => b1.has(p.sha256) && b2.has(p.sha256) ? ['night 1 + 2', ''] : b1.has(p.sha256) ? ['night 1', ''] : b2.has(p.sha256) ? ['night 2 re-pin', 'repin'] : ['—', ''];
+    return head('Pins', `${L.pins.length} content-addressed pins · a changed value mints a new pin · basis = the receipt whose pin_hashes hold it`, 'live', L.receipts.length ? 'REFUSED' : 'CLEAN')
+      + `<div class="grid"><div class="card span-12"><p class="mono" style="font-size:var(--size-2);color:var(--color-ink-3)">${Object.entries(counts).map(([k, v]) => `${esc(k)} ${v}`).join(' · ')} · night-1 basis ${L.pins.filter((p) => b1.has(p.sha256)).length} · night-2 basis ${L.pins.filter((p) => b2.has(p.sha256)).length}</p></div>
+      <div class="card span-12">${raw('raw: pins.json, first 5 rows', pins.slice(0, 5))}</div>
+      <div class="card span-12" style="padding:0 var(--space-3)"><table><thead><tr><th>Product</th><th>Field</th><th>Value</th><th>Pin</th><th>Basis</th><th>Fetched</th></tr></thead><tbody>${pins.map((p) => { const [b, cls] = basis(p); return `<tr class="${cls}"><td>${esc(short(L.pins, p.source_url))}</td><td style="color:var(--color-ink-3)">${esc(fieldOf(p.fact_text))}</td><td>${esc(valueOf(p.fact_text))}</td><td class="mono">${esc(p.pin_id)}</td><td style="color:${cls ? 'var(--color-hold)' : 'inherit'}">${esc(b)}</td><td class="mono">${esc(hh(p.fetched_at))}</td></tr>`; }).join('')}</tbody></table></div></div>`;
+  };
+  // 3 · REFUSED — two receipt cards, the split from the run row or derived and labelled
+  const receiptCard = (title, r, cls = 'span-8') => `<div class="card ${cls}"><h2>${esc(title)}</h2><p style="margin-top:8px">${pill('gate refused', 'REFUSED')} <span class="mono" style="font-size:var(--size-1);color:var(--color-ink-3)">reason ${esc(r.reason)}</span></p>
+    ${r.drifted_facts.map((df) => `<div class="fact"><div><div style="font-weight:500;color:var(--color-ink)">${esc(short(L.pins, df.source_url))} · ${esc(df.field)}</div><div><span class="was">was ${esc(clean(df.old_value))}</span> &nbsp; <span class="now">now ${esc(clean(df.new_value))}</span> <span class="code">pin ${esc(df.pin_id)} → ${esc(df.new_hash.slice(0, 12))}</span></div></div><span class="tag ${isInj(df) ? 'injected' : 'unforced'}">${isInj(df) ? 'injected · −15 %' : 'unforced · the real page changed'}</span></div>`).join('')}
+    ${r.explanation ? `<div class="why"><div class="eyebrow" style="margin-bottom:6px">why, built from this receipt</div>${r.explanation.map((e) => `<div>${esc(clean(e))}</div>`).join('')}</div>` : ''}
+    <dl class="dl" style="margin-top:16px"><dt>refused_at</dt><dd>${esc(r.refused_at)}</dd><dt>basis</dt><dd>${esc(ms3(r.basis_window.from))} → ${esc(ms3(r.basis_window.to))}</dd><dt>pin_hashes</dt><dd>${r.pin_hashes.length} pinned (${esc(r.pin_hashes[0].slice(0, 12))}… +${r.pin_hashes.length - 1})</dd></dl>${raw('raw: this receipt, verbatim', r)}</div>`;
+  F.refused = () => {
+    const rc = L.receipts; if (!rc.length) return '<div class="state-note">No receipt in this evidence folder: every night shipped. <a href="#clean">see the clean ship receipt</a></div>';
+    const all = rc.flatMap((r) => r.drifted_facts), unf = all.filter((df) => !isInj(df)).length;
+    const titles = rc.length === 1 ? ['Refusal · night 2 · the villain'] : ['Refusal 1 · night 1 · nothing injected', 'Refusal 2 · night 2 · the villain'];
+    return head('Receipts', 'every refusal ships with its evidence. Verify it; do not trust it.', 'live', 'REFUSED')
+      + `<div class="grid">${receiptCard(titles[0], rc[0])}
+      <div class="card graphite span-4"><h2>Evidence</h2><dl class="dl" style="margin-top:16px;grid-template-columns:3ch minmax(0,1fr);font-size:var(--size-2)">${ns.concat(ct).map((it) => { const [n, ...l] = it.split(' '); const lab = l.join(' '); return `<dt style="font:600 var(--size-4)/1.2 var(--font-display);color:${/contradictions|false/.test(lab) ? 'var(--color-ok)' : 'var(--color-ink)'}">${esc(n)}</dt><dd style="align-self:center">${esc(lab)}</dd>`; }).join('')}</dl><p class="footnote" style="color:${/matches/.test(line(ev, 'evidence source')) ? 'var(--color-ok)' : 'var(--color-hold)'}">source: ${esc(line(ev, 'evidence source'))}</p>
+      <h3 style="margin-top:24px">Drift split</h3><p style="font:600 var(--size-4)/1.2 var(--font-display);color:var(--color-ink);margin-top:8px">${unf} unforced · ${all.length - unf} injected</p><p class="footnote" style="color:${derived ? 'var(--color-hold)' : 'inherit'}">${derived ? 'derived: the price drift at exactly ×0.85; this run predates the run row\'s injected field' : 'from the run row\'s injected field'}</p></div>
+      ${rc[1] ? receiptCard(titles[1], rc[1]) : ''}
+      <div class="card span-4"><h2>How a judge verifies this</h2><ol style="margin:16px 0 0 16px;padding:0;font-size:var(--size-2)"><li>recompute sha256 over each pin's canonical fact_text</li><li>compare against the stored hash; a mismatch refuses</li><li>every citation in the report resolves, or the ship aborts</li></ol><p class="footnote">The gate contains no model. The model proposes. The gate disposes.</p></div></div>`;
+  };
+  // 4 · RE-BASED — the plan, its impact, the ship receipt
+  F.rebased = () => {
+    if (!P || !P.plan) return '<div class="state-note">No plan.json in this build. Pass --plan <run folder> to build.mjs.</div>';
+    const pl = P.plan, env = (P.runs.at(-1) || {}).adapter === 'mock' ? 'mock' : 'live', sh = P.ships.filter((s) => s.rebased).at(-1), imp = pl.impact || { affected: [], unaffected: 0, drifted_pins: [] }, rec = pl.recommendation || {};
+    const ic = { done: '✓', replanned: '↻', failed: '✗', skipped: '–', pending: '·' };
+    return head('Plan', `night 2 · the plan is a dependency graph from conclusions to pins · ${env} run · ${esc(P.dir)}`, env, sh ? 'RE-BASED' : 'REFUSED')
+      + `<div class="grid"><div class="card span-7"><div class="eyebrow">goal</div><p style="margin-top:8px;color:var(--color-ink)">${esc(pl.goal)}</p><ol class="steps" style="margin-top:16px">${pl.steps.map((s) => `<li><span class="ic ${esc(s.status)}" aria-label="${esc(s.status)}">${ic[s.status] || '·'}</span><span class="id">${esc(s.id)}</span><span class="kind">${esc(s.kind)}</span><span><div class="title">${esc(s.title)}</div><div class="detail">${esc(s.detail || '')}</div></span></li>`).join('')}</ol></div>
+      <div class="span-5" style="display:grid;gap:var(--space-4);min-width:0"><div class="card"><h2>Impact analysis</h2><p style="font:600 var(--size-4)/1.2 var(--font-display);color:var(--color-refuse);margin-top:8px">drift breaks ${imp.affected.length} of ${imp.affected.length + imp.unaffected} conclusions</p><ul style="margin:8px 0 0;padding:0;list-style:none;font-size:var(--size-2)">${imp.affected.map((a) => `<li>✗ ${esc(a.label)}</li>`).join('')}</ul><p class="footnote">${imp.unaffected} still hold · drifted pins: ${esc(imp.drifted_pins.join(', '))}</p></div>
+      <div class="card"><h2>Recommended price</h2><p style="margin-top:8px;font:600 var(--size-5)/1.1 var(--font-display)"><span style="color:var(--color-ink-3)">${rec.before != null ? '$' + rec.before.toFixed(2) : '—'}</span> <span aria-hidden="true" style="color:var(--color-ink-3)">→</span> <span style="color:var(--color-ok)">${rec.after != null ? '$' + rec.after.toFixed(2) : '—'}</span></p><p class="footnote">recomputed from re-pinned facts; the change is disclosed as [was-pin:] in the shipped report</p></div>
+      <div class="card graphite"><h2>Ship receipt · re-based</h2>${sh ? `<p style="margin-top:8px">${pill('gate clean', 'CLEAN')}</p><dl class="dl" style="margin-top:16px"><dt>shipped_at</dt><dd>${esc(sh.shipped_at)}</dd><dt>rebased</dt><dd>true</dd><dt>pin_hashes</dt><dd>${sh.pin_hashes.length} revalidated</dd><dt>basis</dt><dd>${esc(ms3(sh.basis_window.from))} → ${esc(ms3(sh.basis_window.to))}</dd>${P.receipts.length ? `<dt>refused_at</dt><dd>${esc(P.receipts.at(-1).refused_at)}</dd>` : ''}</dl><p class="footnote">refused first, then re-pinned, recomputed, disclosed, re-gated, shipped. <span style="color:var(--color-ok)">0 shipped contradictions: the refused draft never left.</span></p>${raw('raw: ships.jsonl, the re-based row', sh)}` : '<p class="footnote">no re-based ship in this run</p>'}${raw('raw: plan.json', pl)}</div></div></div>`;
+  };
+  // 5 · UNREACHABLE — mock, fail closed
+  F.unreachable = () => {
+    const r = M.receipts.filter((x) => x.reason === 'UNREACHABLE').at(-1); if (!r) return '<div class="state-note">No UNREACHABLE receipt in the mock run.</div>';
+    return head('Receipt · REFUSED (unreachable)', `fail-closed, not fail-open · ${M.dir} · R5`, 'mock', 'REFUSED')
+      + `<div class="grid"><div class="card span-8"><h2>Refusal receipt</h2><p style="margin-top:8px">${pill('gate refused', 'REFUSED')} <span class="mono" style="font-size:var(--size-1);color:var(--color-ink-3)">reason ${esc(r.reason)}</span></p><dl class="dl" style="margin-top:16px"><dt>refused_at</dt><dd>${esc(r.refused_at)}</dd><dt>error</dt><dd>${esc(r.error)}</dd><dt>drifted_facts</dt><dd>[] · nothing to compare</dd><dt>pin_hashes</dt><dd>${r.pin_hashes.length} carried</dd>${r.basis_window ? `<dt>basis_window</dt><dd>${esc(ms3(r.basis_window.from))} → ${esc(ms3(r.basis_window.to))}</dd>` : ''}${M.r5.slice(0, 2).map((l) => `<dt>${esc(l.split(':')[0].replace('R5 report.md ', ''))}</dt><dd style="color:var(--color-ok)">${esc(l.split(':').slice(1).join(':').trim())}</dd>`).join('')}</dl>${M.r5.length ? '<p class="footnote">before = after: report.md untouched (sha256-mtime)</p>' : ''}${raw('raw: this receipt, verbatim', r)}</div>
+      <div class="card graphite span-4"><h2>Fail-closed, not fail-open</h2><ul style="margin:16px 0 0 16px;padding:0;font-size:var(--size-2)"><li>no pins → no report, ever</li><li>no silent fallback to yesterday's values</li><li>the receipt is the audit trail</li></ul><p class="footnote">a live Nimble failure reads: fetch failed for &lt;url&gt;: MCP tools/call → HTTP &lt;code&gt; (veto/adapters.ts, gate.ts)</p></div></div>`;
+  };
+  // 6 · CLEAN — mock ship receipt
+  F.clean = () => {
+    const s = M.ships[0]; if (!s) return '<div class="state-note">No ships.jsonl in the mock run.</div>';
+    const cleanRuns = M.runs.filter((r) => r.verdict === 'CLEAN').length, resolved = M.verify.find((l) => l.includes('resolved')) || '—';
+    return head('Receipt · CLEAN (mock)', `the counter the villain night can't show · deterministic fixtures · ${M.dir}`, 'mock', 'CLEAN')
+      + `<div class="grid">${metric('Facts pinned', s.pin_hashes.length, 'all revalidated')}${metric('Drift flagged', 0, 'nothing moved')}${metric('Clean runs shipped', cleanRuns, 'runs.jsonl · verdict CLEAN', 'ok')}${metric('False refusals', 0, 'refused on a clean basis', 'ok')}
+      <div class="card span-8"><h2>Ship receipt</h2><p style="margin-top:8px">${pill('gate clean', 'CLEAN')}</p><dl class="dl" style="margin-top:16px"><dt>shipped_at</dt><dd>${esc(s.shipped_at)}</dd><dt>rebased</dt><dd>${String(!!s.rebased)}</dd><dt>pin_hashes</dt><dd>${s.pin_hashes.length} revalidated</dd><dt>basis</dt><dd>${esc(ms3(s.basis_window.from))} → ${esc(ms3(s.basis_window.to))}</dd><dt>verify_pins</dt><dd style="color:var(--color-ok)">${esc(resolved)}</dd></dl><p class="footnote">report.md is written by the gated ship step only (G1); report.ts writes a draft.</p>${raw('raw: ships.jsonl, first row', s)}</div></div>`;
+  };
+  // 7 · RUNS — writer and gate latency per run
+  F.runs = () => {
+    if (!L.runs.length) return '<div class="state-note">No runs.jsonl in this evidence folder.</div>';
+    const last = L.runs.at(-1).verdict === 'CLEAN' ? 'CLEAN' : 'REFUSED';
+    const w = (r) => (r.agent || '—').replace('hf.co/LiquidAI/', '').replace('-GGUF:Q4_K_M', ' · on-device');
+    return head('Runs', `session ${sess} · one row per night · the writer and the gate's latency, per run`, 'live', last)
+      + `<div class="grid"><div class="card span-12" style="padding:0 var(--space-3)"><table><thead><tr><th>Run</th><th>Mode</th><th>Verdict</th><th>Writer</th><th>Claims</th><th>Gate</th><th>Adapter</th></tr></thead><tbody>${L.runs.map((r) => `<tr><td class="mono">${esc(hh(r.run_at))}</td><td>${esc(r.mode || '')}</td><td style="color:${r.verdict === 'CLEAN' ? 'var(--color-ok)' : 'var(--color-refuse)'}">${esc(r.verdict)}${r.reason && r.reason !== r.verdict ? ' · ' + esc(r.reason) : ''}${r.rebased ? ' · re-based' : ''}</td><td style="color:${r.agent === 'template' ? 'var(--color-hold)' : 'inherit'}">${esc(w(r))}</td><td style="color:var(--color-ink-3)">${esc(r.claims_kept ?? '–')} kept · ${esc(r.claims_dropped ?? '–')} dropped</td><td class="mono">${esc(r.gate_ms ?? '–')} ms</td><td style="color:var(--color-ink-3)">${esc(r.adapter || '')}</td></tr>`).join('')}</tbody></table></div>
+      <div class="card graphite span-12"><h2>Evidence source and guardrail, this session</h2><dl class="dl" style="margin-top:16px">${['evidence source', 'guardrail', 'live', 'volatility'].filter((k) => line(ev, k)).map((k) => `<dt>${esc(k)}</dt><dd style="color:${k === 'evidence source' && /matches/.test(line(ev, k)) ? 'var(--color-ok)' : 'inherit'}">${esc(line(ev, k))}</dd>`).join('')}</dl><p class="footnote">fallbacks, when they fire: writer → deterministic template (agent.ts); counts → local files (evidence.ts). Neither touches the gate.</p>${raw('raw: runs.jsonl', L.runs)}</div></div>`;
+  };
+  const FRAMES = [['verifying', 'Overview'], ['pins', 'Pins'], ['refused', 'Receipts'], ['rebased', 'Plan'], ['unreachable', 'Unreachable'], ['clean', 'Clean'], ['runs', 'Runs']];
+  const main = document.getElementById('main');
+  main.innerHTML = FRAMES.map(([id]) => `<section data-state="${id}" hidden>${F[id]()}</section>`).join('')
+    + '<section data-state="loading" hidden><div class="state-note" role="status">Loading evidence… <a href="#refused">open the last built frame</a></div></section>'
+    + '<section data-state="empty" hidden><div class="state-note">No evidence folder found. Run <span class="mono">bash veto/demo.sh</span>, then <span class="mono">node demo/console/build.mjs</span>. <a href="#refused">back to receipts</a></div></section>'
+    + '<section data-state="error" hidden><div class="state-note" role="alert">An artifact could not be parsed. The console shows nothing rather than a guess. <a href="#refused">back to receipts</a></div></section>';
+  document.getElementById('frames').innerHTML = FRAMES.map(([id, label]) => `<a href="#${id}" data-frame="${id}">${label}</a>`).join('');
+  document.getElementById('built').textContent = `built ${D.built_at.slice(0, 16).replace('T', ' ')}Z from ${D.live.dir}`;
+  function show(id) {
+    if (!F[id]) id = 'refused';
+    document.querySelectorAll('[data-state]').forEach((el) => { el.hidden = el.getAttribute('data-state') !== id; });
+    document.querySelectorAll('[data-frame]').forEach((a) => { if (a.dataset.frame === id) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    document.title = `Veto console · ${FRAMES.find((f) => f[0] === id)?.[1] || id}`;
+  }
+  const route = () => show(location.hash.replace('#', '') || 'refused');
+  addEventListener('hashchange', route); route();
+  // theme
+  const themeBtn = document.getElementById('theme');
+  const setTheme = (t) => { document.documentElement.setAttribute('data-theme', t); themeBtn.textContent = t; try { localStorage.setItem('veto-theme', t); } catch (e) {} };
+  try { const t = localStorage.getItem('veto-theme'); if (t) setTheme(t); } catch (e) {}
+  themeBtn.addEventListener('click', () => setTheme(document.documentElement.getAttribute('data-theme') === 'dark' ? 'light' : 'dark'));
+  // ⌘K palette: the frame switcher
+  const pal = document.getElementById('palette'), q = document.getElementById('pal-q'), list = document.getElementById('pal-list');
+  let sel = 0, last = null;
+  const items = () => FRAMES.filter(([id, label]) => (label + ' ' + id).toLowerCase().includes(q.value.toLowerCase()));
+  const render = () => { const it = items(); sel = Math.min(sel, Math.max(0, it.length - 1)); list.innerHTML = it.map(([id, label], i) => `<li><button type="button" role="option" aria-selected="${i === sel}" data-go="${id}"><span>${label}</span><kbd>#${id}</kbd></button></li>`).join('') || '<li><button type="button" disabled>no frame matches</button></li>'; };
+  const open = () => { last = document.activeElement; pal.setAttribute('open', ''); q.value = ''; sel = 0; render(); q.focus(); };
+  const close = () => { pal.removeAttribute('open'); if (last && last.focus) last.focus(); };
+  document.getElementById('cmdk').addEventListener('click', open);
+  pal.addEventListener('click', (e) => { if (e.target === pal) close(); const b = e.target.closest('[data-go]'); if (b) { location.hash = b.dataset.go; close(); } });
+  q.addEventListener('input', () => { sel = 0; render(); });
+  addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') { e.preventDefault(); pal.hasAttribute('open') ? close() : open(); return; }
+    if (!pal.hasAttribute('open')) return;
+    if (e.key === 'Escape') close();
+    else if (e.key === 'ArrowDown') { e.preventDefault(); sel = Math.min(items().length - 1, sel + 1); render(); }
+    else if (e.key === 'ArrowUp') { e.preventDefault(); sel = Math.max(0, sel - 1); render(); }
+    else if (e.key === 'Enter') { const it = items()[sel]; if (it) { location.hash = it[0]; close(); } }
+  });
+})();
+</script>
+</body>
+</html>

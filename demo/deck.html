@@ -210,24 +210,24 @@ This is the segment's daily world (TechCrunch names Fortune 10 retailers among N
   </section>
 
   <!-- HAND-OFF: the last slide before cutting to the terminal -->
-  <section class="slide" data-beat="Hand-off → terminal" data-time="0:40 → cut to terminal until 2:35">
+  <section class="slide" data-beat="Hand-off → terminal" data-time="0:40 → cut to terminal until 2:40">
     <div class="eyebrow">Live · Veto</div>
     <h2>This is the 6 pm fetch.</h2>
     <img class="d2" data-step="1" src="diagrams/lifecycle.svg" alt="reset, fetch via Nimble MCP, pin, report, drift, gate, REFUSED, receipt, counts" style="width:1640px; margin-top:56px">
     <div class="d2-src" data-step="1">diagrams/lifecycle.d2 · read from veto/demo.sh</div>
     <script type="text/notes">"Here is the fetch, through Nimble's plugin and MCP server, live."
 Then CUT TO THE TERMINAL:
-1. /plugin install nimble   (Nimble visible by 0:50)
-2. veto/demo.sh --real    (mock fallback: veto/demo.sh)
+1. /plugin install nimble   (C3 pending: Isha's position is strike; if struck, start at step 2 and Nimble is visible by 0:50 from the MCP trace lines)
+2. bash veto/demo.sh --real --night2   (about 2 min; mock fallback: bash veto/demo.sh)
 3. Read report.md on screen: every claim is [pin:…], zero URLs.
 4. The drift, the gate, the REFUSED banner, the receipt line with its plain-English WHY.
 5. The self-correct: [plan impact] names which conclusions the drift broke, [plan P8 correct] re-pins, recomputes the recommendation, discloses [was-pin:], re-gates CLEAN and ships. Then the count lines. Read N, M off the screen.
-Reset between takes: veto/demo.sh resets pins.db, receipts.jsonl, runs.jsonl, ships.jsonl, mcp-trace.jsonl and plan.json itself. Live arc is about 113 s; come back to the next slide at 2:35.
+Reset between takes: veto/demo.sh resets pins.db, receipts.jsonl, runs.jsonl, ships.jsonl, mcp-trace.jsonl and plan.json itself. The full live arc is 260 s; the stage run is night 2 only, about 2 min. Come back to the next slide at 2:40.
 OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liquid LFM2.5) report call. Do not name either on stage; the report is 'the agent's report'.</script>
   </section>
 
   <!-- BRIDGE: the seam, pre-empted -->
-  <section class="slide" data-beat="Seam · fetch-time vs ship-time" data-time="2:35–2:50">
+  <section class="slide" data-beat="Seam · fetch-time vs ship-time" data-time="2:40–2:55">
     <h2>Nimble grounds the claim while the agent works —<br><span class="accent">Veto verifies the basis when the work ships.</span></h2>
     <img class="d2" data-step="1" src="diagrams/seam.svg" alt="Top row: source control, grounding, confidence, run complete. Bottom row: pin, reason, revalidate, ship or refuse. Hours later connects them." style="width:1500px; margin-top:70px">
     <div class="d2-src" data-step="1">diagrams/seam.d2 · Nimble Trust post, Sep 23 2026 · veto/gate.ts</div>
@@ -235,7 +235,7 @@ OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liqu
 Say it as their documented design, never as a defect. Their stack ends when the run ends; the 9 pm drop lives after their last check.</script>
   </section>
 
-  <section class="slide" data-beat="Seam · their doc" data-time="2:50–3:00">
+  <section class="slide" data-beat="Seam · their doc" data-time="2:55–3:05">
     <div class="eyebrow">Nimble blog · Sep 23, 2026 · Tom Shaked</div>
     <h2 data-step="1" style="font-size:76px">Grounding is fetch-time. Veto is ship-time.</h2>
     <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
@@ -248,7 +248,7 @@ Nimble's grounding runs "while the agent is producing the output … before the 
   </section>
 
   <!-- THEME TIE -->
-  <section class="slide" data-beat="Theme tie" data-time="3:00–3:10">
+  <section class="slide" data-beat="Theme tie" data-time="3:05–3:15">
     <div class="eyebrow">tokens& · the brief</div>
     <h2 data-step="1" style="font-size:76px">What persists: the pinned basis. What is refused: a drifted one.</h2>
     <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
@@ -261,7 +261,7 @@ The general panel hears the theme answered; Yaniv hears the receipt again.</scri
   </section>
 
   <!-- MIRROR: one verified flash -->
-  <section class="slide" data-beat="Mirror · Mata v. Avianca" data-time="3:10–3:20" style="justify-content:flex-start; padding-top:90px">
+  <section class="slide" data-beat="Mirror · Mata v. Avianca" data-time="3:15–3:25" style="justify-content:flex-start; padding-top:90px">
     <div class="flash-head">
       <div><div class="eyebrow" style="margin-bottom:18px">New York federal court · 2023</div><h2>The brief cited six cases. None existed.</h2></div>
     </div>
@@ -276,7 +276,7 @@ The quoted words are the judge's, from a court filing, as quoted by Rohan Goswam
   </section>
 
   <!-- DOC QUOTE: Yaniv's own line -->
-  <section class="slide" data-beat="Take-home · his own line" data-time="3:20–3:30">
+  <section class="slide" data-beat="Take-home · his own line" data-time="3:25–3:35">
     <div class="eyebrow">Nimble blog · Sep 22, 2026 · Yaniv Markovski, Head of Ecosystem</div>
     <h2 data-step="1" style="font-size:76px">“…before acting on it.”</h2>
     <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
@@ -289,18 +289,18 @@ His byline, two days before he judges. Quote it next to the mechanism, never as 
   </section>
 
   <!-- CLOSE -->
-  <section class="slide" data-beat="Close" data-time="3:30–3:38">
+  <section class="slide" data-beat="Close" data-time="3:35–3:43">
     <div class="stack">
       <div class="tagline" data-step="1">What git did for code,</div>
       <div class="tagline" data-step="2"><span class="accent">Veto</span> does for evidence.</div>
-      <p class="mono" data-step="3" style="font-size:40px; margin-top:30px; color:var(--muted)">25 facts pinned · 4 drifted-and-flagged · <span class="accent">0 shipped contradictions</span></p>
+      <p class="mono" data-step="3" style="font-size:40px; margin-top:30px; color:var(--muted)">29 facts pinned · 1 drifted-and-flagged · <span class="accent">0 shipped contradictions</span></p>
       <img class="d2" data-step="3" src="diagrams/gate.svg" alt="re-fetch, re-hash, compare; CLEAN ships, DRIFTED refuses with a receipt, UNREACHABLE refuses fail-closed" style="width:1400px; margin-top:30px">
     </div>
     <script type="text/notes">"Content-addressed pins, drift by re-hash, refuse with a receipt. What git did for code, Veto does for evidence."
-25 · 4 · 0 are the committed live trace run's numbers (evidence/live-run-2026-09-25-trace/evidence.txt, session 6a621160, the run with the MCP trace and on-device Liquid). If the recording is a different run, replace them with what evidence.ts printed on screen. Say them, do not memorise them.</script>
+29 · 1 · 0 are the recorded demo run's numbers (evidence/live-run-2026-09-25-demo/evidence.txt, session 4d0a0d93, on-device Liquid both nights). If the recording is a different run, replace them with what evidence.ts printed on screen. Say them, do not memorise them.</script>
   </section>
 
-  <section class="slide" data-beat="Final card" data-time="3:38–3:40">
+  <section class="slide" data-beat="Final card" data-time="3:43–3:45">
     <p class="sub" data-step="1">The model did everything right. The data moved. Veto refused, re-planned, and shipped the truth.</p>
     <div class="final" data-step="2" style="margin-top:40px">Veto is <span class="accent">the ship-time gate.</span></div>
     <p class="sub" data-step="3" style="margin-top:70px; color:var(--text)">What in your stack checks the basis at the moment of action?</p>
