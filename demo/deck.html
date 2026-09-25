@@ -165,7 +165,7 @@ body.presenter #presenter { display: block; }
   <section class="slide" data-beat="Title card (pre-roll)" data-time="—">
     <div class="eyebrow">Long Horizon Agents Hackathon · Best use of Nimble</div>
     <h1>Veto</h1>
-    <p class="sub" style="margin-top:28px">Everyone demos what their agent remembers. We demo what ours refuses. <span class="accent">Built on Nimble.</span></p>
+    <p class="sub" style="margin-top:28px">The ship lock for long-horizon agents. Everyone demos what their agent remembers. We demo what ours refuses. <span class="accent">Built on Nimble.</span></p>
     <script type="text/notes">No narration. Hold here while the recorder starts, then press → to begin at 0:00.</script>
   </section>
 
@@ -215,13 +215,12 @@ This is the segment's daily world (TechCrunch names Fortune 10 retailers among N
     <h2>This is the 6 pm fetch.</h2>
     <img class="d2" data-step="1" src="diagrams/lifecycle.svg" alt="reset, fetch via Nimble MCP, pin, report, drift, gate, REFUSED, receipt, counts" style="width:1640px; margin-top:56px">
     <div class="d2-src" data-step="1">diagrams/lifecycle.d2 · read from veto/demo.sh</div>
-    <script type="text/notes">"Here is the fetch, through Nimble's plugin and MCP server, live."
+    <script type="text/notes">"Here is the fetch, through Nimble's MCP server, live."
 Then CUT TO THE TERMINAL:
-1. /plugin install nimble   (C3 pending: Isha's position is strike; if struck, start at step 2 and Nimble is visible by 0:50 from the MCP trace lines)
-2. bash veto/demo.sh --real --night2   (about 2 min; mock fallback: bash veto/demo.sh)
-3. Read report.md on screen: every claim is [pin:…], zero URLs.
-4. The drift, the gate, the REFUSED banner, the receipt line with its plain-English WHY.
-5. The self-correct: [plan impact] names which conclusions the drift broke, [plan P8 correct] re-pins, recomputes the recommendation, discloses [was-pin:], re-gates CLEAN and ships. Then the count lines. Read N, M off the screen.
+1. bash veto/demo.sh --real --night2   (about 2 min; mock fallback: bash veto/demo.sh). Nimble is visible by 0:50 from the [nimble mcp] tools/call nimble_extract lines; no plugin beat (C3 decided, spec updated).
+2. Read report.md on screen: every claim is [pin:…], zero URLs.
+3. The drift, the gate, the REFUSED banner, the receipt line with its plain-English WHY.
+4. The self-correct: [plan impact] names which conclusions the drift broke, [plan P8 correct] re-pins, recomputes the recommendation, discloses [was-pin:], re-gates CLEAN and ships. Then the count lines. Read N, M off the screen.
 Reset between takes: veto/demo.sh resets pins.db, receipts.jsonl, runs.jsonl, ships.jsonl, mcp-trace.jsonl and plan.json itself. The full live arc is 260 s; the stage run is night 2 only, about 2 min. Come back to the next slide at 2:40.
 OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liquid LFM2.5) report call. Do not name either on stage; the report is 'the agent's report'.</script>
   </section>
