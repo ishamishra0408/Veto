@@ -36,6 +36,13 @@
 html, body { height: 100%; background: #000; color: var(--text); font-family: "DM Sans", system-ui, sans-serif; overflow: hidden; }
 body.idle { cursor: none; }
 
+/* Title-card sponsor list: the three sponsors whose code paths run in the product, each with how. */
+.sponsors { list-style: none; margin-top: 40px; display: grid; gap: 14px; max-width: 1500px; }
+.sponsors li { font-size: 30px; line-height: 1.3; color: var(--muted); padding-left: 28px; position: relative; }
+.sponsors li::before { content: ""; position: absolute; left: 0; top: 16px; width: 12px; height: 12px; background: var(--accent); border-radius: 2px; }
+.sponsors strong { color: var(--text); font-weight: 700; }
+.sponsors code { font-family: "JetBrains Mono", ui-monospace, monospace; font-size: 26px; color: var(--accent); }
+
 /* Stage cue: the one visible instruction to the presenter, on the two slides where the recording switches source. */
 .cue { position: absolute; top: 44px; right: 64px; padding: 16px 24px; border: 3px solid var(--accent); border-radius: 10px;
        background: var(--accent-soft); color: var(--accent); font: 700 30px/1.15 "DM Sans", system-ui, sans-serif; letter-spacing: .01em; max-width: 760px; text-align: right; }
@@ -172,7 +179,12 @@ body.presenter #presenter { display: block; }
   <section class="slide" data-beat="Title card (pre-roll)" data-time="—">
     <div class="eyebrow">Long Horizon Agents Hackathon · Best use of Nimble</div>
     <h1>Veto</h1>
-    <p class="sub" style="margin-top:28px">Nimble grounds the claim at <span class="accent">fetch time</span>. Veto verifies the basis at <span class="accent">ship time</span>.<br>The ship lock for long-horizon agents. Built on Nimble.</p>
+    <p class="sub" style="margin-top:28px">Nimble grounds the claim at <span class="accent">fetch time</span>. Veto verifies the basis at <span class="accent">ship time</span>.<br>The ship lock for long-horizon agents.</p>
+    <ul class="sponsors">
+      <li><strong>Nimble</strong> · every fact is fetched through the Nimble MCP server: <code>nimble_extract</code> collects the pages, <code>nimble_search</code> re-plans a lost one; the cite-pins rule ships as a Nimble Agent Skill</li>
+      <li><strong>Liquid AI</strong> · on device via Ollama: LFM2-1.2B-Extract is the second extractor that must agree before a fact is pinned; LFM2.5-1.2B-Instruct writes the pin-cited report</li>
+      <li><strong>Tinybird</strong> · every pin, receipt and run streams in as it happens; one pipe serves the evidence counts and fact volatility across live runs</li>
+    </ul>
     <script type="text/notes">No narration. Hold here while the recorder starts, then press → to begin at 0:00.</script>
   </section>
 
