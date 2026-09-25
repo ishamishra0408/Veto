@@ -26,7 +26,7 @@ export async function liquidChat(system: string, user: string, maxTokens = 2000,
       ...(LOCAL_URL ? {} : { reasoning: { effort: "low" } }),
       messages: [{ role: "system", content: system }, { role: "user", content: user }],
     }),
-    signal: AbortSignal.timeout(Number(process.env.VETO_AGENT_TIMEOUT_MS ?? 20_000)),
+    signal: AbortSignal.timeout(Number(process.env.VETO_AGENT_TIMEOUT_MS ?? 30_000)),
   });
   const body: any = await res.json(); // eslint-disable-line @typescript-eslint/no-explicit-any
   if (res.status === 429 && /per-day/.test(JSON.stringify(body))) { quotaHit = true; throw new Error("OpenRouter free daily quota reached"); }

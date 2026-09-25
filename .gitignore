@@ -13,6 +13,7 @@ veto/receipts.jsonl
 veto/runs.jsonl
 veto/ships.jsonl
 veto/mcp-trace.jsonl
+veto/plan.json
 veto/report.md
 veto/report.draft.md
 ui-artifacts.zip

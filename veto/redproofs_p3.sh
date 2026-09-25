@@ -9,8 +9,11 @@ verdicts() { echo "$1" | sed 's/\x1b\[[0-9;]*m//g' | grep -oE '^VERDICT: (CLEAN|
 o1=$(bash veto/demo.sh 2>&1); c1=$?; r1=$(wc -l < veto/receipts.jsonl 2>/dev/null | tr -d ' ')
 o2=$(bash veto/demo.sh 2>&1); c2=$?; r2=$(wc -l < veto/receipts.jsonl 2>/dev/null | tr -d ' ')
 v1=$(verdicts "$o1"); v2=$(verdicts "$o2")
-if [ $c1 -eq 0 ] && [ $c2 -eq 0 ] && [ "$v1" = "$v2" ] && [ "$(echo "$v1" | tail -1)" = "VERDICT: REFUSED (DRIFTED)" ] && [ "${r1:-0}" -ge 1 ] && [ "$r1" = "$r2" ]; then
-  echo "R9 PASS (2 runs, identical verdicts [$(echo $v1 | tr '\n' ' ')], $r1 receipt each)"
+# night 2 must refuse the drift (receipt) and then self-correct: re-based, shipped, 0 contradictions
+if [ $c1 -eq 0 ] && [ $c2 -eq 0 ] && [ "$v1" = "$v2" ] && [ "$(echo "$v1" | tail -2 | head -1)" = "VERDICT: REFUSED (DRIFTED)" ] \
+   && [ "$(echo "$v1" | tail -1)" = "VERDICT: CLEAN" ] && echo "$o1" | grep -q "shipped re-based" && echo "$o1" | grep -q "0 shipped contradictions" \
+   && [ "${r1:-0}" -ge 1 ] && [ "$r1" = "$r2" ]; then
+  echo "R9 PASS (2 runs, identical verdicts [$(echo $v1 | tr '\n' ' ')], $r1 receipt each, refused → re-based → shipped, 0 contradictions)"
 else echo "R9 FAIL (exit $c1/$c2, receipts $r1/$r2)"; echo "$v1"; echo "--"; echo "$v2"; fail=1; fi
 
 # R10 — the real adapter can't silently change shape
@@ -151,5 +154,21 @@ const r = checkClaims(claims.map((c) => repairCitations(c, basis).sentence).join
 console.log(r.kept.length, r.dropped.length);')
 if [ "$r22" = "1 3" ]; then echo "R22 PASS (repair kept the 1 true claim; invented price, cross-product price and one-sided comparison all dropped)"
 else echo "R22 FAIL ($r22)"; fail=1; fi
+
+# R23 — the plan is a real dependency graph: a drift on the anchor breaks exactly the conclusions that cite it,
+# and self-correction recomputes the recommendation from the new fact
+rm -f veto/pins.db veto/receipts.jsonl veto/runs.jsonl veto/plan.json
+out=$(VETO_AGENT=off VETO_STREAM=off $NODE veto/scenario.ts --rebase 2>/dev/null); rc=$?
+r23=$($NODE -e '
+const p=JSON.parse(require("fs").readFileSync("veto/plan.json","utf8"));
+const st=Object.fromEntries(p.steps.map(s=>[s.id,s.status]));
+const aff=(p.impact?.affected??[]).map(a=>a.id);
+const b=p.recommendation.before, a=p.recommendation.after;
+const expect=Math.round(Math.round(b/0.97*0.85*100)/100*0.97*100)/100;   // anchor × 0.85, then the 3% rule
+console.log([st.P7==="failed", st.P8==="done", aff.includes("anchor"), aff.includes("recommendation"), !aff.includes("comparables"), p.impact.unaffected>0, a!==b, Math.abs(a-expect)<0.02].join(","))')
+vr=$($NODE veto/verify_pins.ts >/dev/null 2>&1; echo $?)
+if [ $rc -eq 0 ] && [ "$r23" = "true,true,true,true,true,true,true,true" ] && grep -q '\[was-pin:' veto/report.md && [ "$vr" = 0 ]; then
+  echo "R23 PASS (plan P1–P8 logged; drift on the anchor breaks exactly the conclusions citing it (anchor, recommendation, …) while the comparable set still holds; recommendation recomputed; re-based report verifies)"
+else echo "R23 FAIL (rc=$rc checks=$r23 verify=$vr)"; echo "$out" | grep -E '^\[plan' | head -12; fail=1; fi
 
 exit $fail

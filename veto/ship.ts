@@ -17,6 +17,7 @@ export interface RunMeta {
   rebase?: boolean;
   injected?: { url: string; field: string }; // the fact the injector changed (ground truth for contradictions)
   injectedFactor?: number; // e.g. 0.85 for the villain's −15%
+  onRefused?: (v: Verdict) => void; // planner hook: observe + impact analysis, before any self-correction
 }
 
 export async function draft(adapter: FetchAdapter, disclosures: Drift[] = []): Promise<string> {
@@ -77,18 +78,24 @@ export async function decide(text: string, world: FetchAdapter, meta: RunMeta) {
     console.log(`${ansi("1;32")}VERDICT: CLEAN${ansi("0")} — shipped report.md (${verdict.pin_hashes.length} pins revalidated)`);
   } else {
     receipts.push(await announce(verdict));
+    meta.onRefused?.(verdict);
     if (meta.rebase && verdict.status === "DRIFTED") {
-      const next = await draft(world, verdict.drifted);
-      const v2 = await revalidate(DB_PATH, world, citedPinIds(next));
-      if (v2.status === "CLEAN") {
-        writeFileSync(REPORT, next);
-        appendShip(v2, true);
-        shipped = rebased = true;
-        console.log(`REBASE: re-pinned on fresh facts; ${verdict.drifted.length} drift(s) disclosed as [was-pin:]`);
-        console.log(`${ansi("1;32")}VERDICT: CLEAN${ansi("0")} — shipped re-based report.md (${v2.pin_hashes.length} pins revalidated)`);
-      } else {
-        console.log("REBASE: failed — world still moving");
-        receipts.push(await announce(v2));
+      // Self-correct: re-pin on fresh facts and re-gate. A listing that keeps moving gets a second try, then refusal.
+      let drifts = verdict.drifted;
+      for (let attempt = 1; attempt <= 2 && !shipped; attempt++) {
+        const next = await draft(world, drifts);
+        const v2 = await revalidate(DB_PATH, world, citedPinIds(next));
+        if (v2.status === "CLEAN") {
+          writeFileSync(REPORT, next);
+          appendShip(v2, true);
+          shipped = rebased = true;
+          console.log(`REBASE: re-pinned on fresh facts${attempt > 1 ? ` (attempt ${attempt})` : ""}; ${verdict.drifted.length} drift(s) disclosed as [was-pin:]`);
+          console.log(`${ansi("1;32")}VERDICT: CLEAN${ansi("0")} — shipped re-based report.md (${v2.pin_hashes.length} pins revalidated)`);
+        } else {
+          console.log(`REBASE: attempt ${attempt} — ${v2.status === "DRIFTED" ? "the page moved again during re-pin" : "re-gate refused"}`);
+          if (attempt === 2 || v2.status !== "DRIFTED") { receipts.push(await announce(v2)); break; }
+          else drifts = [...verdict.drifted, ...v2.drifted];
+        }
       }
     }
   }
