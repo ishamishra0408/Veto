@@ -3,10 +3,11 @@
 **Status:** LOCKED 2026-09-24 by Devansh. Changes after this point are additive corrections only, approved by Devansh.
 **Addendum 2026-09-24 (evening):** Yaniv's Sep 22 Nimble post and Sep 23 Trust post read live. Seam sharpened on the time axis; drift defined as world drift; Nimble MCP facts pinned (server URL, Streamable HTTP, `nimble_` tool prefixes, plugin steer). Additive only — no scope change except the two flagged items (plugin in first 60s, one-file Agent Skill).
 **Addendum 2026-09-24 (late):** Tinybird scoped IN narrowly — evidence read path only (datasource + pipe serving the counts API; never inside the gate, never in the pitch; local files remain source of truth with offline fallback). Liquid AI scoped IN as the report-writing agent (LFM2.5 — 2.6B per C2, free via OpenRouter; generator/verifier — agent proposes, gate disposes; deterministic template fallback; agent never inside the gate). Nimble zero-maintenance pipeline stays UNCONFIGURED — narrative villain only, not a built component. Pitch remains single-lane Nimble.
+**Addendum 2026-09-25 (event day):** name is **Veto** throughout — tagline "the ship lock for long-horizon agents". Demo script updated to the built flow (Veto's own MCP session in the first 60s, self-correct beat); C3 decided — no plugin beat.
 **Correction 2026-09-24 (night, Isha — additive, from live runs):**
 - C1: Collection uses `nimble_extract` (Nimble MCP), not Extract Templates — `best_buy_pdp` timed out (463s) and `amazon_pdp` returned no parsed results. Live source is Amazon (Best Buy failed via Nimble); requests pinned `country=US, locale=en`.
 - C2 (updated 2026-09-25): Liquid runs **on-device** via Ollama — writer `LFM2.5-1.2B-Instruct` (Q4_K_M GGUF) and extractor `LFM2-1.2B-Extract` (Q4_K_M), both from huggingface.co/LiquidAI. Fallback when no local server: `liquid/lfm-2.5-2.6b:free` on OpenRouter (the only Liquid model listed there; free tier capped at 50 requests/day). Code: `veto/liquid.ts`.
-- C3: `/plugin install nimble` beat is OPEN — the agent runs on OpenRouter, not Claude Code, so a Claude Code plugin install is not in the runtime path. Proposed replacement pending Devansh.
+- C3 (decided 2026-09-25): **no plugin beat.** Veto's agent calls Nimble's MCP server directly from its own code (models run on-device via Ollama, not inside Claude Code), so `/plugin install nimble` is not in Veto's runtime and is not shown. The first 60s show Veto's own live Nimble MCP session instead: `initialize → tools/list → nimble_extract → nimble_search`. Nimble's second surface is the cite-pins Agent Skill (`veto/skill/SKILL.md`).
 - Runtime is TypeScript / Node ≥ 22.18 (D1); every `.py` in PROMPTS reads `.ts`.
 - Live finding: Amazon's buy box rotates seller/price/stock between fetches ~30s apart with nothing injected; the gate refused every time. Used as the live demo beat ("the real page moved on its own").
 
@@ -14,6 +15,8 @@
 **Event:** Long Horizon Agents Hackathon, Sep 25 2026. Submission deadline 4:30 PM PT. ~5h build window.
 
 ## One-liner
+**Veto — the ship lock for long-horizon agents.**
+
 Everyone demos what their agent remembers. We demo what ours refuses: Veto pins every fact with hash + timestamp, cites pins not pages, and deterministically revalidates before ship — it will not ship the contradiction.
 
 **Thesis:** trust is a property of the moment of action, not the moment of retrieval. Nimble verifies the claim while the agent works; Veto verifies the basis when the work ships. With the agent in the loop: the agent works, Nimble grounds it while it works, Veto verifies the basis when it ships.
@@ -42,7 +45,7 @@ A Fortune-10 retailer's pricing agent works overnight against competitor prices 
 - Mature-domain mirror (mechanism, not vibe): **Mata v. Avianca (2023)** — the brief cited six cases; none existed. Veto is the mechanism that makes that impossible.
 
 ## Mechanism
-1. **Collect** — Nimble **MCP server** (agent's tool interface; visible in first 60s of demo): `https://mcp.nimbleway.com/mcp`, Streamable HTTP (current per docs.nimbleway.com; the Nov 2025 blog shows the older /sse endpoint — use the docs), tools prefixed `nimble_` (Search, Extract, Map, Crawl, Extract Template, Web Search Agent). Nimble's own docs steer toward the plugin — the demo's first 60s shows `/plugin install nimble`, then the MCP tool call. The built seam is the MCP adapter (direct tool calls). Nimble's zero-maintenance pipeline is the villain's *narrative* accomplice — it runs silently and never notices drift — but no pipeline is configured in this build; Veto is the witness.
+1. **Collect** — Nimble **MCP server** (agent's tool interface; visible in first 60s of demo): `https://mcp.nimbleway.com/mcp`, Streamable HTTP (current per docs.nimbleway.com; the Nov 2025 blog shows the older /sse endpoint — use the docs), tools prefixed `nimble_` (Search, Extract, Map, Crawl, Extract Template, Web Search Agent). The built seam is the MCP adapter: direct tool calls from Veto's own code — `nimble_extract` to collect, `nimble_search` to re-plan when a competitor page is lost — traced to `mcp-trace.jsonl`. (Nimble's docs also steer toward their Claude Code plugin; Veto does not run inside Claude Code, so the plugin is not used — see C3.) Nimble's zero-maintenance pipeline is the villain's *narrative* accomplice — it runs silently and never notices drift — but no pipeline is configured in this build; Veto is the witness.
 2. **Pin** — at ingest, every fact pinned: `{fact, sha256, fetched_at}`. Agent cites pins, not pages. The cite-pins rule ships as a one-file Agent Skill in the repo (Nimble's own publish format) — "best use" on two surfaces.
 3. **Reason** — a Liquid LFM2.5 agent (`LFM2.5-1.2B-Instruct` on-device; `liquid/lfm-2.5-2.6b:free` via OpenRouter as fallback — see C2) reasons against the pinned basis and writes the pin-cited report. Generator/verifier: the agent proposes, the deterministic gate disposes — the agent is never inside the gate, and the trust guarantee never depends on it. Deterministic template report remains as fallback if the model call fails.
 4. **Revalidate (deterministic gate, no LLM inside it)** — before ship: re-fetch → re-hash → compare. Pure function.
@@ -77,13 +80,15 @@ directly — R4/R5 test drift recall, R6 tests the false-refusal boundary, R2 te
 nobody runs. The demo's < 3 min full arc is the budget.
 
 ## Demo script (theatrical beats)
-1. **First 60s:** `/plugin install nimble`, then Nimble MCP tools live — fetch running through the MCP server on screen. The judge sees Yaniv's surface (the plugin his team ships), not just Anthropic's protocol.
-2. **Villain reveal:** the report on screen, citations highlighted, prices don't match.
-3. **Refusal:** big REFUSED — the agent declines to ship the contradiction; receipt shown.
-4. **Mata line:** "The brief cited six cases. None of them existed."
+Command on stage: `bash veto/demo.sh --real --night2` (≈2 min, live Nimble + on-device Liquid). Offline fallback if the venue network fails: `bash veto/demo.sh` (mock, same arc).
+1. **First 60s — Nimble live:** Veto's own MCP session on screen: `initialize → tools/list → tools/call nimble_extract` ×5 in parallel against real Amazon pages; if a competitor page is lost, `nimble_search` finds a comparable. The judge sees Nimble's agent-native surface driven by an agent, not a plugin install.
+2. **Villain reveal:** 21:00 the anchor competitor drops 15%; the 06:00 gate re-fetches, re-hashes, and the draft's citations no longer match — the report on screen with the changed pins highlighted.
+3. **Refusal:** big REFUSED — the agent declines to ship the contradiction; receipt shown (confirm fetch: moved vs flap; plain-English why).
+4. **Self-correct:** impact analysis names exactly which conclusions broke (e.g. anchor, recommendation) → targeted re-base (re-fetch only the drifted pages; facts that keep changing are marked unstable, not relied on) → re-gate CLEAN → ships with the old values disclosed as `[was-pin:]`. If the live page won't hold still, it refuses again — fail closed.
+5. **Mata line:** "The brief cited six cases. None of them existed." Veto's report cites pins — a forged or moved one never ships.
 
 ## Scope: in
-Nimble MCP + plugin, pin store, cite-pins Agent Skill (one file, Nimble's publish format), Liquid agent report writer (deterministic template fallback), deterministic gate, fail-closed, refusal receipts, Tinybird evidence read path (datasource + pipe serving the counts API; local files stay source of truth, offline fallback), counts, demo script above.
+Nimble MCP (`nimble_extract` + `nimble_search`), pin store, cite-pins Agent Skill (one file, Nimble's publish format), Liquid agent report writer (deterministic template fallback), deterministic gate, fail-closed, refusal receipts, Tinybird evidence read path (datasource + pipe serving the counts API; local files stay source of truth, offline fallback), counts, demo script above.
 
 ## Scope: out (do not build)
 Dashboards, Nimble pipeline configuration, second sponsor pitch, ML metrics, any change to Nimble itself. Build uses Nimble + Tinybird + Liquid where each fits naturally; pitch is single-lane Nimble only — Tinybird and Liquid are never mentioned on stage.
@@ -94,7 +99,7 @@ Dashboards, Nimble pipeline configuration, second sponsor pitch, ML metrics, any
 - No unmeasured efficiency claims (no "10x faster", no token math without measurement).
 
 ## Pre-registration (before building)
-Hypothesis: Yaniv rewards (a) his data-failure thesis made tangible, (b) depth on Nimble's agent-native surfaces — the plugin install on screen, MCP tools in the first 60s, the cite-pins rule as a one-file Agent Skill in his team's format, (c) production-robustness thinking (fail-closed, deterministic gate). The demo's winning moment is the refusal, not the recall. Pre-registered seam defenses: grounding is fetch-time, Veto is ship-time; /monitor watches the world, Veto watches the report's basis; our drift is world drift, never pipeline drift. We will score the outcome against this after the event.
+Hypothesis: Yaniv rewards (a) his data-failure thesis made tangible, (b) depth on Nimble's agent-native surfaces — the plugin install on screen, MCP tools in the first 60s, the cite-pins rule as a one-file Agent Skill in his team's format [amended 2026-09-25: plugin install dropped per C3; MCP tools driven by the agent (extract + search) and the Agent Skill remain], (c) production-robustness thinking (fail-closed, deterministic gate). The demo's winning moment is the refusal, not the recall. Pre-registered seam defenses: grounding is fetch-time, Veto is ship-time; /monitor watches the world, Veto watches the report's basis; our drift is world drift, never pipeline drift. We will score the outcome against this after the event.
 
 ## Build phases (rough — build-prompt packages these into paste blocks)
 - P0: Nimble MCP wiring + one pipeline fetch, visible on screen.

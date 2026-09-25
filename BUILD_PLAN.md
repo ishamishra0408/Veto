@@ -73,7 +73,7 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
 
 ## PHASE 3 ADDENDUM (PM update 2026-09-24 late) — Skill, Tinybird, Liquid
 
-> Corrections applied: `.py` → `.ts`; model per C2; Extract Template → `nimble_extract` per C1; plugin beat open per C3.
+> Corrections applied: `.py` → `.ts`; model per C2; Extract Template → `nimble_extract` per C1; plugin beat dropped per C3 (decided 2026-09-25: Veto's own MCP session instead).
 
 5. `veto/redproofs_p3.sh`: runs R9–R17 below, prints PASS/FAIL per proof.
 6. `veto/skill/SKILL.md`: the cite-pins rule as a one-file Agent Skill in Nimble's publish

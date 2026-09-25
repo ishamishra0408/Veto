@@ -1,10 +1,10 @@
-# Sponsor hero features — build status (2026-09-24 late; corrected night per live runs)
+# Veto — the ship lock for long-horizon agents. Sponsor hero features — build status (2026-09-24 late; corrected night per live runs)
 
 ## Nimble — built on
 | Hero feature | How the build uses it | Where | Built? |
 |---|---|---|---|
 | MCP server (`mcp.nimbleway.com/mcp`, Streamable HTTP, `nimble_`-prefixed tools) | Collection layer; live fetches visible in the first 60s | Phase 3 adapter, Phase 4 live key | Y |
-| Plugin (`/plugin install nimble`) | OPEN (C3): agent runs on OpenRouter, not Claude Code — plugin is not in the runtime path | — | N (pending) |
+| Plugin (`/plugin install nimble`) | Not used (C3 decided): Veto calls Nimble's MCP server directly from its own code; the plugin is a Claude Code surface outside Veto's runtime. The first 60s show Veto's own MCP session instead | — | N (by design) |
 | Search (`nimble_search`) | Planner re-plan: a lost competitor page (unreachable or no extractable price) is replaced by a comparable listing found by search, then corroborated and pinned — used live in the final run | veto/adapters.ts, veto/report.ts, R25 | Y |
 | Extract (`nimble_extract`) | The 5 live Amazon product pages in the villain scenario, fetched concurrently (~10s) | adapters.ts / scenario.ts | Y |
 | Extract Template | Tried: `best_buy_pdp` timed out (463s), `amazon_pdp` returned no parsed results — not used (C1) | — | N |

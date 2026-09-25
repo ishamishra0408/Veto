@@ -1,8 +1,10 @@
 # Veto
 
+**The ship lock for long-horizon agents.**
+
 **Everyone demos what their agent remembers. We demo what ours refuses.**
 
-**Veto is the ship lock at the end of a long-horizon agent's cycle:** the agent's output cites pinned facts, and Veto won't let it ship if those facts have moved. It refuses with a receipt, re-plans around what changed, and ships only what still holds. Demonstrated here on a pricing report; the same lock applies to any output that cites facts.
+The agent's output cites pinned facts, and Veto won't let it ship if those facts have moved. It refuses with a receipt, re-plans around what changed, and ships only what still holds. Demonstrated here on a pricing report; the same lock applies to any output that cites facts.
 
 **An AI pricing agent fetches competitor prices at 6pm, works overnight, and ships a recommendation at 6am. If a price moved at 9pm, the recommendation matches a price that no longer exists. The model did everything right. The data moved. Veto stops that report before it ships.**
 
@@ -53,11 +55,11 @@ Every claim above is a red proof — an adversarial test that the mechanism cann
 | Proof | Attack | Must show |
 |---|---|---|
 | R1 | Name the mock outside the adapter seam | nothing |
-| R2 | Flip one character of a pinned fact | `MISSING`, exit 1; real vault byte-identical |
+| R2 | Flip one character of a pinned fact | `MISSING`, exit 1; the real `pins.db` byte-identical |
 | R3 | Look for a URL in the report | 0 |
 | R4 / R5 / R6 | Drift / outage / clean world | REFUSED / REFUSED + report untouched / CLEAN |
 | R7 | Look for a model inside the gate | nothing |
-| R8 | Cross-check receipt hashes against the vault | all match, inside the run window |
+| R8 | Cross-check receipt hashes against `pins.db` | all match, inside the run window |
 | G1 / G2 | Ship without the gate / re-base after drift | impossible / disclosed + verifies |
 | R9 / R11 / R12 | Repeat the demo / time it / counter computed | identical verdicts, refused → re-based → shipped / < 3 min (mock) / K = CLEAN count |
 | R10 | Nimble adapter vs mock shape | exact match (also live) |
