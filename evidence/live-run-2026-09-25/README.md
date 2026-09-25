@@ -1,6 +1,6 @@
 # Live run — 2026-09-25 05:43–05:44 UTC
 
-One `bash vault/demo.sh --real` run: Nimble MCP (`nimble_extract`) → 5 Amazon product pages → pins → Liquid agent → gate.
+One `bash veto/demo.sh --real` run: Nimble MCP (`nimble_extract`) → 5 Amazon product pages → pins → Liquid agent → gate.
 
 | File | What it is | What it is not |
 |---|---|---|

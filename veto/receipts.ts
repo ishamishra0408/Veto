@@ -4,7 +4,7 @@ import type { Verdict } from "./gate.ts";
 
 export const RECEIPTS = new URL("./receipts.jsonl", import.meta.url);
 
-export function appendReceipt(v: Exclude<Verdict, { status: "CLEAN" }>) {
+export function appendReceipt(v: Exclude<Verdict, { status: "CLEAN" }>, explanation: string[] = []) {
   const receipt = {
     refused_at: new Date().toISOString(),
     reason: v.status,
@@ -12,6 +12,7 @@ export function appendReceipt(v: Exclude<Verdict, { status: "CLEAN" }>) {
     error: v.status === "UNREACHABLE" ? v.error : null,
     pin_hashes: v.pin_hashes,
     basis_window: v.basis_window,
+    ...(explanation.length ? { explanation } : {}),
   };
   appendFileSync(RECEIPTS, JSON.stringify(receipt) + "\n");
   return receipt;

@@ -4,7 +4,8 @@ import { existsSync, readFileSync } from "node:fs";
 import { connect, sessionOf } from "./pins.ts";
 import { RECEIPTS } from "./receipts.ts";
 import { RUNS } from "./ship.ts";
-import { remoteCounts, type Counts, type VaultEvent } from "./tinybird.ts";
+import { eventsFor } from "./stream.ts";
+import { remoteCounts, volatility, type Counts } from "./tinybird.ts";
 
 const jsonl = (u: URL) =>
   existsSync(u) ? readFileSync(u, "utf8").split("\n").filter(Boolean).map((l) => JSON.parse(l)) : [];
@@ -15,29 +16,27 @@ const pins = db.prepare("SELECT pin_id, fetched_at FROM pins").all() as { pin_id
 const receipts = jsonl(RECEIPTS);
 const runs = jsonl(RUNS);
 
-// Ground truth comes from the injected world, not from the gate: a shipped run on a drifted world
-// that was not re-based is a shipped contradiction.
+// Ground truth comes from the injected world, not from the gate: a shipped, non-re-based report that cites the
+// exact fact the injector changed is a shipped contradiction (recorded per run by ship.ts).
 const local: Counts = {
   pinned: pins.length,
   drifted_flagged: receipts.reduce((s, r) => s + r.drifted_facts.length, 0),
-  shipped_contradictions: runs.filter((r) => r.shipped && r.mode === "drift" && !r.rebased).length,
+  shipped_contradictions: runs.filter((r) => r.contradiction === 1).length,
   clean_shipped: runs.filter((r) => r.verdict === "CLEAN" && r.shipped).length,
   false_refusals: runs.filter((r) => r.verdict === "REFUSED" && r.mode === "clean").length,
   unforced_refusals: runs.filter((r) => r.verdict === "REFUSED" && r.mode === "live").length,
+  // T1 guardrail: nearest-rank p95 of gate wall time (same formula as the Tinybird pipe).
+  gate_p95_ms: (() => { const ms = runs.map((r) => Number(r.gate_ms ?? 0)).sort((a, b) => a - b);
+    return ms.length ? ms[Math.ceil(0.95 * ms.length) - 1] : 0; })(),
 };
 
 console.log(`north star: ${local.pinned} facts pinned · ${local.drifted_flagged} drifted-and-flagged · ${local.shipped_contradictions} shipped contradictions`);
 console.log(`counter: ${local.clean_shipped} clean runs shipped · ${local.false_refusals} false refusals`);
 // Live runs with no injection have no ground truth; a refusal there is the real world moving, reported separately.
+console.log(`guardrail: gate p95 ${local.gate_p95_ms} ms over ${runs.length} run(s)`);
 if (local.unforced_refusals) console.log(`live: ${local.unforced_refusals} unforced drift refusal(s) — nothing injected, the real page changed`);
 
-const base = { session, n_drifted: 0, verdict: "", mode: "", shipped: 0, rebased: 0 };
-const events: VaultEvent[] = [
-  ...pins.map((p) => ({ ...base, kind: "pin" as const, event_id: p.pin_id, ts: p.fetched_at })),
-  ...receipts.map((r) => ({ ...base, kind: "receipt" as const, event_id: `${r.refused_at}|${r.reason}`, ts: r.refused_at, n_drifted: r.drifted_facts.length })),
-  ...runs.map((r) => ({ ...base, kind: "run" as const, event_id: `${r.run_at}|${r.mode}`, ts: r.run_at,
-    verdict: r.verdict, mode: r.mode, shipped: r.shipped ? 1 : 0, rebased: r.rebased ? 1 : 0 })),
-];
+const events = eventsFor(session, pins, receipts, runs);
 try {
   // Push once, then re-read: freshly ingested rows can take a moment to become queryable.
   let remote = await remoteCounts(events, session);
@@ -52,3 +51,11 @@ try {
 } catch (e) {
   console.log(`evidence source: local (Tinybird offline: ${(e as Error).message.slice(0, 80)})`);
 }
+
+// T2: history across every live run (Tinybird only — local state resets with each demo).
+try {
+  const titles = new Map((db.prepare("SELECT source_url, fact_text FROM pins WHERE fact_text LIKE 'title of %'").all() as { source_url: string; fact_text: string }[])
+    .map((r) => [r.source_url, r.fact_text.split(" is ").slice(1).join(" is ").split(/[,(-]/)[0].trim().slice(0, 32)]));
+  const vol = (await volatility()).filter((v) => v.drifts > 0).slice(0, 3);
+  if (vol.length) console.log(`volatility (all live runs, Tinybird): ${vol.map((v) => `${titles.get(v.url) ?? v.url.split("/").pop()} ${v.field} ${v.drifts}/${v.checks}`).join(" · ")}`);
+} catch { /* offline: volatility needs history only Tinybird keeps */ }

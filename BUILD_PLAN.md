@@ -1,8 +1,8 @@
-# Vault build plan — TONIGHT (2026-09-24)
+# Veto build plan — TONIGHT (2026-09-24)
 
 > **Correction (additive, 2026-09-24, per Isha):** runtime is **TypeScript on Node ≥ 22.18** (decision D1), not Python.
 > Every `.py` below is `.ts`; "venv, requirements" is `package.json` + `tsconfig.json`; scripts run as
-> `node --disable-warning=ExperimentalWarning vault/<file>.ts`. `NotImplementedError` = a thrown `Error("NotImplemented…")`.
+> `node --disable-warning=ExperimentalWarning veto/<file>.ts`. `NotImplementedError` = a thrown `Error("NotImplemented…")`.
 
 Goal: whole thing built tonight; tomorrow is pitch + networking.
 Nothing is blocked except live-key verification before the demo — the key is self-served
@@ -16,29 +16,29 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
 
 ## PHASE 1 — repo + adapter seam + mock + pin store + cite-pins loop
 
-1. `vault/` — TypeScript / Node ≥ 22.18, package.json, tsconfig, README.
-2. `vault/adapters.ts`: `FetchResult` `{url, title, price, fetched_at}` (+ stock, rating, seller per D6); `FetchAdapter` base with `fetch(url) -> FetchResult`; `MockAdapter` — 5 deterministic fixture pages recorded in `vault/pages.txt`; `NimbleMCPAdapter` — stub, built in Phase 3.
-3. `vault/pins.ts`: one pin per fact to SQLite `vault/pins.db`: `{pin_id, fact_text, sha256, fetched_at, source_url}`; sha256 over canonical fact text.
-4. `vault/report.ts`: reasons over PINNED facts; every claim cites `[pin:…]`. No bare URLs, no uncited claims.
-5. `vault/verify_pins.ts`: every `[pin:…]` resolves → OK / MISSING; non-zero on MISSING; takes `--db`.
-6. `vault/redproofs_p1.sh`: R1–R3.
+1. `veto/` — TypeScript / Node ≥ 22.18, package.json, tsconfig, README.
+2. `veto/adapters.ts`: `FetchResult` `{url, title, price, fetched_at}` (+ stock, rating, seller per D6); `FetchAdapter` base with `fetch(url) -> FetchResult`; `MockAdapter` — 5 deterministic fixture pages recorded in `veto/pages.txt`; `NimbleMCPAdapter` — stub, built in Phase 3.
+3. `veto/pins.ts`: one pin per fact to SQLite `veto/pins.db`: `{pin_id, fact_text, sha256, fetched_at, source_url}`; sha256 over canonical fact text.
+4. `veto/report.ts`: reasons over PINNED facts; every claim cites `[pin:…]`. No bare URLs, no uncited claims.
+5. `veto/verify_pins.ts`: every `[pin:…]` resolves → OK / MISSING; non-zero on MISSING; takes `--db`.
+6. `veto/redproofs_p1.sh`: R1–R3.
 
 **CHECKPOINT 1**
 
 | ID | Adversarial test | Command | Must show |
 |----|------------------|---------|-----------|
-| R1 | The seam is real: nothing outside adapters.ts names MockAdapter | `grep -rn "MockAdapter" vault/ --include=*.ts --exclude-dir=node_modules \| grep -v adapters.ts \| grep -v redproofs` | empty output |
+| R1 | The seam is real: nothing outside adapters.ts names MockAdapter | `grep -rn "MockAdapter" veto/ --include=*.ts --exclude-dir=node_modules \| grep -v adapters.ts \| grep -v redproofs` | empty output |
 | R2 | Pins are content-addressed | copy pins.db to temp, flip one `fact_text` char in the copy, `verify_pins.ts --db <tmp>`, delete copy | MISSING + non-zero (never OK); real pins.db byte-identical |
-| R3 | No uncited facts escape | `grep -c "http" vault/report.md` | `0` |
+| R3 | No uncited facts escape | `grep -c "http" veto/report.md` | `0` |
 
 ---
 
 ## PHASE 2 — deterministic revalidate gate + fail-closed + receipts
 
-1. `vault/gate.ts` `revalidate(db_path, adapter) -> verdict` — no model inside; re-fetch → re-hash → compare. `CLEAN` ships; `DRIFTED {pin_id, old_hash, new_hash, old_value, new_value}` refuses (re-base or disclose); `UNREACHABLE` fails closed.
-2. `vault/receipts.jsonl`: one line per refusal `{refused_at, drifted_facts, pin_hashes, basis_window}`.
-3. `vault/simulate.ts`: `--drift` / `--outage` / `--clean`.
-4. `vault/redproofs_p2.sh`: R4–R8.
+1. `veto/gate.ts` `revalidate(db_path, adapter) -> verdict` — no model inside; re-fetch → re-hash → compare. `CLEAN` ships; `DRIFTED {pin_id, old_hash, new_hash, old_value, new_value}` refuses (re-base or disclose); `UNREACHABLE` fails closed.
+2. `veto/receipts.jsonl`: one line per refusal `{refused_at, drifted_facts, pin_hashes, basis_window}`.
+3. `veto/simulate.ts`: `--drift` / `--outage` / `--clean`.
+4. `veto/redproofs_p2.sh`: R4–R8.
 
 **CHECKPOINT 2**
 
@@ -47,18 +47,18 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
 | R4 | Drift cannot slip through | `simulate.ts --drift` | REFUSED; receipt with old_hash ≠ new_hash |
 | R5 | Outage cannot cause a stale ship | `simulate.ts --outage` | REFUSED; report.md not written |
 | R6 | The gate doesn't cry wolf | `simulate.ts --clean` | CLEAN |
-| R7 | Safety check independent of the model | `grep -rniE "openai\|anthropic\|llm\|client\." vault/gate.ts` | empty output |
+| R7 | Safety check independent of the model | `grep -rniE "openai\|anthropic\|llm\|client\." veto/gate.ts` | empty output |
 | R8 | Receipts are checkable | receipt pin_hashes vs `SELECT sha256 FROM pins` | all match; refused_at in run window |
 
 ---
 
 ## PHASE 3 — Nimble adapter code + villain scenario + demo rehearsal
 
-1. `NimbleMCPAdapter` in `vault/adapters.ts` (https://mcp.nimbleway.com/mcp, `Authorization: Bearer ${NIMBLE_API_KEY}`); same `FetchResult` shape; no key → clear error, never an invented key.
-2. `vault/scenario.ts`: T0 pins → T1 competitor drops one price 15% → overnight reasoning → 6am gate ⇒ DRIFTED, REFUSED, receipt. `--clean`: no flip ⇒ CLEAN, ships.
-3. `vault/evidence.ts`: computed, never hardcoded — `N facts pinned · M drifted-and-flagged · 0 shipped contradictions`; `K clean runs shipped · 0 false refusals`.
-4. `vault/demo.sh [--real]`: resets state, full arc, appends `{run_at, adapter, verdict}` to `vault/runs.jsonl`.
-5. `vault/redproofs_p3.sh`: R9–R12.
+1. `NimbleMCPAdapter` in `veto/adapters.ts` (https://mcp.nimbleway.com/mcp, `Authorization: Bearer ${NIMBLE_API_KEY}`); same `FetchResult` shape; no key → clear error, never an invented key.
+2. `veto/scenario.ts`: T0 pins → T1 competitor drops one price 15% → overnight reasoning → 6am gate ⇒ DRIFTED, REFUSED, receipt. `--clean`: no flip ⇒ CLEAN, ships.
+3. `veto/evidence.ts`: computed, never hardcoded — `N facts pinned · M drifted-and-flagged · 0 shipped contradictions`; `K clean runs shipped · 0 false refusals`.
+4. `veto/demo.sh [--real]`: resets state, full arc, appends `{run_at, adapter, verdict}` to `veto/runs.jsonl`.
+5. `veto/redproofs_p3.sh`: R9–R12.
 
 **CHECKPOINT 3**
 
@@ -66,7 +66,7 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
 |----|------------------|---------|-----------|
 | R9 | Not a one-off | `demo.sh && demo.sh` | both REFUSED with receipts; identical verdicts |
 | R10 | Real adapter can't change shape | FetchResult keys Nimble == Mock | exact match |
-| R11 | Fits a judging slot | `time vault/demo.sh` | < 3 min |
+| R11 | Fits a judging slot | `time veto/demo.sh` | < 3 min |
 | R12 | Counter is real | `scenario.ts --clean` then `evidence.ts` | CLEAN; K ≥ 1, 0 false refusals; K == CLEAN count in runs.jsonl |
 
 ---
@@ -75,21 +75,21 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
 
 > Corrections applied: `.py` → `.ts`; model per C2; Extract Template → `nimble_extract` per C1; plugin beat open per C3.
 
-5. `vault/redproofs_p3.sh`: runs R9–R17 below, prints PASS/FAIL per proof.
-6. `vault/skill/SKILL.md`: the cite-pins rule as a one-file Agent Skill in Nimble's publish
+5. `veto/redproofs_p3.sh`: runs R9–R17 below, prints PASS/FAIL per proof.
+6. `veto/skill/SKILL.md`: the cite-pins rule as a one-file Agent Skill in Nimble's publish
    format. Opens with the thesis — "trust is a property of the moment of action, not the
-   moment of retrieval" — and positions the Vault as the stage after Nimble's trust stack
-   (source control → grounding → confidence → Vault revalidation at ship time). Then:
+   moment of retrieval" — and positions Veto as the stage after Nimble's trust stack
+   (source control → grounding → confidence → Veto revalidation at ship time). Then:
    when to pin, the pin schema `{fact, sha256, fetched_at}`, the cite-pins-only
-   report rule, the revalidate-before-ship gate. It must describe the built vault exactly,
+   report rule, the revalidate-before-ship gate. It must describe the built veto exactly,
    not an aspirational superset.
 7. Tinybird evidence read path (their hero: SQL → production API): create one Tinybird
-   datasource ingesting the vault's event stream (pins, receipts, runs) and one pipe
+   datasource ingesting the veto's event stream (pins, receipts, runs) and one pipe
    (SQL) serving the evidence counts as an API. `evidence.ts` prefers the pipe but MUST
    work with no network — local computation from pins.db + receipts.jsonl + runs.jsonl
    is the source of truth and the offline fallback. Tinybird is never inside the gate
    and never in the pitch.
-8. Liquid agent report writer (their hero: extraction-tuned small model): `vault/agent.ts`
+8. Liquid agent report writer (their hero: extraction-tuned small model): `veto/agent.ts`
    calls LFM2.5-1.2B-Instruct via OpenRouter (free tier) with a constrained prompt — the
    pinned facts in-context, instruction to emit ONLY claims of the form `[pin:<id>]` +
    quoted fact text. The agent's report goes through the same `verify_pins.ts` +
@@ -104,7 +104,7 @@ Devansh decides whether to raise it or defer an item.
 
 | ID | Adversarial test | Command | Must show |
 |----|------------------|---------|-----------|
-| R15 | The Agent Skill describes the built vault, not a fantasy: every pin format it documents resolves | `verify_pins.ts` against the pin format in `vault/skill/SKILL.md` | all documented pin references resolve; the skill mentions no feature the vault doesn't have |
+| R15 | The Agent Skill describes the built veto, not a fantasy: every pin format it documents resolves | `verify_pins.ts` against the pin format in `veto/skill/SKILL.md` | all documented pin references resolve; the skill mentions no feature the veto doesn't have |
 | R16 | The Tinybird read path can't disagree with the local truth: pipe counts vs local counts | `evidence.ts` with network, then with network blocked | identical counts both ways; offline run exits 0 with no exception |
 | R17 | The agent can't smuggle a hallucination past the gate: fabricated pin citation | hand-edit one agent-written report to cite `[pin:deadbeef…]` (nonexistent), run `verify_pins.ts` + gate | prints MISSING / REFUSED; no ship |
 
@@ -115,7 +115,7 @@ Devansh decides whether to raise it or defer an item.
 
 1. Self-serve key: signup → Account Settings → API Keys.
 2. `export NIMBLE_API_KEY="<key>" && claude mcp add --transport http nimble https://mcp.nimbleway.com/mcp --header "Authorization: Bearer ${NIMBLE_API_KEY}"`, restart Claude Code.
-3. `vault/demo.sh --real`.
+3. `veto/demo.sh --real`.
 
 **CHECKPOINT 4**
 

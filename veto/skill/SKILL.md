@@ -10,7 +10,7 @@ description: Pin every web fact with sha256 + fetch time, cite pins (not pages) 
 Nimble's trust stack covers the run: source control at fetch time, grounding and confidence while the agent writes. This skill covers the stage after the run ends — the gap between when facts were fetched and when the report is acted on. Revalidation happens at ship time.
 
 ## When to pin
-Every fact the report will state, at ingest, the moment it is fetched (this vault fetches with the Nimble MCP tool `nimble_extract`). One pin per fact. Five facts per product page: `title`, `price`, `stock`, `rating`, `seller`.
+Every fact the report will state, at ingest, the moment it is fetched (this veto fetches with the Nimble MCP tool `nimble_extract`). One pin per fact. Five facts per product page: `title`, `price`, `stock`, `rating`, `seller`.
 
 ## Pin schema
 Stored in SQLite `pins.db`, one row per fact:
@@ -21,7 +21,7 @@ Stored in SQLite `pins.db`, one row per fact:
 | `fact_text` | canonical fact: `<field> of <source url> is <value>`, whitespace collapsed |
 | `sha256` | sha256 of `fact_text` |
 | `fetched_at` | ISO-8601 UTC time of the fetch |
-| `source_url` | page the fact came from — stays in the vault, never in the report |
+| `source_url` | page the fact came from — stays in the veto, never in the report |
 
 The same fact always hashes to the same pin; a pin keeps the timestamp of its first fetch.
 

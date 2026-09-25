@@ -1,0 +1,24 @@
+DESCRIPTION >
+    Fact volatility across every streamed run: how often each (page, field) changed between pin time and the gate.
+    Tells you which facts need re-checking most. History lives here, not in the local veto (it resets per demo).
+
+NODE volatility
+SQL >
+    %
+    SELECT
+        url,
+        field,
+        count() AS checks,
+        sum(drifted) AS drifts,
+        round(sum(drifted) / count(), 2) AS rate,
+        uniqExact(session) AS runs
+    FROM (
+        SELECT * FROM vault_events
+        WHERE kind = 'check' AND adapter = {{ String(adapter, 'nimble-mcp') }}
+        LIMIT 1 BY event_id
+    )
+    GROUP BY url, field
+    ORDER BY rate DESC, drifts DESC
+    LIMIT 10
+
+TYPE ENDPOINT

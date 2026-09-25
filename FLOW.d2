@@ -1,11 +1,11 @@
-# Pinned Evidence Vault — as built (2026-09-24 night)
+# Veto — as built (2026-09-24 night)
 # Render: d2 FLOW.d2 FLOW.svg   (or paste into https://play.d2lang.com)
 
 direction: right
 
 title: |md
-  # Pinned Evidence Vault
-  The agent works, Nimble grounds it while it works, the Vault verifies the basis when it ships.
+  # Veto
+  The agent works, Nimble grounds it while it works, Veto verifies the basis when it ships.
 | {near: top-center}
 
 classes: {
@@ -31,7 +31,7 @@ collect: 1. Collect — 18:00 T0 {
   adapter: "adapters.ts\ngetAdapter()" {class: det}
   mock: "MockAdapter\npages.txt (5 fixtures)" {class: det}
   nimble: "NimbleMCPAdapter\nJSON-RPC over Streamable HTTP\ninitialize → tools/list → tools/call" {class: ext}
-  adapter -> mock: VAULT_ADAPTER=mock
+  adapter -> mock: VETO_ADAPTER=mock
   adapter -> nimble: "--real"
 }
 
@@ -108,7 +108,7 @@ tinybird: "Tinybird (read path only, R16)\nEvents API → vault_events\npipe vau
 evidence <-> tinybird: "sync (idempotent) + compare"
 
 # ---------- Skill ----------
-skill: "vault/skill/SKILL.md\ncite-pins Agent Skill (Nimble format)\ndescribes only what is built (R15)" {class: ext}
+skill: "veto/skill/SKILL.md\ncite-pins Agent Skill (Nimble format)\ndescribes only what is built (R15)" {class: ext}
 skill -> pin: documents {style.stroke-dash: 4}
 skill -> gate: documents {style.stroke-dash: 4}
 

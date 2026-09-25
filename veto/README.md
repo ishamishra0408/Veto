@@ -1,4 +1,4 @@
-# Pinned Evidence Vault — Phase 1
+# Veto — Phase 1
 
 The agent pins every fact (sha256 + timestamp), cites pins not pages, and revalidates before ship.
 
@@ -6,7 +6,7 @@ Runtime: **Node ≥ 22.18, TypeScript**, run directly (native type stripping). S
 
 | File | Role |
 |---|---|
-| `adapters.ts` | `FetchAdapter` seam; `getAdapter()` picks impl via `VAULT_ADAPTER` (`mock` default, `nimble` = Phase 3 stub) |
+| `adapters.ts` | `FetchAdapter` seam; `getAdapter()` picks impl via `VETO_ADAPTER` (`mock` default, `nimble` = Phase 3 stub) |
 | `pages.txt` | 5 fixtures: url, title, price, stock, rating, seller |
 | `pins.ts` | SQLite `pins.db`; `pin_id = sha256(canonical fact)[:12]`; `INSERT OR IGNORE` keeps first `fetched_at` |
 | `report.ts` | fetch → pin 5 facts/page → `report.md` citing `[pin:…]` only |
@@ -14,7 +14,7 @@ Runtime: **Node ≥ 22.18, TypeScript**, run directly (native type stripping). S
 | `redproofs_p1.sh` | R1 seam, R2 tamper, R3 no-URL proofs |
 
 ```bash
-cd vault && npm install && npm run typecheck && npm run redproofs
+cd veto && npm install && npm run typecheck && npm run redproofs
 ```
 
 ## Phase 2 — revalidate gate
@@ -27,7 +27,7 @@ cd vault && npm install && npm run typecheck && npm run redproofs
 | `redproofs_p2.sh` | R4–R8 |
 
 ```bash
-bash vault/redproofs_p1.sh && bash vault/redproofs_p2.sh
+bash veto/redproofs_p1.sh && bash veto/redproofs_p2.sh
 ```
 
 **G1:** `report.ts` alone writes `report.draft.md` only. `ship.ts` is the single path that writes `report.md`, and it only does so after the gate.

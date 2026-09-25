@@ -14,7 +14,12 @@ export interface Drift {
   new_value: string;
 }
 
+export interface Check { url: string; field: Field; drifted: number }
+
 interface Basis {
+  gate_ms: number; // T1: wall time of this revalidation
+  checks: Check[]; // one per cited fact actually compared
+
   pin_hashes: string[];
   basis_window: { from: string; to: string } | null;
   checked_at: string;
@@ -26,6 +31,8 @@ export type Verdict =
   | ({ status: "UNREACHABLE"; ship: false; error: string } & Basis);
 
 export async function revalidate(dbPath: string, adapter: FetchAdapter, basisPinIds: string[]): Promise<Verdict> {
+  const t0 = performance.now();
+  let checks: Check[] = [];
   const db = new DatabaseSync(dbPath, { readOnly: true });
   const get = db.prepare("SELECT * FROM pins WHERE pin_id = ?");
   const pins = basisPinIds.map((id) => get.get(id) as unknown as Pin | undefined);
@@ -37,11 +44,13 @@ export async function revalidate(dbPath: string, adapter: FetchAdapter, basisPin
     pin_hashes: found.map((p) => p.sha256),
     basis_window: stamps.length ? { from: stamps[0], to: stamps[stamps.length - 1] } : null,
     checked_at: new Date().toISOString(),
+    gate_ms: Math.round(performance.now() - t0),
+    checks,
   });
   const refuse = (error: string): Verdict => ({ status: "UNREACHABLE", ship: false, error, ...basis() });
 
   if (basisPinIds.length === 0) return refuse("empty basis: nothing cited, nothing to revalidate");
-  if (found.length !== pins.length) return refuse("basis cites a pin absent from the vault");
+  if (found.length !== pins.length) return refuse("basis cites a pin absent from the veto");
 
   // Re-fetch every source concurrently. Any failure refuses the ship (fail closed), reported in page order.
   const urls = [...new Set(found.map((p) => parseFact(p.fact_text).url))];
@@ -62,6 +71,8 @@ export async function revalidate(dbPath: string, adapter: FetchAdapter, basisPin
         old_value: value, new_value: parseFact(newFact).value });
     }
   }
+  const driftedIds = new Set(drifted.map((d) => d.pin_id));
+  checks = found.map((p) => { const f = parseFact(p.fact_text); return { url: f.url, field: f.field, drifted: driftedIds.has(p.pin_id) ? 1 : 0 }; });
   return drifted.length
     ? { status: "DRIFTED", ship: false, drifted, ...basis() }
     : { status: "CLEAN", ship: true, ...basis() };

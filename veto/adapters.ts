@@ -16,6 +16,8 @@ export interface FetchResult {
 export abstract class FetchAdapter {
   abstract readonly name: string;
   abstract fetch(url: string): Promise<FetchResult>;
+  // Raw page text from the last fetch of `url`, when the adapter has one (used only at ingest, for L1).
+  raw(_url: string): string | undefined { return undefined; }
 }
 
 type Fixture = Omit<FetchResult, "url" | "fetched_at">;
@@ -71,17 +73,24 @@ function findKey(node: Json, keys: string[], depth = 0): Json {
 }
 
 // Canonical extracted values: the same fact must hash the same wherever on the page it was read.
-const clean = (v: string) =>
+export const clean = (v: string) =>
   v.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // markdown links -> text
     .replace(/https?:\/\/\S+/g, "") // bare URLs never enter a fact
     .replace(/\s+and (ships|fulfilled) (from|by) .*$/i, "")
     .replace(/^ships from and sold by\s+/i, "")
     .replace(/[\s.]+$/, "")
     .trim();
-const canonStock = (v: string) =>
-  /out of stock|unavailable|sold out/i.test(v) ? "Out of stock" : /only \d+ left|low stock/i.test(v) ? "Low stock" : /in stock/i.test(v) ? "In stock" : clean(v);
+export const canonStock = (v: string) =>
+  /out of stock|unavailable|sold out/i.test(v) ? "Out of stock" : /(only )?\d+ left|low stock/i.test(v) ? "Low stock" : /in stock/i.test(v) ? "In stock" : clean(v);
 
 // Map a Nimble tools/call result onto FetchResult. Missing field -> throw (fail closed); never invent a value.
+export function markdownOf(result: Json): string {
+  const texts: string[] = (result?.content ?? []).filter((c: Json) => c?.type === "text").map((c: Json) => c.text);
+  const docs: Json[] = [];
+  for (const t of texts) try { docs.push(JSON.parse(t)); } catch { /* plain text */ }
+  return docs.map((d) => (typeof d?.content === "string" ? d.content : "")).join("\n") || texts.join("\n");
+}
+
 export function toFetchResult(url: string, result: Json, fetched_at: string): FetchResult {
   const texts: string[] = (result?.content ?? []).filter((c: Json) => c?.type === "text").map((c: Json) => c.text);
   const docs: Json[] = [result?.structuredContent];
@@ -110,6 +119,9 @@ class NimbleMCPAdapter extends FetchAdapter {
   private session: string | null = null;
   private ready: Promise<string> | null = null;
   private seq = 0;
+  private rawByUrl = new Map<string, string>();
+
+  raw(url: string): string | undefined { return this.rawByUrl.get(url); }
 
   private key(): string {
     const k = process.env.NIMBLE_API_KEY;
@@ -149,7 +161,7 @@ class NimbleMCPAdapter extends FetchAdapter {
     const info = await this.rpc("initialize", {
       protocolVersion: "2025-06-18",
       capabilities: {},
-      clientInfo: { name: "pinned-evidence-vault", version: "0.1.0" },
+      clientInfo: { name: "pinned-evidence-veto", version: "0.1.0" },
     });
     await this.rpc("notifications/initialized", {}, true);
     trace(`session ${this.session ?? "(stateless)"} · server ${info?.serverInfo?.name ?? "?"} ${info?.serverInfo?.version ?? ""}`);
@@ -165,7 +177,7 @@ class NimbleMCPAdapter extends FetchAdapter {
     const tool = await (this.ready ??= this.init());
     const args = {
       url, output_format: "markdown", country: "US", locale: "en",
-      context: "Pinned Evidence Vault fetches a retail product page to pin price facts before revalidating a pricing report for drift.",
+      context: "Veto fetches a retail product page to pin price facts before revalidating a pricing report for drift.",
       ...JSON.parse(process.env.NIMBLE_EXTRACT_ARGS ?? "{}"),
     };
     const t0 = Date.now();
@@ -173,20 +185,21 @@ class NimbleMCPAdapter extends FetchAdapter {
     const result = await this.rpc("tools/call", { name: tool, arguments: args });
     if (result?.isError) throw new Error(`${tool} failed for ${url}: ${JSON.stringify(result.content).slice(0, 200)}`);
     const r = toFetchResult(url, result, new Date().toISOString());
+    this.rawByUrl.set(url, markdownOf(result));
     trace(`  ← ${Date.now() - t0}ms · ${r.title} · $${r.price.toFixed(2)} · ${r.stock}`);
     return r;
   }
 }
 
-// Page list: VAULT_PAGES (default pages.txt). First column is the URL.
-export function pageUrls(file = process.env.VAULT_PAGES ?? "pages.txt"): string[] {
+// Page list: VETO_PAGES (default pages.txt). First column is the URL.
+export function pageUrls(file = process.env.VETO_PAGES ?? "pages.txt"): string[] {
   const urls = dataLines(new URL(`./${file}`, import.meta.url)).map((l) => l.split("|")[0].trim());
   if (!urls.length) throw new Error(`${file} lists no URLs`);
   return urls;
 }
 
-export function getAdapter(kind = process.env.VAULT_ADAPTER ?? "mock"): FetchAdapter {
+export function getAdapter(kind = process.env.VETO_ADAPTER ?? "mock"): FetchAdapter {
   if (kind === "mock") return new MockAdapter();
   if (kind === "nimble") return new NimbleMCPAdapter();
-  throw new Error(`unknown VAULT_ADAPTER: ${kind}`);
+  throw new Error(`unknown VETO_ADAPTER: ${kind}`);
 }

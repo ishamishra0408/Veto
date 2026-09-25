@@ -1,4 +1,4 @@
-# Pinned Evidence Vault — Frozen Spec
+# Veto — Frozen Spec
 
 **Status:** LOCKED 2026-09-24 by Devansh. Changes after this point are additive corrections only, approved by Devansh.
 **Addendum 2026-09-24 (evening):** Yaniv's Sep 22 Nimble post and Sep 23 Trust post read live. Seam sharpened on the time axis; drift defined as world drift; Nimble MCP facts pinned (server URL, Streamable HTTP, `nimble_` tool prefixes, plugin steer). Additive only — no scope change except the two flagged items (plugin in first 60s, one-file Agent Skill).
@@ -14,9 +14,9 @@
 **Event:** Long Horizon Agents Hackathon, Sep 25 2026. Submission deadline 4:30 PM PT. ~5h build window.
 
 ## One-liner
-Everyone demos what their agent remembers. We demo what ours refuses: the Vault pins every fact with hash + timestamp, cites pins not pages, and deterministically revalidates before ship — it will not ship the contradiction.
+Everyone demos what their agent remembers. We demo what ours refuses: Veto pins every fact with hash + timestamp, cites pins not pages, and deterministically revalidates before ship — it will not ship the contradiction.
 
-**Thesis:** trust is a property of the moment of action, not the moment of retrieval. Nimble verifies the claim while the agent works; the Vault verifies the basis when the work ships. With the agent in the loop: the agent works, Nimble grounds it while it works, the Vault verifies the basis when it ships.
+**Thesis:** trust is a property of the moment of action, not the moment of retrieval. Nimble verifies the claim while the agent works; Veto verifies the basis when the work ships. With the agent in the loop: the agent works, Nimble grounds it while it works, Veto verifies the basis when it ships.
 
 ## The seam (Nimble) — read against everything they've published
 
@@ -28,21 +28,21 @@ Nimble's public trust story, in order. We built the one stage it doesn't cover.
 - **agent-skills README:** "Stale signals are dropped, not reported."
 - **/monitor (beta):** tells you the web changed.
 
-**Where the Vault sits:** their stack ends when the run ends. Grounding verifies the claim while the agent works; the Vault verifies the basis when the work ships — the 6pm-fetch → 9pm-drop → 6am-ship gap lives entirely after their last check. /monitor watches the world; the Vault watches the report's basis — and stops the ship. Nimble drops stale signals; the Vault keeps the pinned basis and refuses to ship on it.
+**Where Veto sits:** their stack ends when the run ends. Grounding verifies the claim while the agent works; Veto verifies the basis when the work ships — the 6pm-fetch → 9pm-drop → 6am-ship gap lives entirely after their last check. /monitor watches the world; Veto watches the report's basis — and stops the ship. Nimble drops stale signals; Veto keeps the pinned basis and refuses to ship on it.
 
 **Definitions that keep us honest:**
 - **Drift = world drift** (the world moved under a fixed pinned basis). Never "pipeline drift": Nimble's "no data drift" claim refers to scrapers not breaking. Do not contradict it; use their own "agents drift" sentence instead.
 - Their FAQ concedes grounding "cannot guarantee that every source is itself correct" — and it cannot guarantee a source is still correct *later*. That later is the stage we built.
-- Domain authority: **Git** — content-addressed pins (hash = identity), drift detected by re-hash. "What git did for code, the Vault does for evidence."
+- Domain authority: **Git** — content-addressed pins (hash = identity), drift detected by re-hash. "What git did for code, Veto does for evidence."
 
 ## Villain (retail pricing world — Nimble's biggest-customer segment)
 A Fortune-10 retailer's pricing agent works overnight against competitor prices fetched at 6pm. At 9pm the competitor drops 15%. The 6am report recommends matching a price that no longer exists — millions of SKUs repriced against a ghost. The model did everything right. The data moved.
 - Opening flash, in Nimble's own words (attributed on screen): "they often produce outdated or inaccurate results, and it's rarely because the reasoning model broke. It's because the data fueling the model stopped reflecting reality." — Tom Shaked, Nimble blog, Nov 20 2025. CEO version (TechCrunch, Feb 2026): "most production AI fails aren't because the models are not good enough — it's because of a data failure." The line is theirs; the mechanism is ours.
 - TechCrunch (Feb 2026) names Fortune-10 retailers among Nimble's customers — this licenses the villain's segment as the world, not a claimed incident.
-- Mature-domain mirror (mechanism, not vibe): **Mata v. Avianca (2023)** — the brief cited six cases; none existed. The Vault is the mechanism that makes that impossible.
+- Mature-domain mirror (mechanism, not vibe): **Mata v. Avianca (2023)** — the brief cited six cases; none existed. Veto is the mechanism that makes that impossible.
 
 ## Mechanism
-1. **Collect** — Nimble **MCP server** (agent's tool interface; visible in first 60s of demo): `https://mcp.nimbleway.com/mcp`, Streamable HTTP (current per docs.nimbleway.com; the Nov 2025 blog shows the older /sse endpoint — use the docs), tools prefixed `nimble_` (Search, Extract, Map, Crawl, Extract Template, Web Search Agent). Nimble's own docs steer toward the plugin — the demo's first 60s shows `/plugin install nimble`, then the MCP tool call. The built seam is the MCP adapter (direct tool calls). Nimble's zero-maintenance pipeline is the villain's *narrative* accomplice — it runs silently and never notices drift — but no pipeline is configured in this build; the Vault is the witness.
+1. **Collect** — Nimble **MCP server** (agent's tool interface; visible in first 60s of demo): `https://mcp.nimbleway.com/mcp`, Streamable HTTP (current per docs.nimbleway.com; the Nov 2025 blog shows the older /sse endpoint — use the docs), tools prefixed `nimble_` (Search, Extract, Map, Crawl, Extract Template, Web Search Agent). Nimble's own docs steer toward the plugin — the demo's first 60s shows `/plugin install nimble`, then the MCP tool call. The built seam is the MCP adapter (direct tool calls). Nimble's zero-maintenance pipeline is the villain's *narrative* accomplice — it runs silently and never notices drift — but no pipeline is configured in this build; Veto is the witness.
 2. **Pin** — at ingest, every fact pinned: `{fact, sha256, fetched_at}`. Agent cites pins, not pages. The cite-pins rule ships as a one-file Agent Skill in the repo (Nimble's own publish format) — "best use" on two surfaces.
 3. **Reason** — a Liquid LFM2.5 agent (`liquid/lfm-2.5-2.6b:free` via OpenRouter — see C2) reasons against the pinned basis and writes the pin-cited report. Generator/verifier: the agent proposes, the deterministic gate disposes — the agent is never inside the gate, and the trust guarantee never depends on it. Deterministic template report remains as fallback if the model call fails.
 4. **Revalidate (deterministic gate, no LLM inside it)** — before ship: re-fetch → re-hash → compare. Pure function.
@@ -94,7 +94,7 @@ Dashboards, Nimble pipeline configuration, second sponsor pitch, ML metrics, any
 - No unmeasured efficiency claims (no "10x faster", no token math without measurement).
 
 ## Pre-registration (before building)
-Hypothesis: Yaniv rewards (a) his data-failure thesis made tangible, (b) depth on Nimble's agent-native surfaces — the plugin install on screen, MCP tools in the first 60s, the cite-pins rule as a one-file Agent Skill in his team's format, (c) production-robustness thinking (fail-closed, deterministic gate). The demo's winning moment is the refusal, not the recall. Pre-registered seam defenses: grounding is fetch-time, the Vault is ship-time; /monitor watches the world, the Vault watches the report's basis; our drift is world drift, never pipeline drift. We will score the outcome against this after the event.
+Hypothesis: Yaniv rewards (a) his data-failure thesis made tangible, (b) depth on Nimble's agent-native surfaces — the plugin install on screen, MCP tools in the first 60s, the cite-pins rule as a one-file Agent Skill in his team's format, (c) production-robustness thinking (fail-closed, deterministic gate). The demo's winning moment is the refusal, not the recall. Pre-registered seam defenses: grounding is fetch-time, Veto is ship-time; /monitor watches the world, Veto watches the report's basis; our drift is world drift, never pipeline drift. We will score the outcome against this after the event.
 
 ## Build phases (rough — build-prompt packages these into paste blocks)
 - P0: Nimble MCP wiring + one pipeline fetch, visible on screen.

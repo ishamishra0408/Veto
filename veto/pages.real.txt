@@ -1,5 +1,5 @@
 # Live product URLs for demo.sh --real. Same 5 products as pages.txt, on Amazon (Best Buy timed out via Nimble).
-# Sourced 2026-09-24 via web search of amazon.com; the Vault never invents a URL.
+# Sourced 2026-09-24 via web search of amazon.com; Veto never invents a URL.
 https://www.amazon.com/dp/B09XS7JWHH
 https://www.amazon.com/dp/B0CCZ1L489
 https://www.amazon.com/dp/B0DGJC52FP

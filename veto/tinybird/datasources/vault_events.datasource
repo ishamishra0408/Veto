@@ -1,0 +1,23 @@
+DESCRIPTION >
+    Veto evidence event stream (read path only; local pins.db / receipts.jsonl / runs.jsonl are the source of truth).
+    One row per pin, receipt, run or per-fact check, tagged with the veto session. Streamed live via the Events API
+    and re-synced idempotently (dedup by kind + event_id).
+
+SCHEMA >
+    `session` String `json:$.session`,
+    `kind` LowCardinality(String) `json:$.kind`,
+    `event_id` String `json:$.event_id`,
+    `ts` DateTime64(3) `json:$.ts`,
+    `n_drifted` UInt32 `json:$.n_drifted`,
+    `verdict` String `json:$.verdict`,
+    `mode` String `json:$.mode`,
+    `shipped` UInt8 `json:$.shipped`,
+    `rebased` UInt8 `json:$.rebased`,
+    `adapter` String `json:$.adapter` DEFAULT '',
+    `gate_ms` UInt32 `json:$.gate_ms` DEFAULT 0,
+    `url` String `json:$.url` DEFAULT '',
+    `field` String `json:$.field` DEFAULT '',
+    `drifted` UInt8 `json:$.drifted` DEFAULT 0
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "session, kind, event_id"
