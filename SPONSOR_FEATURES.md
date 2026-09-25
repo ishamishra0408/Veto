@@ -4,7 +4,7 @@
 | Hero feature | How the build uses it | Where | Built? |
 |---|---|---|---|
 | MCP server (`mcp.nimbleway.com/mcp`, Streamable HTTP, `nimble_`-prefixed tools) | Collection layer; live fetches visible in the first 60s | Phase 3 adapter, Phase 4 live key | Y |
-| Plugin (`/plugin install nimble`) | Not used (C3 decided): Veto calls Nimble's MCP server directly from its own code; the plugin is a Claude Code surface outside Veto's runtime. The first 60s show Veto's own MCP session instead | — | N (by design) |
+| Plugin (`/plugin install nimble`) | Not used by the product: Veto calls Nimble's MCP server directly from its own code; the plugin is a Claude Code surface outside Veto's runtime. Whether it is shown on stage is C3 — **pending Devansh** (Isha's position: don't show it; open with Veto's own MCP session) | — | N (product) · stage: pending |
 | Search (`nimble_search`) | Planner re-plan: a lost competitor page (unreachable or no extractable price) is replaced by a comparable listing found by search, then corroborated and pinned — used live in the final run | veto/adapters.ts, veto/report.ts, R25 | Y |
 | Extract (`nimble_extract`) | The 5 live Amazon product pages in the villain scenario, fetched concurrently (~10s) | adapters.ts / scenario.ts | Y |
 | Extract Template | Tried: `best_buy_pdp` timed out (463s), `amazon_pdp` returned no parsed results — not used (C1) | — | N |
