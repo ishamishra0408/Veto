@@ -1,0 +1,10 @@
+{
+  "generated": "checks/diagram-contrast.mjs --index",
+  "projects": [
+    {
+      "dir": "veto",
+      "name": "Veto",
+      "description": "A deterministic ship-time gate for agent reports: pin facts by hash, cite pins, re-validate the basis, refuse drift with a receipt."
+    }
+  ]
+}

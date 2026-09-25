@@ -1,0 +1,19 @@
+{
+  "source": "https://docs.nimbleway.com/home",
+  "scheme": "dark",
+  "read_at": "2026-09-25",
+  "bg": "#000000",
+  "text": "#FFFFFF",
+  "accent": "237 198 2",
+  "accentHi": "237 198 2",
+  "accentSoft": null,
+  "accentGlow": null,
+  "font": "Inter",
+  "vars": {
+    "--twoslash-highlighted-border": "#ffa50080",
+    "--twoslash-highlighted-bg": "#ffa50030",
+    "--primary": "237 198 2",
+    "--primary-light": "237 198 2",
+    "--primary-dark": "237 198 2"
+  }
+}

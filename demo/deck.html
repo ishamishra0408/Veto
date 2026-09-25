@@ -1,0 +1,454 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Veto Demo Deck</title>
+<link rel="icon" href="data:,">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,700;0,9..40,800;1,9..40,400&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* PALETTE — paste the block scripts/palette.mjs prints for the organizer URL, and keep
+   its "read from <url>" comment. Tokens every slide type uses: --bg --text --accent --accent-hi
+   --accent-soft --accent-glow. The rest (--panel, --line, --muted, --critical, --ok) are neutrals. */
+:root {
+  /* Palette read from https://docs.nimbleway.com/home (dark scheme) on 2026-09-25: --bg #000000, --text #FFFFFF;
+     accent from https://www.nimbleway.com/pricing on 2026-09-25: --nimble-primary #7c8dff, --primary-light #9eabff; font DM Sans. */
+  --bg: #000000;
+  --panel: #161618;
+  --panel-2: #1F1F23;
+  --line: #2C2C31;
+  --text: #FFFFFF;
+  --muted: #A9A4A2;
+  --faint: #6F6B6A;
+  --accent: #7C8DFF;
+  --accent-hi: #9EABFF;
+  --accent-soft: rgba(124, 141, 255, .12);
+  --accent-glow: rgba(124, 141, 255, .35);
+  --critical: #FF5A4E;
+  --critical-soft: rgba(255, 90, 78, .14);
+  --ok: #5BD68A;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #000; color: var(--text); font-family: "DM Sans", system-ui, sans-serif; overflow: hidden; }
+body.idle { cursor: none; }
+
+/* A fixed 1920x1080 stage, scaled to fit whatever window records it. */
+#viewport { position: fixed; inset: 0; }
+#stage { width: 1920px; height: 1080px; position: absolute; left: 50%; top: 50%; background: var(--bg); transform-origin: center; transform: translate(-50%, -50%); overflow: hidden; }
+.slide { position: absolute; inset: 0; padding: 110px 140px; display: flex; flex-direction: column; justify-content: center; opacity: 0; pointer-events: none; transition: opacity .5s ease; }
+.slide.active { opacity: 1; pointer-events: auto; }
+.slide::before { content: ""; position: absolute; inset: 0; background: radial-gradient(900px 600px at 85% 110%, rgba(124,141,255,.07), transparent 70%); pointer-events: none; }
+
+/* Stepped reveals: anything with data-step appears when the slide reaches that step. */
+[data-step] { opacity: 0; transform: translateY(18px); transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1); }
+[data-step].in { opacity: 1; transform: none; }
+
+.eyebrow { font: 500 26px/1 "DM Mono", ui-monospace, monospace; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); margin-bottom: 36px; }
+h1 { font-weight: 800; font-size: 120px; line-height: 1.02; letter-spacing: -.035em; }
+h2 { font-weight: 700; font-size: 84px; line-height: 1.06; letter-spacing: -.03em; }
+.accent { color: var(--accent); }
+.muted { color: var(--muted); }
+.mono { font-family: "DM Mono", ui-monospace, monospace; }
+.corner { position: absolute; left: 140px; bottom: 56px; font: 400 22px/1 "DM Mono", monospace; color: var(--faint); letter-spacing: .06em; }
+.corner-r { position: absolute; right: 140px; bottom: 56px; font: 400 22px/1 "DM Mono", monospace; color: var(--faint); }
+
+/* ---------- Slide 0: title ---------- */
+.mark { width: 96px; height: 96px; border-radius: 22px; background: var(--accent-soft); border: 2px solid var(--accent); display: grid; place-items: center; margin-bottom: 48px; box-shadow: 0 0 60px var(--accent-glow); }
+.mark svg { width: 52px; height: 52px; }
+
+/* ---------- Slide 1: legacy CAB ---------- */
+.legacy { display: grid; grid-template-columns: 560px 1fr; gap: 56px; align-items: start; margin-top: 12px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 18px; padding: 30px 34px; }
+.invite .when { font: 500 22px/1 "DM Mono", monospace; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.invite h3 { font-size: 40px; font-weight: 700; margin: 18px 0 22px; letter-spacing: -.02em; }
+.invite .row { display: flex; justify-content: space-between; font-size: 26px; color: var(--muted); padding: 14px 0; border-top: 1px solid var(--line); }
+.invite .row b { color: var(--text); font-weight: 600; }
+.recur { display: inline-block; margin-top: 18px; font: 500 20px/1 "DM Mono", monospace; color: var(--faint); }
+.thread { display: flex; flex-direction: column; gap: 18px; }
+.mail { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 22px 28px; font-size: 25px; line-height: 1.4; }
+.mail .hdr { display: flex; justify-content: space-between; font: 400 20px/1.2 "DM Mono", monospace; color: var(--faint); margin-bottom: 10px; }
+.mail .subj { font-weight: 700; font-size: 26px; margin-bottom: 6px; }
+.finding { border-color: rgba(255,90,78,.5); background: linear-gradient(0deg, var(--critical-soft), var(--critical-soft)), var(--panel); }
+.sev { display: inline-block; font: 700 18px/1 "DM Mono", monospace; letter-spacing: .1em; padding: 7px 10px; border-radius: 6px; background: var(--critical); color: #1a0705; margin-right: 12px; vertical-align: 3px; }
+.tag-info { display: inline-block; font: 500 18px/1 "DM Mono", monospace; letter-spacing: .08em; padding: 7px 10px; border-radius: 6px; border: 1px solid var(--faint); color: var(--muted); margin-left: 10px; vertical-align: 3px; }
+.lgtm { position: relative; }
+.stamp { position: absolute; right: 48px; top: 62%; transform: translateY(-50%) rotate(-8deg); font: 800 44px/1 "DM Sans"; letter-spacing: .08em; color: var(--accent); border: 5px solid var(--accent); border-radius: 10px; padding: 10px 20px; opacity: .92; }
+
+/* ---------- Slide 2: the five flashes ---------- */
+.flash-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 28px; }
+.flash-head h2 { font-size: 72px; }
+.meter { display: flex; align-items: center; gap: 18px; font: 500 22px/1 "DM Mono", monospace; color: var(--muted); letter-spacing: .08em; }
+.meter .bar { width: 320px; height: 10px; border-radius: 5px; background: var(--panel-2); overflow: hidden; }
+.meter .fill { height: 100%; width: 0; background: linear-gradient(90deg, var(--accent), var(--critical)); transition: width .6s ease; }
+.pile { position: relative; flex: 1; }
+.flash { position: absolute; width: 1180px; background: #fff; border-radius: 14px; box-shadow: 0 30px 80px rgba(0,0,0,.6), 0 0 0 1px rgba(255,255,255,.06); overflow: hidden; }
+.flash .crop { position: relative; overflow: hidden; background: #fff; }
+.flash .crop img { position: absolute; display: block; }
+.flash .src { background: var(--panel); color: var(--text); font: 500 21px/1.3 "DM Mono", monospace; padding: 14px 22px; display: flex; justify-content: space-between; gap: 20px; border-top: 2px solid var(--accent); }
+.flash .src span:last-child { color: var(--muted); }
+.flash[data-step] { transform: translateY(40px) scale(.96) rotate(var(--r, 0deg)); }
+.flash[data-step].in { transform: rotate(var(--r, 0deg)); }
+/* Only the newest flash is read; the ones beneath recede so the pile reads as escalation, not clutter. */
+.flash.past { filter: brightness(.38) saturate(.6); }
+.flash { transition: opacity .55s ease, transform .55s cubic-bezier(.2,.7,.2,1), filter .5s ease; }
+
+/* ---------- Slide 3/4: the turn ---------- */
+.stack > * + * { margin-top: 34px; }
+.big-quote { font-size: 96px; font-weight: 800; letter-spacing: -.035em; line-height: 1.04; }
+.pipeline { display: flex; align-items: center; margin-top: 90px; gap: 0; }
+.stage-box { width: 250px; height: 118px; border-radius: 16px; background: var(--panel); border: 1px solid var(--line); display: grid; place-items: center; font-size: 34px; font-weight: 700; position: relative; }
+.stage-box.spec { border: 2px solid var(--accent); color: var(--accent); background: var(--accent-soft); }
+.conn { width: 150px; height: 2px; background: var(--line); position: relative; }
+.gate { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: 20px; height: 84px; border-radius: 5px; background: var(--ok); box-shadow: 0 0 18px rgba(91,214,138,.4); }
+.gate.missing { background: transparent; border: 3px dashed var(--accent); box-shadow: 0 0 40px var(--accent-glow); width: 34px; }
+.gate-label { position: absolute; top: 72px; left: 50%; transform: translateX(-50%); white-space: nowrap; font: 500 20px/1 "DM Mono", monospace; color: var(--muted); }
+.gate.missing + .gate-label { color: var(--accent); font-weight: 700; font-size: 26px; }
+
+/* ---------- Slide 5: the seam ---------- */
+.seam { display: grid; grid-template-columns: 1fr 1fr; gap: 70px; align-items: center; }
+.doc { border-radius: 16px; overflow: hidden; border: 1px solid var(--line); box-shadow: 0 30px 80px rgba(0,0,0,.55); }
+.doc .crop { position: relative; overflow: hidden; }
+.doc .crop img { position: absolute; display: block; }
+.doc .src { background: var(--panel); font: 500 20px/1.3 "DM Mono", monospace; color: var(--muted); padding: 14px 22px; border-top: 2px solid var(--accent); }
+.pull { font-size: 54px; font-weight: 700; line-height: 1.16; letter-spacing: -.02em; border-left: 8px solid var(--accent); padding-left: 36px; }
+.pull em { font-style: normal; color: var(--accent); }
+
+/* ---------- Slide 6: hand-off to the app ---------- */
+.chg { display: inline-flex; align-items: center; gap: 26px; background: var(--panel); border: 1px solid rgba(255,90,78,.5); border-radius: 18px; padding: 30px 38px; margin-top: 50px; font-size: 38px; font-weight: 700; }
+.chg .id { font-family: "DM Mono", monospace; color: var(--accent); }
+
+/* ---------- D2 diagrams: rendered from demo/diagrams/*.d2, never drawn by hand ---------- */
+img.d2 { display: block; max-width: 100%; height: auto; }
+.d2-src { margin-top: 12px; font: 400 18px/1 "DM Mono", monospace; color: var(--faint); letter-spacing: .04em; }
+
+/* ---------- Slide 7/8: close ---------- */
+.tagline { font-size: 88px; font-weight: 800; letter-spacing: -.035em; line-height: 1.05; }
+.sub { font-size: 40px; color: var(--muted); line-height: 1.35; max-width: 1400px; }
+.arrowline { display: flex; align-items: center; gap: 30px; font-size: 40px; font-weight: 600; }
+.pill { padding: 14px 26px; border-radius: 999px; border: 1px solid var(--line); background: var(--panel); }
+.pill.hot { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.final { font-size: 150px; font-weight: 800; letter-spacing: -.045em; line-height: 1; }
+.final .accent { text-shadow: 0 0 80px var(--accent-glow); }
+
+/* ---------- Chrome: progress, notes, help ---------- */
+#progress { position: absolute; left: 0; bottom: 0; height: 4px; background: var(--accent); transition: width .4s ease; }
+body.recording #progress { display: none; }
+#notes { position: fixed; left: 0; right: 0; bottom: 0; max-height: 38vh; overflow: auto; background: rgba(14,14,15,.96); border-top: 2px solid var(--accent); padding: 20px 28px 26px; font-size: 17px; line-height: 1.55; color: var(--text); display: none; z-index: 5; }
+#notes.show { display: block; }
+#notes .meta { font: 500 13px/1 "DM Mono", monospace; color: var(--accent); letter-spacing: .1em; text-transform: uppercase; margin-bottom: 10px; }
+#notes .caveat { margin-top: 12px; color: var(--muted); font-size: 15px; }
+#help { position: fixed; top: 16px; right: 16px; background: rgba(23,23,26,.96); border: 1px solid var(--line); border-radius: 12px; padding: 16px 20px; font: 14px/1.8 "DM Mono", monospace; color: var(--muted); z-index: 6; display: none; }
+#help.show { display: block; }
+#help b { color: var(--accent); font-weight: 500; display: inline-block; min-width: 88px; }
+
+/* ---------- Presenter window ---------- */
+body.presenter { overflow: auto; background: var(--bg); }
+body.presenter #viewport { display: none; }
+#presenter { display: none; padding: 32px 40px; max-width: 1100px; margin: 0 auto; }
+body.presenter #presenter { display: block; }
+#presenter .top { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 18px; font: 500 16px/1 "DM Mono", monospace; color: var(--muted); }
+#presenter .beat { font-size: 30px; font-weight: 700; margin-bottom: 8px; }
+#presenter .script { font-size: 26px; line-height: 1.55; margin: 18px 0; }
+#presenter .caveat { font-size: 17px; color: var(--muted); border-left: 3px solid var(--accent); padding-left: 14px; margin-top: 12px; }
+#presenter .next { margin-top: 30px; font-size: 18px; color: var(--faint); }
+#presenter .clock { font: 700 40px/1 "DM Mono", monospace; color: var(--accent); }
+#presenter button { background: var(--panel); color: var(--text); border: 1px solid var(--line); border-radius: 8px; padding: 10px 18px; font: 500 16px "DM Sans"; cursor: pointer; margin-right: 8px; }
+#presenter button:hover { border-color: var(--accent); color: var(--accent-hi); }
+</style>
+</head>
+<body>
+<div id="viewport"><div id="stage">
+  <!-- TITLE: hold on this while the recorder starts -->
+  <section class="slide" data-beat="Title card (pre-roll)" data-time="—">
+    <div class="eyebrow">Long Horizon Agents Hackathon · Best use of Nimble</div>
+    <h1>Veto</h1>
+    <p class="sub" style="margin-top:28px">Everyone demos what their agent remembers. We demo what ours refuses. <span class="accent">Built on Nimble.</span></p>
+    <script type="text/notes">No narration. Hold here while the recorder starts, then press → to begin at 0:00.</script>
+  </section>
+
+  <!-- RECOGNITION: two verified flashes, in Nimble's own words -->
+  <section class="slide" data-beat="Recognition · in Nimble's words" data-time="0:00–0:20" style="justify-content:flex-start; padding-top:90px">
+    <div class="flash-head">
+      <div><div class="eyebrow" style="margin-bottom:18px">Nov 2025 → Feb 2026</div><h2>Not our line. Theirs.</h2></div>
+      <div class="meter"><span>THEIR WORDS</span><div class="bar"><div class="fill" id="stakes"></div></div><span id="stakes-n">0/2</span></div>
+    </div>
+    <div class="pile">
+      <figure class="flash" data-step="1" data-w="1180" style="left:0; top:0; --r:-1.2deg">
+        <div class="crop" data-crop=".365,.715,.52,.16" data-img="2880x1800"><img src="sources/2-nimble-mcp-reality.png" alt="It's because the data fueling the model stopped reflecting reality."></div>
+        <figcaption class="src"><span>Nimble blog · Tom Shaked</span><span>Nov 20, 2025</span></figcaption>
+      </figure>
+      <figure class="flash" data-step="2" data-w="1180" style="left:300px; top:300px; --r:.8deg">
+        <div class="crop" data-crop=".13,.675,.51,.26" data-img="2880x1800"><img src="sources/1-techcrunch-knorovich.png" alt="most production AI fails aren't because the models are not good enough — it's because of a data failure"></div>
+        <figcaption class="src"><span>TechCrunch · Uri Knorovich, Nimble CEO</span><span>Feb 24, 2026</span></figcaption>
+      </figure>
+    </div>
+    <script type="text/notes">"Most production AI failures are data failures. Not our line. Nimble's CEO said it to TechCrunch in February. Their own blog said it first: the data fueling the model stopped reflecting reality."
+→ first card is Tom Shaked, Nimble blog, Nov 20 2025 — an employee's post, not a company statement.
+→ second card is Uri Knorovich, Nimble CEO, quoted by Ram Iyer in TechCrunch, Feb 24 2026.</script>
+  </section>
+
+  <!-- OPEN-LOOP STAKES: the villain's clock -->
+  <section class="slide" data-beat="Open-loop stakes · the villain" data-time="0:20–0:30">
+    <div class="stack">
+      <h2 class="muted" data-step="1">6 pm — a pricing agent fetches five competitor prices.</h2>
+      <h2 data-step="2">9 pm — one competitor drops 15 %.</h2>
+      <div class="big-quote" data-step="3">6 am — the report ships.<br><span class="accent">The model did everything right. The data moved.</span></div>
+    </div>
+    <script type="text/notes">"A pricing agent fetches at 6 pm, works overnight, ships at 6 am. At 9 pm one competitor drops 15 percent. The 6 am report recommends matching a price that no longer exists. The model did everything right. The data moved."
+This is the segment's daily world (TechCrunch names Fortune 10 retailers among Nimble's customers). Never say a real customer's agent broke.</script>
+  </section>
+
+  <section class="slide" data-beat="The gap on a clock" data-time="0:30–0:40">
+    <h2>Every trust check ran before 9 pm —<br><span class="accent">nothing checks the basis at 6 am.</span></h2>
+    <img class="d2" data-step="1" src="diagrams/timeline.svg" alt="6 pm fetch and pin, 9 pm competitor drops 15 percent, overnight reasoning on the pinned basis, 6 am ship question" style="width:1500px; margin-top:80px">
+    <div class="d2-src" data-step="1">diagrams/timeline.d2 · SPEC §Villain · re-read against veto/scenario.ts</div>
+    <script type="text/notes">"Every trust check in the stack ran before 9 pm. Nothing checks the basis at the moment the report ships."
+→ the timeline. Next slide is the hand-off to the terminal.</script>
+  </section>
+
+  <!-- HAND-OFF: the last slide before cutting to the terminal -->
+  <section class="slide" data-beat="Hand-off → terminal" data-time="0:40 → cut to terminal until 2:20">
+    <div class="eyebrow">Live · Veto</div>
+    <h2>This is the 6 pm fetch.</h2>
+    <img class="d2" data-step="1" src="diagrams/lifecycle.svg" alt="reset, fetch via Nimble MCP, pin, report, drift, gate, REFUSED, receipt, counts" style="width:1640px; margin-top:56px">
+    <div class="d2-src" data-step="1">diagrams/lifecycle.d2 · read from veto/demo.sh</div>
+    <script type="text/notes">"Here is the fetch, through Nimble's plugin and MCP server, live."
+Then CUT TO THE TERMINAL:
+1. /plugin install nimble   (Nimble visible by 0:50)
+2. veto/demo.sh --real    (mock fallback: veto/demo.sh)
+3. Read report.md on screen: every claim is [pin:…], zero URLs.
+4. The drift, the gate, the REFUSED banner, the receipt line, the two count lines. Read N, M, K off the screen.
+Reset between takes: veto/demo.sh resets pins.db, receipts.jsonl and runs.jsonl itself. Come back to the next slide at 2:20.
+OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liquid LFM2.5) report call. Do not name either on stage; the report is 'the agent's report'.</script>
+  </section>
+
+  <!-- BRIDGE: the seam, pre-empted -->
+  <section class="slide" data-beat="Seam · fetch-time vs ship-time" data-time="2:20–2:35">
+    <h2>Nimble grounds the claim while the agent works —<br><span class="accent">Veto verifies the basis when the work ships.</span></h2>
+    <img class="d2" data-step="1" src="diagrams/seam.svg" alt="Top row: source control, grounding, confidence, run complete. Bottom row: pin, reason, revalidate, ship or refuse. Hours later connects them." style="width:1500px; margin-top:70px">
+    <div class="d2-src" data-step="1">diagrams/seam.d2 · Nimble Trust post, Sep 23 2026 · veto/gate.ts</div>
+    <script type="text/notes">"Nimble grounds the claim while the agent works. Veto verifies the basis when the work ships. Grounding is fetch-time. This is ship-time."
+Say it as their documented design, never as a defect. Their stack ends when the run ends; the 9 pm drop lives after their last check.</script>
+  </section>
+
+  <section class="slide" data-beat="Seam · their doc" data-time="2:35–2:45">
+    <div class="eyebrow">Nimble blog · Sep 23, 2026 · Tom Shaked</div>
+    <h2 data-step="1" style="font-size:76px">Grounding is fetch-time. Veto is ship-time.</h2>
+    <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
+      <div class="crop" data-crop=".355,.695,.53,.10" data-img="2880x1800"><img src="sources/4-nimble-trust-grounding.png" alt="A citation shows where information came from. Grounding checks whether the evidence actually supports the output."></div>
+      <figcaption class="src">Trustworthy web search for AI Agents · nimbleway.com/blog/trustworthy-web-search-for-ai-agents-sources-grounding-and-confidence</figcaption>
+    </figure>
+    <p class="pull" data-step="3" style="margin-top:44px">A citation shows where it came from. Grounding checks it was supported. <em>Veto checks it still is.</em></p>
+    <script type="text/notes">"Their words, two days ago: a citation shows where information came from, grounding checks the evidence supports the output. We add the third line: Veto checks it still does, at the moment you act."
+Nimble's grounding runs "while the agent is producing the output … before the run is complete" — in-run. Ours runs at ship. One axis they do not cover: time.</script>
+  </section>
+
+  <!-- THEME TIE -->
+  <section class="slide" data-beat="Theme tie" data-time="2:45–2:55">
+    <div class="eyebrow">tokens& · the brief</div>
+    <h2 data-step="1" style="font-size:76px">What persists: the pinned basis. What is refused: a drifted one.</h2>
+    <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
+      <div class="crop" data-crop=".42,.77,.42,.13" data-img="2880x1800"><img src="sources/8-luma-theme.png" alt="a clear split between what needs to persist and what can be discarded"></div>
+      <figcaption class="src">Long Horizon Agents Hackathon · luma.com/horizonagentshack</figcaption>
+    </figure>
+    <p class="pull" data-step="3" style="margin-top:44px">Never silently discarded — <em>refused, with a receipt.</em></p>
+    <script type="text/notes">"This hackathon asked what persists and what gets discarded. The pinned basis persists. A drifted basis is refused, never silently discarded."
+The general panel hears the theme answered; Yaniv hears the receipt again.</script>
+  </section>
+
+  <!-- MIRROR: one verified flash -->
+  <section class="slide" data-beat="Mirror · Mata v. Avianca" data-time="2:55–3:10" style="justify-content:flex-start; padding-top:90px">
+    <div class="flash-head">
+      <div><div class="eyebrow" style="margin-bottom:18px">New York federal court · 2023</div><h2>The brief cited six cases. None existed.</h2></div>
+    </div>
+    <div class="pile">
+      <figure class="flash" data-step="1" data-w="1500" style="left:70px; top:0; --r:-.6deg">
+        <div class="crop" data-crop=".22,.755,.42,.15" data-img="2880x1800"><img src="sources/6-nbc-mata-bogus.png" alt="bogus judicial decisions with bogus quotes and bogus internal citations"></div>
+        <figcaption class="src"><span>NBC News (CNBC) · Judge P. Kevin Castel, quoted by Rohan Goswami</span><span>May 30, 2023</span></figcaption>
+      </figure>
+    </div>
+    <script type="text/notes">"The brief cited six cases. None of them existed. That was a citation that was never true. Ours is a citation that was true at 6 pm — and Veto is the mechanism that catches both."
+The quoted words are the judge's, from a court filing, as quoted by Rohan Goswami (CNBC, carried by NBC). This piece is May 30 2023; the sanctions came Jun 22 2023.</script>
+  </section>
+
+  <!-- DOC QUOTE: Yaniv's own line -->
+  <section class="slide" data-beat="Take-home · his own line" data-time="3:10–3:20">
+    <div class="eyebrow">Nimble blog · Sep 22, 2026 · Yaniv Markovski, Head of Ecosystem</div>
+    <h2 data-step="1" style="font-size:76px">“…before acting on it.”</h2>
+    <figure class="doc" data-step="2" style="margin-top:44px; width:100%">
+      <div class="crop" data-crop=".37,.70,.52,.085" data-img="2880x1800"><img src="sources/5-yaniv-before-acting.png" alt="use confidence scoring to evaluate the data before acting on it."></div>
+      <figcaption class="src">Nimble expert web search is now on ChatGPT and Codex · nimbleway.com/blog/nimble-expert-web-search-is-now-on-chatgpt-and-codex</figcaption>
+    </figure>
+    <p class="pull" data-step="3" style="margin-top:44px">Trust is a property of the moment of action, <em>not the moment of retrieval.</em></p>
+    <script type="text/notes">"You wrote this on Monday: inspect how information was retrieved, and evaluate the data before acting on it. We built the 'before acting on it' part."
+His byline, two days before he judges. Quote it next to the mechanism, never as flattery.</script>
+  </section>
+
+  <!-- CLOSE -->
+  <section class="slide" data-beat="Close" data-time="3:20–3:28">
+    <div class="stack">
+      <div class="tagline" data-step="1">What git did for code,</div>
+      <div class="tagline" data-step="2"><span class="accent">Veto</span> does for evidence.</div>
+      <p class="mono" data-step="3" style="font-size:40px; margin-top:30px; color:var(--muted)">25 facts pinned · 4 drifted-and-flagged · <span class="accent">0 shipped contradictions</span></p>
+      <img class="d2" data-step="3" src="diagrams/gate.svg" alt="re-fetch, re-hash, compare; CLEAN ships, DRIFTED refuses with a receipt, UNREACHABLE refuses fail-closed" style="width:1400px; margin-top:30px">
+    </div>
+    <script type="text/notes">"Content-addressed pins, drift by re-hash, refuse with a receipt. What git did for code, Veto does for evidence."
+25 · 4 · 0 are the committed live trace run's numbers (evidence/live-run-2026-09-25-trace/evidence.txt, session 6a621160, the run with the MCP trace and on-device Liquid). If the recording is a different run, replace them with what evidence.ts printed on screen. Say them, do not memorise them.</script>
+  </section>
+
+  <section class="slide" data-beat="Final card" data-time="3:28–3:30">
+    <p class="sub" data-step="1">The model did everything right. The data moved. Veto did not ship it.</p>
+    <div class="final" data-step="2" style="margin-top:40px">Veto is <span class="accent">the ship-time gate.</span></div>
+    <p class="sub" data-step="3" style="margin-top:70px; color:var(--text)">What in your stack checks the basis at the moment of action?</p>
+    <script type="text/notes">"What in your stack checks the basis at the moment of action, not the moment of retrieval?"
+Hold on the final question for 2–3 seconds of silence before stopping the recording.</script>
+  </section>
+
+  <div id="progress"></div>
+</div></div>
+
+<div id="notes"><div class="meta"></div><div class="body"></div></div>
+<div id="help">
+  <div><b>→ / space</b>next step</div>
+  <div><b>←</b>previous step</div>
+  <div><b>n</b>notes on this screen</div>
+  <div><b>p</b>presenter window</div>
+  <div><b>r</b>recording mode</div>
+  <div><b>f</b>full screen</div>
+  <div><b>Home</b>first slide</div>
+  <div><b>h</b>this help</div>
+</div>
+
+<div id="presenter">
+  <div class="top"><span id="p-pos"></span><span class="clock" id="p-clock">0:00</span></div>
+  <div class="beat" id="p-beat"></div>
+  <div class="muted mono" id="p-time"></div>
+  <div class="script" id="p-script"></div>
+  <div id="p-caveat"></div>
+  <div class="next" id="p-next"></div>
+  <div style="margin-top:28px">
+    <button id="p-prev">← Prev</button><button id="p-go">Next →</button><button id="p-reset">Reset clock</button>
+  </div>
+</div>
+
+<script>
+(() => {
+  const slides = [...document.querySelectorAll('.slide')];
+  const presenter = new URLSearchParams(location.search).has('presenter');
+  const chan = 'BroadcastChannel' in window ? new BroadcastChannel('vault-deck') : null;
+  let s = 0, step = 0;
+
+  const stepsOf = (el) => Math.max(0, ...[...el.querySelectorAll('[data-step]')].map((n) => +n.dataset.step));
+  const notesOf = (el) => (el.querySelector('script[type="text/notes"]')?.textContent || '').trim();
+
+  // Crop a screenshot to a fractional rectangle x,y,w,h of its natural size. The WIDTH is the figure's
+  // (data-w on a flash, the column on a doc); the height follows from the crop's own aspect ratio, so
+  // text in a screenshot is never squashed and never smaller than the width allows.
+  function layoutCrops() {
+    document.querySelectorAll('.crop').forEach((c) => {
+      const [x, y, w, h] = c.dataset.crop.split(',').map(Number);
+      const [iw, ih] = c.dataset.img.split('x').map(Number);
+      const fig = c.closest('.flash, .doc');
+      const frameW = fig.dataset.w ? +fig.dataset.w : fig.clientWidth;
+      const scale = frameW / (w * iw);
+      fig.style.width = frameW + 'px';
+      c.style.width = frameW + 'px';
+      c.style.height = h * ih * scale + 'px';
+      const img = c.querySelector('img');
+      img.style.width = iw * scale + 'px';
+      img.style.left = -x * iw * scale + 'px';
+      img.style.top = -y * ih * scale + 'px';
+    });
+  }
+
+  function fit() {
+    const st = document.getElementById('stage');
+    const k = Math.min(innerWidth / 1920, innerHeight / 1080);
+    st.style.transform = `translate(-50%, -50%) scale(${k})`;
+  }
+
+  function render(broadcast = true) {
+    slides.forEach((el, i) => el.classList.toggle('active', i === s));
+    const cur = slides[s];
+    cur.querySelectorAll('[data-step]').forEach((n) => n.classList.toggle('in', +n.dataset.step <= step));
+    slides.forEach((el, i) => { if (i !== s) el.querySelectorAll('[data-step]').forEach((n) => n.classList.remove('in')); });
+    // Stakes meter on the Log4Shell slide follows the flashes revealed.
+    const flashes = [...cur.querySelectorAll('.flash')];
+    flashes.forEach((f) => f.classList.toggle('past', +f.dataset.step < step));
+    const shown = [...cur.querySelectorAll('.flash.in')].length;
+    const fill = document.getElementById('stakes');
+    if (fill) { fill.style.width = (shown / flashes.length * 100) + '%'; document.getElementById('stakes-n').textContent = shown + '/' + flashes.length; }
+    document.getElementById('progress').style.width = ((s + (stepsOf(cur) ? step / stepsOf(cur) : 1)) / slides.length * 100) + '%';
+    const n = document.getElementById('notes');
+    n.querySelector('.meta').textContent = `${s + 1}/${slides.length} · ${cur.dataset.beat} · ${cur.dataset.time} · step ${step}/${stepsOf(cur)}`;
+    n.querySelector('.body').textContent = notesOf(cur);
+    if (presenter) renderPresenter();
+    try { localStorage.setItem('vault-deck', JSON.stringify({ s, step })); } catch (e) {}
+    if (broadcast && chan) chan.postMessage({ s, step });
+    history.replaceState(null, '', (presenter ? '?presenter' : '') + `#${s + 1}.${step}`);
+  }
+
+  function renderPresenter() {
+    const cur = slides[s], next = slides[s + 1];
+    const text = notesOf(cur);
+    const [script, ...rest] = text.split('\n');
+    document.getElementById('p-pos').textContent = `Slide ${s + 1} of ${slides.length} · step ${step}/${stepsOf(cur)}`;
+    document.getElementById('p-beat').textContent = cur.dataset.beat;
+    document.getElementById('p-time').textContent = cur.dataset.time;
+    document.getElementById('p-script').textContent = script;
+    document.getElementById('p-caveat').innerHTML = rest.filter(Boolean).map((l) => `<div class="caveat"></div>`).join('');
+    [...document.querySelectorAll('#p-caveat .caveat')].forEach((d, i) => { d.textContent = rest.filter(Boolean)[i]; });
+    document.getElementById('p-next').textContent = next ? `Next: ${next.dataset.beat} (${next.dataset.time})` : 'Last slide.';
+  }
+
+  function go(d) {
+    const max = stepsOf(slides[s]);
+    if (d > 0) { if (step < max) step++; else if (s < slides.length - 1) { s++; step = 0; } }
+    else { if (step > 0) step--; else if (s > 0) { s--; step = stepsOf(slides[s]); } }
+    render();
+  }
+
+  // Restore position from the hash (#slide.step) so a reload does not lose the place mid-recording.
+  const m = location.hash.match(/^#(\d+)\.(\d+)$/);
+  if (m) { s = Math.min(slides.length - 1, Math.max(0, +m[1] - 1)); step = Math.min(stepsOf(slides[s]), +m[2]); }
+
+  if (chan) chan.onmessage = (e) => { s = e.data.s; step = e.data.step; render(false); };
+
+  addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    const k = e.key;
+    if (['ArrowRight', ' ', 'PageDown', 'Enter'].includes(k)) { e.preventDefault(); go(1); }
+    else if (['ArrowLeft', 'PageUp', 'Backspace'].includes(k)) { e.preventDefault(); go(-1); }
+    else if (k === 'Home') { s = 0; step = 0; render(); }
+    else if (k === 'n') document.getElementById('notes').classList.toggle('show');
+    else if (k === 'h' || k === '?') document.getElementById('help').classList.toggle('show');
+    else if (k === 'r') document.body.classList.toggle('recording');
+    else if (k === 'p') window.open(location.pathname + '?presenter' + location.hash, 'vault-presenter', 'popup=yes,width=1100,height=800,left=80,top=80');
+    else if (k === 'f') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); }
+  });
+  document.getElementById('stage').addEventListener('click', (e) => { if (!presenter) go(e.clientX > innerWidth / 3 ? 1 : -1); });
+
+  // Hide the cursor when idle, so it never lands in the recording.
+  let idle; addEventListener('mousemove', () => { document.body.classList.remove('idle'); clearTimeout(idle); idle = setTimeout(() => document.body.classList.add('idle'), 1500); });
+
+  if (presenter) {
+    document.body.classList.add('presenter');
+    document.getElementById('p-prev').onclick = () => go(-1);
+    document.getElementById('p-go').onclick = () => go(1);
+    let t0 = Date.now();
+    document.getElementById('p-reset').onclick = () => { t0 = Date.now(); };
+    setInterval(() => { const sec = Math.floor((Date.now() - t0) / 1000); document.getElementById('p-clock').textContent = `${Math.floor(sec / 60)}:${String(sec % 60).padStart(2, '0')}`; }, 250);
+  }
+
+  addEventListener('resize', fit);
+  fit();
+  const ready = () => { layoutCrops(); render(false); };
+  if (document.readyState === 'complete') ready(); else addEventListener('load', ready);
+  document.fonts?.ready.then(layoutCrops);
+})();
+</script>
+</body>
+</html>

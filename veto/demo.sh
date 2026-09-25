@@ -18,7 +18,7 @@ fi
 rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl report.md report.draft.md   # deterministic: counts never accumulate
 
 bar() { printf '\n\033[1m━━ %s ━━\033[0m\n' "$1"; }
-bar "PINNED EVIDENCE VAULT — adapter: ${VETO_ADAPTER:-mock}"
+bar "VETO — adapter: ${VETO_ADAPTER:-mock}"
 if [ "${VETO_ADAPTER:-mock}" = mock ]; then bar "Night 1 — the world holds"; else bar "Night 1 — nothing injected: whatever moves is the real page"; fi
 $NODE scenario.ts --clean; c=$?
 # Mock is deterministic: a clean-night refusal is a bug. Live: it is the real world moving — report it and continue.

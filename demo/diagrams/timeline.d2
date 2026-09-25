@@ -1,0 +1,13 @@
+# Open-loop stakes slide — the villain's clock, from SPEC.md §Villain. Re-read against veto/scenario.ts
+# (T0 fetch, T1 flip, gate) once Phase 3 lands: the three times on screen must be the ones the code prints.
+...@theme.d2
+direction: right
+
+fetch: "6 pm\nfetch 5 pages\npin every fact" {class: hot}
+drop: "9 pm\ncompetitor\ndrops 15 %" {class: bad}
+reason: "overnight\nreasoning on\nthe pinned basis" {class: box}
+ship: "6 am\nship?" {class: ask}
+
+fetch -> drop: "grounding ends here" {class: flow}
+drop -> reason: "nobody re-checks" {class: flow-bad; style.stroke-dash: 5}
+reason -> ship: "the gate" {class: flow-hot}

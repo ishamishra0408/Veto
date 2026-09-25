@@ -1,0 +1,92 @@
+# Nimble palette, read live 2026-09-24 by demo-ready/scripts/palette.mjs:
+#   canvas #000000 and text #FFFFFF from docs.nimbleway.com/home (dark scheme);
+#   accent #7C8DFF (--nimble-primary) and #9EABFF (--primary-light) from nimbleway.com/pricing; font DM Sans.
+# Imported by every diagram so a colour changes in one place.
+vars: {
+  d2-config: {
+    layout-engine: elk
+    pad: 24
+  }
+}
+style: {
+  fill: "#0A0A0A"
+}
+classes: {
+  box: {
+    style: {
+      fill: "#161618"
+      stroke: "#2C2C31"
+      font-color: "#FFFFFF"
+      border-radius: 10
+      font-size: 30
+      stroke-width: 2
+    }
+  }
+  hot: {
+    style: {
+      fill: "#171A33"
+      stroke: "#7C8DFF"
+      font-color: "#9EABFF"
+      border-radius: 10
+      font-size: 30
+      stroke-width: 3
+      bold: true
+    }
+  }
+  bad: {
+    style: {
+      fill: "#2A1311"
+      stroke: "#FF5A4E"
+      font-color: "#FF8A80"
+      border-radius: 10
+      font-size: 30
+      stroke-width: 3
+      bold: true
+    }
+  }
+  good: {
+    style: {
+      fill: "#10241A"
+      stroke: "#5BD68A"
+      font-color: "#8BE6AE"
+      border-radius: 10
+      font-size: 30
+      stroke-width: 3
+      bold: true
+    }
+  }
+  ask: {
+    shape: diamond
+    style: {
+      fill: "#161618"
+      stroke: "#A9A4A2"
+      font-color: "#FFFFFF"
+      font-size: 27
+      stroke-width: 2
+    }
+  }
+  flow: {
+    style: {
+      stroke: "#6F6B6A"
+      font-color: "#A9A4A2"
+      font-size: 24
+      stroke-width: 2
+    }
+  }
+  flow-hot: {
+    style: {
+      stroke: "#7C8DFF"
+      font-color: "#9EABFF"
+      font-size: 24
+      stroke-width: 3
+    }
+  }
+  flow-bad: {
+    style: {
+      stroke: "#FF5A4E"
+      font-color: "#FF8A80"
+      font-size: 24
+      stroke-width: 3
+    }
+  }
+}
