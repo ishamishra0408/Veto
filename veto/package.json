@@ -1,5 +1,6 @@
 {
   "name": "veto",
+  "description": "Veto — the ship lock for long-horizon agents. Pin every fact, cite pins not pages, revalidate before ship.",
   "version": "0.1.0",
   "private": true,
   "type": "module",

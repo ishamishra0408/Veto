@@ -41,7 +41,7 @@ export async function revalidate(dbPath: string, adapter: FetchAdapter, basisPin
   try {
     const obs = db.prepare("SELECT MAX(observed_at) AS t FROM observations WHERE pin_id = ?");
     lastSeen = (p: Pin) => ((obs.get(p.pin_id) as { t: string | null } | undefined)?.t ?? p.fetched_at);
-  } catch { /* older vault without observations */ }
+  } catch { /* older pins.db without observations */ }
   const seen = new Map(pins.filter((p): p is Pin => !!p).map((p) => [p.pin_id, lastSeen(p)]));
   db.close();
 

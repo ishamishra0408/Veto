@@ -139,7 +139,7 @@ const r = await decide(text, a, { mode: "drift", injected: { url, field: "price"
 console.log(r.shipped);' 2>/dev/null | tail -1)
 c=$(VETO_STREAM=off TINYBIRD_HOST=http://127.0.0.1:9 $NODE veto/evidence.ts | grep -oE '[0-9]+ shipped contradictions' | grep -oE '^[0-9]+')
 cp "$TMPDIR/r21_runs.bak" veto/runs.jsonl 2>/dev/null; cp "$TMPDIR/r21_report.bak" veto/report.md 2>/dev/null
-if [ "$r21" = true ] && [ "${c:-0}" -ge 1 ]; then echo "R21 PASS (a shipped report citing the injected fact is counted: $c shipped contradiction(s); veto restored)"
+if [ "$r21" = true ] && [ "${c:-0}" -ge 1 ]; then echo "R21 PASS (a shipped report citing the injected fact is counted: $c shipped contradiction(s); state restored)"
 else echo "R21 FAIL (shipped=$r21 counted=$c)"; fail=1; fi
 
 # R22 — deterministic citation repair can't launder a claim: invented numbers and cross-product prices still drop
@@ -215,7 +215,7 @@ class Flap extends FetchAdapter { name = "mock"; async fetch(u) { const r = awai
 await decide(text, new Flap(), { mode: "live" });' >/dev/null 2>&1; tail -1 veto/runs.jsonl | $NODE -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(r.verdict,r.false_refusal,(r.drift_classes||[]).join())')
 fr=$(VETO_STREAM=off TINYBIRD_HOST=http://127.0.0.1:9 $NODE veto/evidence.ts | grep -oE '[0-9]+ false refusals' | grep -oE '^[0-9]+')
 cp "$TMPDIR/r27_runs.bak" veto/runs.jsonl; cp "$TMPDIR/r27_rc.bak" veto/receipts.jsonl
-if [ "$r27" = "REFUSED 1 flap" ] && [ "${fr:-0}" -ge 1 ]; then echo "R27 PASS (flapping source → class flap → counted: $fr false refusal(s); vault restored)"
+if [ "$r27" = "REFUSED 1 flap" ] && [ "${fr:-0}" -ge 1 ]; then echo "R27 PASS (flapping source → class flap → counted: $fr false refusal(s); state restored)"
 else echo "R27 FAIL ($r27 counted=$fr)"; fail=1; fi
 
 # R28 — E: basis_window is when THIS basis was observed, not when each fact was first seen

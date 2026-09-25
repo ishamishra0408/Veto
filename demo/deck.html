@@ -338,7 +338,7 @@ Hold on the final question for 2–3 seconds of silence before stopping the reco
 (() => {
   const slides = [...document.querySelectorAll('.slide')];
   const presenter = new URLSearchParams(location.search).has('presenter');
-  const chan = 'BroadcastChannel' in window ? new BroadcastChannel('vault-deck') : null;
+  const chan = 'BroadcastChannel' in window ? new BroadcastChannel('veto-deck') : null;
   let s = 0, step = 0;
 
   const stepsOf = (el) => Math.max(0, ...[...el.querySelectorAll('[data-step]')].map((n) => +n.dataset.step));
@@ -386,7 +386,7 @@ Hold on the final question for 2–3 seconds of silence before stopping the reco
     n.querySelector('.meta').textContent = `${s + 1}/${slides.length} · ${cur.dataset.beat} · ${cur.dataset.time} · step ${step}/${stepsOf(cur)}`;
     n.querySelector('.body').textContent = notesOf(cur);
     if (presenter) renderPresenter();
-    try { localStorage.setItem('vault-deck', JSON.stringify({ s, step })); } catch (e) {}
+    try { localStorage.setItem('veto-deck', JSON.stringify({ s, step })); } catch (e) {}
     if (broadcast && chan) chan.postMessage({ s, step });
     history.replaceState(null, '', (presenter ? '?presenter' : '') + `#${s + 1}.${step}`);
   }
@@ -426,7 +426,7 @@ Hold on the final question for 2–3 seconds of silence before stopping the reco
     else if (k === 'n') document.getElementById('notes').classList.toggle('show');
     else if (k === 'h' || k === '?') document.getElementById('help').classList.toggle('show');
     else if (k === 'r') document.body.classList.toggle('recording');
-    else if (k === 'p') window.open(location.pathname + '?presenter' + location.hash, 'vault-presenter', 'popup=yes,width=1100,height=800,left=80,top=80');
+    else if (k === 'p') window.open(location.pathname + '?presenter' + location.hash, 'veto-presenter', 'popup=yes,width=1100,height=800,left=80,top=80');
     else if (k === 'f') { if (!document.fullscreenElement) document.documentElement.requestFullscreen?.().catch(() => {}); else document.exitFullscreen?.(); }
   });
   document.getElementById('stage').addEventListener('click', (e) => { if (!presenter) go(e.clientX > innerWidth / 3 ? 1 : -1); });

@@ -19,7 +19,8 @@ name: architecture
 on:
   push:
     branches: [main]
-    paths: ["architecture/**", "veto/**", ".github/workflows/architecture.yml"]
+    # demo/console/** is a PUBLISHED PAGE (the evidence console), not a model source — it only triggers a redeploy.
+    paths: ["architecture/**", "veto/**", ".github/workflows/architecture.yml", "demo/console/**"]
   pull_request:
     paths: ["architecture/**", "veto/**", ".github/workflows/architecture.yml"]
   workflow_dispatch:
@@ -96,6 +97,10 @@ jobs:
         run: |
           mkdir -p _site
           cp -R veto-repo/architecture _site/architecture
+          # the evidence console (read-only, self-contained; built from a committed evidence/ run)
+          mkdir -p _site/demo/console
+          cp veto-repo/demo/console/index.html _site/demo/console/index.html
+          cp veto-repo/demo/console/*.png _site/demo/console/ 2>/dev/null || true
           printf '<!doctype html><meta http-equiv="refresh" content="0; url=architecture/viewer.html"><title>Veto architecture</title><a href="architecture/viewer.html">Veto architecture</a>\n' > _site/index.html
 
       - uses: actions/upload-pages-artifact@v3

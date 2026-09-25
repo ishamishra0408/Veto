@@ -5,6 +5,8 @@ description: Pin every web fact with sha256 + fetch time, cite pins (not pages) 
 
 # Cite pins, not pages
 
+*From Veto — the ship lock for long-horizon agents.*
+
 **Trust is a property of the moment of action, not the moment of retrieval.**
 
 Nimble's trust stack covers the run: source control at fetch time, grounding and confidence while the agent writes. This skill covers the stage after the run ends — the gap between when facts were fetched and when the report is acted on. Revalidation happens at ship time.
