@@ -1,0 +1,20 @@
+DESCRIPTION >
+    Evidence counts for one vault session — same definitions as evidence.ts (north star + counter).
+
+NODE evidence
+SQL >
+    %
+    SELECT
+        countIf(kind = 'pin') AS pinned,
+        sumIf(n_drifted, kind = 'receipt') AS drifted_flagged,
+        countIf(kind = 'run' AND shipped = 1 AND mode = 'drift' AND rebased = 0) AS shipped_contradictions,
+        countIf(kind = 'run' AND verdict = 'CLEAN' AND shipped = 1) AS clean_shipped,
+        countIf(kind = 'run' AND verdict = 'REFUSED' AND mode = 'clean') AS false_refusals,
+        countIf(kind = 'run' AND verdict = 'REFUSED' AND mode = 'live') AS unforced_refusals
+    FROM (
+        SELECT * FROM vault_events
+        WHERE session = {{ String(session, required=True) }}
+        LIMIT 1 BY kind, event_id
+    )
+
+TYPE ENDPOINT

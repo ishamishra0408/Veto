@@ -1,0 +1,4 @@
+north star: 28 facts pinned · 4 drifted-and-flagged · 0 shipped contradictions
+counter: 0 clean runs shipped · 0 false refusals
+live: 1 unforced drift refusal(s) — nothing injected, the real page changed
+evidence source: Tinybird pipe vault_evidence — matches local (session f67e7bd4)

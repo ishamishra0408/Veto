@@ -1,0 +1,17 @@
+DESCRIPTION >
+    Vault evidence event stream (read path only; local pins.db / receipts.jsonl / runs.jsonl are the source of truth).
+    One row per pin, receipt or run, tagged with the vault session. Ingested via the Events API; re-sync is idempotent (dedup by kind + event_id).
+
+SCHEMA >
+    `session` String `json:$.session`,
+    `kind` LowCardinality(String) `json:$.kind`,
+    `event_id` String `json:$.event_id`,
+    `ts` DateTime64(3) `json:$.ts`,
+    `n_drifted` UInt32 `json:$.n_drifted`,
+    `verdict` String `json:$.verdict`,
+    `mode` String `json:$.mode`,
+    `shipped` UInt8 `json:$.shipped`,
+    `rebased` UInt8 `json:$.rebased`
+
+ENGINE "MergeTree"
+ENGINE_SORTING_KEY "session, kind, event_id"

@@ -1,0 +1,14 @@
+{
+  "name": "pinned-evidence-vault",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=22.18" },
+  "scripts": {
+    "report": "node --disable-warning=ExperimentalWarning report.ts",
+    "verify": "node --disable-warning=ExperimentalWarning verify_pins.ts",
+    "typecheck": "tsc --noEmit",
+    "redproofs": "bash redproofs_p1.sh"
+  },
+  "devDependencies": { "typescript": "^5.6.0", "@types/node": "^22.10.0" }
+}

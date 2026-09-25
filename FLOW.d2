@@ -1,0 +1,116 @@
+# Pinned Evidence Vault — as built (2026-09-24 night)
+# Render: d2 FLOW.d2 FLOW.svg   (or paste into https://play.d2lang.com)
+
+direction: right
+
+title: |md
+  # Pinned Evidence Vault
+  The agent works, Nimble grounds it while it works, the Vault verifies the basis when it ships.
+| {near: top-center}
+
+classes: {
+  ext: {style: {fill: "#EEF2FF"; stroke: "#4F46E5"; border-radius: 8}}
+  det: {style: {fill: "#ECFDF5"; stroke: "#059669"; border-radius: 8}}
+  model: {style: {fill: "#FDF4FF"; stroke: "#A21CAF"; border-radius: 8}}
+  store: {shape: cylinder; style: {fill: "#F8FAFC"; stroke: "#475569"}}
+  bad: {style: {fill: "#FEF2F2"; stroke: "#DC2626"; bold: true}}
+  good: {style: {fill: "#F0FDF4"; stroke: "#16A34A"; bold: true}}
+}
+
+legend: {
+  near: bottom-left
+  label: Legend
+  a: Sponsor / external {class: ext}
+  b: Deterministic — no model inside {class: det}
+  c: Model — proposes only {class: model}
+  d: Local store — source of truth {class: store}
+}
+
+# ---------- 1. Collect (18:00 T0) ----------
+collect: 1. Collect — 18:00 T0 {
+  adapter: "adapters.ts\ngetAdapter()" {class: det}
+  mock: "MockAdapter\npages.txt (5 fixtures)" {class: det}
+  nimble: "NimbleMCPAdapter\nJSON-RPC over Streamable HTTP\ninitialize → tools/list → tools/call" {class: ext}
+  adapter -> mock: VAULT_ADAPTER=mock
+  adapter -> nimble: "--real"
+}
+
+nimble_mcp: "Nimble MCP server\nmcp.nimbleway.com/mcp\nnimble_extract ×5 (parallel)\ncountry=US, locale=en" {class: ext}
+amazon: "Amazon product pages\npages.real.txt (5 ASINs)" {class: ext}
+collect.nimble -> nimble_mcp: "Bearer NIMBLE_API_KEY"
+nimble_mcp -> amazon: live fetch (~10s)
+
+# ---------- 2. Pin ----------
+pin: "2. Pin — pins.ts\n5 facts / page: title, price, stock, rating, seller\npin_id = sha256(canonical fact)[:12] + fetched_at\nINSERT OR IGNORE (first timestamp wins)" {class: det}
+pinsdb: "pins.db\n{pin_id, fact_text, sha256, fetched_at, source_url}\n+ session id" {class: store}
+collect -> pin: FetchResult
+pin -> pinsdb
+
+# ---------- 3. Reason (overnight) ----------
+reason: 3. Reason — overnight {
+  template: "report.ts\ntemplate table + findings\nevery claim [pin:…], 0 URLs" {class: det}
+  agent: "agent.ts — Liquid LFM2.5\nliquid/lfm-2.5-2.6b:free (OpenRouter)\nreasoning: low · sees ONLY pinned facts" {class: model}
+  checker: "Claim checker (deterministic)\ndrop if: uncited · pin not in basis\n· URL · number not in cited facts" {class: det}
+  agent -> checker: 3–5 sentences
+  checker -> template: verified sentences → "## Agent analysis"
+  fallback: "no key / error / timeout\n→ template only" {class: det}
+  agent -> fallback: {style.stroke-dash: 4}
+}
+pinsdb -> reason.template: pinned facts
+pinsdb -> reason.agent: "pinned facts (titles, no URLs)"
+draft: "report.draft.md\n(never shipped directly — G1)" {class: store}
+reason.template -> draft
+
+# ---------- World change (21:00 T1) ----------
+world: "21:00 T1 — world change\nmock: PriceShift −15% (injected)\nlive night 1: nothing injected — Amazon moves on its own\noutage: Outage (every fetch throws)" {class: ext; style.stroke-dash: 4}
+
+# ---------- 4. Revalidate (06:00) ----------
+gate: "4. Gate — gate.ts (06:00)\nre-fetch every cited source (parallel)\n→ re-hash each fact → compare to pin\nNO model inside (R7)" {class: det}
+draft -> gate: "cited [pin:…] = basis"
+world -> gate: re-fetch through same adapter
+
+# ---------- 5. Decide ----------
+ship: "ship.ts — the ONLY writer of report.md" {class: det}
+gate -> ship: verdict
+
+clean: "CLEAN\nship report.md" {class: good}
+drifted: "DRIFTED\nREFUSED" {class: bad}
+unreach: "UNREACHABLE\nREFUSED — fail closed" {class: bad}
+ship -> clean
+ship -> drifted
+ship -> unreach
+
+report: "report.md\npin-cited · 0 URLs" {class: store}
+clean -> report
+
+rebase: "--rebase (optional)\nre-pin on fresh facts\nold facts shown as [was-pin:…]\nre-gate → ship (G2)" {class: det; style.stroke-dash: 4}
+drifted -> rebase
+rebase -> report: {style.stroke-dash: 4}
+
+receipts: "receipts.jsonl\n{refused_at, reason, drifted_facts,\nerror, pin_hashes, basis_window}" {class: store}
+drifted -> receipts: receipt
+unreach -> receipts: receipt
+
+runs: "runs.jsonl\n{run_at, adapter, verdict, mode,\nshipped, rebased}" {class: store}
+ship -> runs: every run
+
+# ---------- 6. Verify + Evidence ----------
+verify: "verify_pins.ts\nevery [pin:] + [was-pin:] exists\nAND re-hashes to itself\nelse MISSING, exit 1 (R2, R14, R17)" {class: det}
+report -> verify
+draft -> verify: {style.stroke-dash: 4}
+
+evidence: "evidence.ts — counts from LOCAL files (truth)\nnorth star: N pinned · M drifted-and-flagged · 0 shipped contradictions\ncounter: K clean shipped · 0 false refusals\nlive: unforced drift refusals" {class: det}
+pinsdb -> evidence
+receipts -> evidence
+runs -> evidence
+
+tinybird: "Tinybird (read path only, R16)\nEvents API → vault_events\npipe vault_evidence → counts API\nmust equal local · offline → local, exit 0" {class: ext}
+evidence <-> tinybird: "sync (idempotent) + compare"
+
+# ---------- Skill ----------
+skill: "vault/skill/SKILL.md\ncite-pins Agent Skill (Nimble format)\ndescribes only what is built (R15)" {class: ext}
+skill -> pin: documents {style.stroke-dash: 4}
+skill -> gate: documents {style.stroke-dash: 4}
+
+# ---------- Demo ----------
+demo: "demo.sh [--real]\nreset state → Night 1 (clean / nothing injected)\n→ Night 2 (villain −15%) → Evidence\nmock ~35s · live ~62s (R11)" {class: det; near: bottom-right}

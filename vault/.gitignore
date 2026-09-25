@@ -1,0 +1,7 @@
+node_modules/
+pins.db
+pins.db.bak
+report.draft.md
+receipts.jsonl
+runs.jsonl
+.env

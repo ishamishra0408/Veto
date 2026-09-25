@@ -1,0 +1,6 @@
+# url | title | price_usd | stock | rating | seller
+https://www.bestbuy.example/site/sony-wh-1000xm5-wireless-noise-canceling-headphones/6505727.p | Sony WH-1000XM5 Wireless Noise Canceling Headphones | 399.99 | In stock | 4.7 | Best Buy
+https://www.bestbuy.example/site/bose-quietcomfort-ultra-headphones/6554464.p | Bose QuietComfort Ultra Headphones | 429.00 | In stock | 4.6 | Best Buy
+https://www.bestbuy.example/site/apple-airpods-max-usb-c/6570123.p | Apple AirPods Max (USB-C) | 549.00 | Low stock | 4.5 | Best Buy
+https://www.bestbuy.example/site/sennheiser-momentum-4-wireless/6512346.p | Sennheiser Momentum 4 Wireless Headphones | 299.95 | Out of stock | 4.4 | AudioDirect Marketplace
+https://www.bestbuy.example/site/jbl-tune-770nc-wireless/6541209.p | JBL Tune 770NC Wireless Headphones | 129.99 | In stock | 4.3 | Best Buy
