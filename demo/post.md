@@ -4,7 +4,7 @@ For the tokens& form at tokensand.com/horizonagentshack/submit ("what you built 
 
 ## What you built
 
-**Hook.** "Most production AI fails aren't because the models are not good enough — it's because of a data failure." Nimble's CEO said that to TechCrunch in February. We built the stage that makes it true at the moment of action, not just the moment of retrieval.
+**Hook.** "Most production AI fails aren't because the models are not good enough — it's because of a data failure." Nimble's CEO said that to TechCrunch in February. We read Nimble's grounding stack, source control, grounding and confidence, all of which run at fetch time while the agent works, and built the stage after it: Veto verifies the basis at ship time. Grounding is fetch-time. This is ship-time.
 
 **The problem.** A pricing agent fetches competitor prices at 6 pm, reasons overnight, and ships a repricing report at 6 am. At 9 pm one competitor dropped 15 %. The 6 am report recommends matching a price that no longer exists. The model did everything right. The data moved. Every trust check in the stack ran before 9 pm.
 
