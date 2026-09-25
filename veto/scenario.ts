@@ -26,7 +26,7 @@ say("06:00 gate", "re-fetch → re-hash → compare, before anything ships");
 // Ground truth: mock + no injection = clean. Live + no injection = unknown (the real world may move).
 const live = base.name !== "mock";
 const { verdict } = await decide(text, world, { mode: clean ? (live ? "live" : "clean") : "drift",
-  ...(target ? { injected: { url: target, field: "price" } } : {}) });
+  ...(target ? { injected: { url: target, field: "price" }, injectedFactor: 0.85 } : {}) });
 
 if (verdict.status === "DRIFTED") {
   if (clean) console.log(`\nNothing was injected — the live page moved on its own between 18:00 and 06:00.`);

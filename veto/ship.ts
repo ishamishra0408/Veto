@@ -16,6 +16,7 @@ export interface RunMeta {
   mode: string; // clean | drift | outage | live — ground truth of the injected world
   rebase?: boolean;
   injected?: { url: string; field: string }; // the fact the injector changed (ground truth for contradictions)
+  injectedFactor?: number; // e.g. 0.85 for the villain's −15%
 }
 
 export async function draft(adapter: FetchAdapter, disclosures: Drift[] = []): Promise<string> {
@@ -108,7 +109,8 @@ export async function decide(text: string, world: FetchAdapter, meta: RunMeta) {
     run_at: new Date().toISOString(), adapter: world.name,
     verdict: verdict.status === "CLEAN" ? "CLEAN" : "REFUSED", reason: verdict.status,
     mode: meta.mode, shipped, rebased, contradiction, gate_ms: verdict.gate_ms,
-    agent: writer.agent, claims_kept: writer.claims_kept, claims_dropped: writer.claims_dropped, checks: verdict.checks,
+    agent: writer.agent, claims_kept: writer.claims_kept, claims_dropped: writer.claims_dropped,
+    ...(meta.injected ? { injected: { ...meta.injected, factor: meta.injectedFactor ?? null } } : {}), checks: verdict.checks,
   };
   appendFileSync(RUNS, JSON.stringify(run) + "\n");
   // T3: stream this run to Tinybird as it happens (fire-and-forget, bounded wait; local files stay the truth).
