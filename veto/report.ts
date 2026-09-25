@@ -3,7 +3,7 @@ import { writeFileSync } from "node:fs";
 import type { DatabaseSync } from "node:sqlite";
 import { pathToFileURL } from "node:url";
 import { getAdapter, pageUrls, type FetchAdapter } from "./adapters.ts";
-import { agentAnalysis, shortName } from "./agent.ts";
+import { AGENT_MODEL, agentAnalysis, shortName } from "./agent.ts";
 import { corroborate, type Extractor } from "./extract.ts";
 import type { Drift } from "./gate.ts";
 import { connect, factValue, PIN_LEN, pinResult, type Field, type Pin } from "./pins.ts";
@@ -13,6 +13,9 @@ export const DRAFT = new URL("./report.draft.md", import.meta.url);
 const cite = (p: Pin) => `[pin:${p.pin_id}]`;
 
 export interface BuildOpts { extractor?: Extractor }
+
+// G5: who wrote the last draft built in this process (the run row records it).
+export const lastBuild = { text: "", agent: "template", claims_kept: 0, claims_dropped: 0 };
 
 export async function buildReport(adapter: FetchAdapter, db: DatabaseSync, disclosures: Drift[] = [], opts: BuildOpts = {}): Promise<string> {
   const products: Record<Field, Pin>[] = [];
@@ -74,7 +77,9 @@ export async function buildReport(adapter: FetchAdapter, db: DatabaseSync, discl
         return `- ${p ? name(p) : "A tracked product"}: ${d.field} moved from ${d.old_value} [was-pin:${d.pin_id}] to ${d.new_value} [pin:${d.new_hash.slice(0, PIN_LEN)}].`;
       }), "");
   }
-  return lines.join("\n");
+  const out = lines.join("\n");
+  Object.assign(lastBuild, { text: out, agent: agent ? AGENT_MODEL : "template", claims_kept: agent?.kept.length ?? 0, claims_dropped: agent?.dropped.length ?? 0 });
+  return out;
 }
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {

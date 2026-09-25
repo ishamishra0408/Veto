@@ -5,9 +5,9 @@ import { getAdapter, type FetchAdapter } from "./adapters.ts";
 import { revalidate, type Drift, type Verdict } from "./gate.ts";
 import { citedPinIds, connect, DB_PATH, factValue, PIN_LEN, sessionOf, type Pin } from "./pins.ts";
 import { checkClaims, shortName, type BasisFact } from "./agent.ts";
-import { appendReceipt } from "./receipts.ts";
+import { appendReceipt, appendShip } from "./receipts.ts";
 import { emit, eventsFor, flush } from "./stream.ts";
-import { buildReport, DRAFT, REPORT } from "./report.ts";
+import { buildReport, DRAFT, lastBuild, REPORT } from "./report.ts";
 const ansi = (c: string) => (process.stdout.isTTY ? `\x1b[${c}m` : ""); // color only on a terminal
 
 export const RUNS = new URL("./runs.jsonl", import.meta.url);
@@ -71,6 +71,7 @@ export async function decide(text: string, world: FetchAdapter, meta: RunMeta) {
   const receipts: (ReturnType<typeof appendReceipt> | null)[] = [];
   if (verdict.status === "CLEAN") {
     writeFileSync(REPORT, text);
+    appendShip(verdict);
     shipped = true;
     console.log(`${ansi("1;32")}VERDICT: CLEAN${ansi("0")} — shipped report.md (${verdict.pin_hashes.length} pins revalidated)`);
   } else {
@@ -80,6 +81,7 @@ export async function decide(text: string, world: FetchAdapter, meta: RunMeta) {
       const v2 = await revalidate(DB_PATH, world, citedPinIds(next));
       if (v2.status === "CLEAN") {
         writeFileSync(REPORT, next);
+        appendShip(v2, true);
         shipped = rebased = true;
         console.log(`REBASE: re-pinned on fresh facts; ${verdict.drifted.length} drift(s) disclosed as [was-pin:]`);
         console.log(`${ansi("1;32")}VERDICT: CLEAN${ansi("0")} — shipped re-based report.md (${v2.pin_hashes.length} pins revalidated)`);
@@ -101,10 +103,12 @@ export async function decide(text: string, world: FetchAdapter, meta: RunMeta) {
     }) ? 1 : 0;
     cdb.close();
   }
+  const writer = lastBuild.text === text ? lastBuild : { agent: "external", claims_kept: 0, claims_dropped: 0 };
   const run = {
     run_at: new Date().toISOString(), adapter: world.name,
     verdict: verdict.status === "CLEAN" ? "CLEAN" : "REFUSED", reason: verdict.status,
-    mode: meta.mode, shipped, rebased, contradiction, gate_ms: verdict.gate_ms, checks: verdict.checks,
+    mode: meta.mode, shipped, rebased, contradiction, gate_ms: verdict.gate_ms,
+    agent: writer.agent, claims_kept: writer.claims_kept, claims_dropped: writer.claims_dropped, checks: verdict.checks,
   };
   appendFileSync(RUNS, JSON.stringify(run) + "\n");
   // T3: stream this run to Tinybird as it happens (fire-and-forget, bounded wait; local files stay the truth).

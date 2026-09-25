@@ -11,6 +11,8 @@ veto/pins.db
 veto/pins.db.bak
 veto/receipts.jsonl
 veto/runs.jsonl
+veto/ships.jsonl
+veto/mcp-trace.jsonl
 veto/report.md
 veto/report.draft.md
 ui-artifacts.zip

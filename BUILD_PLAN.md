@@ -90,7 +90,7 @@ One prompt at a time. Additive corrections only. No scope-out items (SPEC.md). B
    is the source of truth and the offline fallback. Tinybird is never inside the gate
    and never in the pitch.
 8. Liquid agent report writer (their hero: extraction-tuned small model): `veto/agent.ts`
-   calls LFM2.5-1.2B-Instruct via OpenRouter (free tier) with a constrained prompt — the
+   calls LFM2.5-1.2B-Instruct (on-device via Ollama; OpenRouter `liquid/lfm-2.5-2.6b:free` fallback — C2) with a constrained prompt — the
    pinned facts in-context, instruction to emit ONLY claims of the form `[pin:<id>]` +
    quoted fact text. The agent's report goes through the same `verify_pins.ts` +
    gate as the template report. If the model call fails, fall back to the deterministic

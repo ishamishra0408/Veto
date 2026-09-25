@@ -19,6 +19,7 @@
 ## Liquid AI — built on
 | Hero feature | How the build uses it | Where | Built? |
 |---|---|---|---|
-| LFM2.5 small model (`liquid/lfm-2.5-2.6b:free` on OpenRouter — 1.2B not listed, C2) | Report-writing agent: reasons over pinned facts, writes the pin-cited report. Generator/verifier — agent proposes, gate disposes; deterministic template fallback | agent.ts (reasoning effort low), R17 | Y |
+| LFM2.5-1.2B-Instruct (on-device, Ollama; OpenRouter `lfm-2.5-2.6b:free` fallback) | Report-writing agent: JSON claims over pinned facts; deterministic claim checker + citation repair (agent proposes, gate disposes); template fallback | veto/agent.ts, veto/liquid.ts, R17 R22 | Y |
+| LFM2-1.2B-Extract (on-device, Ollama) | L1: second, independent extractor — a page is pinned only if it agrees with the parser; never called from the gate | veto/extract.ts, R18 | Y |
 
 Pitch discipline: single-lane Nimble only. Tinybird and Liquid are never mentioned on stage.

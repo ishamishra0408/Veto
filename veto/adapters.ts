@@ -1,5 +1,5 @@
 // Fetch seam. Nothing outside this file names a concrete adapter; use getAdapter().
-import { readFileSync } from "node:fs";
+import { appendFileSync, readFileSync } from "node:fs";
 
 const FIXTURES = new URL("./pages.txt", import.meta.url);
 
@@ -50,6 +50,9 @@ class MockAdapter extends FetchAdapter {
 
 type Json = any; // eslint-disable-line @typescript-eslint/no-explicit-any
 const trace = (msg: string) => process.stderr.write(`\x1b[36m[nimble mcp]\x1b[0m ${msg}\n`);
+// G1: every MCP request is also persisted, one JSON line each (committed as evidence for a live run).
+export const MCP_TRACE = new URL("./mcp-trace.jsonl", import.meta.url);
+const persist = (row: Record<string, unknown>) => { try { appendFileSync(MCP_TRACE, JSON.stringify(row) + "\n"); } catch { /* never block a fetch */ } };
 
 const FIELD_KEYS: Record<Exclude<keyof FetchResult, "url" | "fetched_at">, string[]> = {
   title: ["title", "product_title", "product_name", "name"],
@@ -131,7 +134,11 @@ class NimbleMCPAdapter extends FetchAdapter {
 
   private async rpc(method: string, params?: Json, notify = false): Promise<Json> {
     const body: Json = notify ? { jsonrpc: "2.0", method, params } : { jsonrpc: "2.0", id: ++this.seq, method, params };
-    const res = await fetch(this.endpoint, {
+    const ts = new Date().toISOString(), t0 = Date.now();
+    const row = { ts, method, ...(params?.name ? { tool: params.name } : {}), ...(params?.arguments?.url ? { url: params.arguments.url } : {}) };
+    let res: Response;
+    try {
+      res = await fetch(this.endpoint, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -141,10 +148,15 @@ class NimbleMCPAdapter extends FetchAdapter {
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(Number(process.env.NIMBLE_TIMEOUT_MS ?? 90_000)),
-    });
+      });
+    } catch (e) {
+      persist({ ...row, ms: Date.now() - t0, error: (e as Error).message.slice(0, 120) });
+      throw e;
+    }
     const sid = res.headers.get("mcp-session-id");
     if (sid) this.session = sid;
     const text = await res.text();
+    persist({ ...row, ms: Date.now() - t0, http: res.status }); // timed to the full body, not just headers
     if (!res.ok) throw new Error(`MCP ${method} → HTTP ${res.status}: ${text.slice(0, 200)}`);
     if (notify) return null;
     const msgs: Json[] = (res.headers.get("content-type") ?? "").includes("text/event-stream")

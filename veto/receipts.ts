@@ -17,3 +17,12 @@ export function appendReceipt(v: Exclude<Verdict, { status: "CLEAN" }>, explanat
   appendFileSync(RECEIPTS, JSON.stringify(receipt) + "\n");
   return receipt;
 }
+
+// G4: every CLEAN ship leaves a receipt too — what shipped, on which basis.
+export const SHIPS = new URL("./ships.jsonl", import.meta.url);
+
+export function appendShip(v: Extract<Verdict, { status: "CLEAN" }>, rebased = false) {
+  const ship = { shipped_at: new Date().toISOString(), reason: "CLEAN", rebased, pin_hashes: v.pin_hashes, basis_window: v.basis_window };
+  appendFileSync(SHIPS, JSON.stringify(ship) + "\n");
+  return ship;
+}

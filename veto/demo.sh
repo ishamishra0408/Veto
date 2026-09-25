@@ -15,7 +15,7 @@ if [ "$1" = "--real" ]; then
   [ -n "$NIMBLE_API_KEY" ] || { echo "demo --real: NIMBLE_API_KEY not set (Nimble → Account Settings → API Keys). Veto untouched."; exit 3; }
   grep -qv '^#' pages.real.txt || { echo "demo --real: pages.real.txt has no URLs. Veto untouched."; exit 3; }
 fi
-rm -f pins.db receipts.jsonl runs.jsonl report.md report.draft.md   # deterministic: counts never accumulate
+rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl report.md report.draft.md   # deterministic: counts never accumulate
 
 bar() { printf '\n\033[1m━━ %s ━━\033[0m\n' "$1"; }
 bar "PINNED EVIDENCE VAULT — adapter: ${VETO_ADAPTER:-mock}"

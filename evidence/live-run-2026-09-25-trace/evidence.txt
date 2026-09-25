@@ -1,0 +1,6 @@
+north star: 25 facts pinned · 4 drifted-and-flagged · 0 shipped contradictions
+counter: 0 clean runs shipped · 0 false refusals
+guardrail: gate p95 11542 ms over 2 run(s)
+live: 1 unforced drift refusal(s) — nothing injected, the real page changed
+evidence source: Tinybird pipe vault_evidence — matches local (session 6a621160)
+volatility (all live runs, Tinybird): Bose QuietComfort Ultra Bluetoot price 6/10 · Bose QuietComfort Ultra Bluetoot seller 4/10 · Sony WH seller 3/12
