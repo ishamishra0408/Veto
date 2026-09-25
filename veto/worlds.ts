@@ -14,6 +14,7 @@ export class PriceShift extends FetchAdapter {
   }
   private seen = new Map<string, [number, number]>();
   get name() { return this.inner.name; }
+  search(q: string) { return this.inner.search(q); }
   raw(url: string) {
     const raw = this.inner.raw(url), s = this.seen.get(url);
     return raw && s ? raw.replaceAll(s[0].toFixed(2), s[1].toFixed(2)) : raw;
@@ -27,6 +28,24 @@ export class PriceShift extends FetchAdapter {
   }
 }
 
+// One competitor page is unreachable (simulated) — the planner must re-plan around it.
+export class PageDown extends FetchAdapter {
+  private inner: FetchAdapter;
+  private url: string;
+  constructor(inner: FetchAdapter, url: string) {
+    super();
+    this.inner = inner;
+    this.url = url;
+  }
+  get name() { return this.inner.name; }
+  raw(url: string) { return this.inner.raw(url); }
+  search(q: string) { return this.inner.search(q); }
+  async fetch(url: string): Promise<FetchResult> {
+    if (url === this.url) throw new Error(`simulated: ${url} unreachable`);
+    return this.inner.fetch(url);
+  }
+}
+
 export class Outage extends FetchAdapter {
   private inner: FetchAdapter;
   constructor(inner: FetchAdapter) {
@@ -34,6 +53,7 @@ export class Outage extends FetchAdapter {
     this.inner = inner;
   }
   get name() { return this.inner.name; }
+  search(q: string) { return this.inner.search(q); }
   raw(url: string) { return this.inner.raw(url); }
   async fetch(url: string): Promise<FetchResult> {
     throw new Error(`simulated outage fetching ${url}`);

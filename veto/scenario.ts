@@ -7,12 +7,13 @@ import { getAdapter, pageUrls } from "./adapters.ts";
 import { impactOf, Plan } from "./planner.ts";
 import { lastBuild, RULE } from "./report.ts";
 import { decide, draft } from "./ship.ts";
-import { citedPriceTarget, PriceShift } from "./worlds.ts";
+import { citedPriceTarget, PageDown, PriceShift } from "./worlds.ts";
 import { citedPinIds } from "./pins.ts";
 const ansi = (c: string) => (process.stdout.isTTY ? `\x1b[${c}m` : ""); // color only on a terminal
 
 const clean = process.argv.includes("--clean");
 const rebase = process.argv.includes("--rebase");
+const losePage = process.argv.includes("--lose-page"); // one competitor page is unreachable at 18:00 (simulated)
 const say = (clock: string, msg: string) => console.log(`${ansi("1")}[${clock}]${ansi("0")} ${msg}`);
 const base = getAdapter();
 
@@ -30,12 +31,17 @@ const plan = new Plan(
   ]);
 plan.mark("P1", "done", "needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings");
 
-say("18:00 T0", `fetching ${pageUrls().length} competitor pages via ${base.name}; pinning every fact`);
-const text = await draft(base);
-plan.mark("P2", "done", `${lastBuild.pages} pages fetched`);
-plan.mark("P3", lastBuild.held ? "replanned" : "done", lastBuild.held
-  ? `${lastBuild.held} page(s) held (extractors disagreed) → comparable set re-planned without them`
-  : lastBuild.parserOnly ? `${lastBuild.parserOnly} page(s) parser-only (second extractor unavailable)` : `${lastBuild.corroborated || lastBuild.pages} page(s) pinned`);
+say("18:00 T0", `fetching ${pageUrls().length} competitor pages via ${base.name}; pinning every fact` +
+  (losePage ? ` (simulated: ${pageUrls()[2].split("/").pop()} is unreachable)` : ""));
+const text = await draft(losePage ? new PageDown(base, pageUrls()[2]) : base);
+plan.mark("P2", lastBuild.unreachable ? "replanned" : "done", `${lastBuild.pages} pages fetched${lastBuild.unreachable ? `, ${lastBuild.unreachable} lost (unreachable or no extractable price — never invented)` : ""}`);
+const p3: string[] = [];
+if (lastBuild.corroborated) p3.push(`${lastBuild.corroborated} corroborated now`);
+if (lastBuild.reused) p3.push(`${lastBuild.reused} re-used (corroborated earlier)`);
+if (lastBuild.parserOnly) p3.push(`${lastBuild.parserOnly} parser-only (second extractor unavailable)`);
+if (lastBuild.held) p3.push(`${lastBuild.held} held (extractors disagreed)`);
+for (const r of lastBuild.replacements) p3.push(`re-planned: lost ${r.lost.split("/").pop()} → searched and pinned a comparable: ${r.title.slice(0, 40)}`);
+plan.mark("P3", lastBuild.held || lastBuild.replacements.length || lastBuild.unreachable ? "replanned" : "done", p3.join("; ") || `${lastBuild.pages} page(s) pinned`);
 const comps = lastBuild.conclusions.find((c) => c.id === "comparables");
 plan.mark("P4", comps ? "done" : "failed", comps ? `${comps.pins.length / 3} comparable competitor(s)` : "no comparable competitor");
 plan.recommendation.before = lastBuild.recommended;
@@ -58,7 +64,7 @@ const live = base.name !== "mock";
 function onRefused(verdict: import("./gate.ts").Verdict) {
   plan.mark("P7", "failed", `REFUSED (${verdict.status})`);
 if (verdict.status === "DRIFTED") {
-  if (clean) console.log(`\nNothing was injected — the live page moved on its own between 18:00 and 06:00.`);
+  if (clean) console.log(`\nNo price was injected — the live page moved on its own between 18:00 and 06:00.`);
   console.log("\nThe draft that would have shipped:");
   const rows = new Map<string, typeof verdict.drifted>();
   for (const d of verdict.drifted) {
@@ -85,7 +91,7 @@ if (verdict.status === "CLEAN") plan.mark("P8", "skipped", "nothing to correct")
 else if (rebased) {
   plan.recommendation.after = lastBuild.recommended;
   const r = plan.recommendation;
-  plan.mark("P8", "done", `re-pinned changed facts, recomputed${r.before !== r.after ? ` recommendation $${r.before?.toFixed(2)} → $${r.after?.toFixed(2)}` : " (recommendation unchanged)"}, disclosed as [was-pin:], re-gated CLEAN, shipped`);
+  plan.mark("P8", "done", `re-fetched only the drifted page(s), reused the rest from pins, recomputed${r.before !== r.after ? ` recommendation $${r.before?.toFixed(2)} → $${r.after?.toFixed(2)}` : " (recommendation unchanged)"}, disclosed as [was-pin:], re-gated CLEAN, shipped`);
 } else plan.mark("P8", rebase ? "failed" : "skipped", rebase ? "re-base could not reach a clean basis" : "not requested (--rebase) — refused, receipt written");
 // Villain night succeeds only if the drift was caught (REFUSED) and, when asked, corrected (re-based and shipped).
 process.exit(clean ? (shipped ? 0 : 2) : verdict.status !== "CLEAN" && (!rebase || rebased) ? 0 : 1);

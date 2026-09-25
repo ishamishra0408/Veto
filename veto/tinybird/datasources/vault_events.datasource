@@ -17,7 +17,8 @@ SCHEMA >
     `gate_ms` UInt32 `json:$.gate_ms` DEFAULT 0,
     `url` String `json:$.url` DEFAULT '',
     `field` String `json:$.field` DEFAULT '',
-    `drifted` UInt8 `json:$.drifted` DEFAULT 0
+    `drifted` UInt8 `json:$.drifted` DEFAULT 0,
+    `false_refusal` UInt8 `json:$.false_refusal` DEFAULT 0
 
 ENGINE "MergeTree"
 ENGINE_SORTING_KEY "session, kind, event_id"

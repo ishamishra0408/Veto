@@ -1,4 +1,5 @@
 # Veto — as built (2026-09-24 night)
+# Updated 2026-09-25: planner P1–P8, L1 two-extractor pinning, nimble_search re-plan, confirm fetch, targeted re-base.
 # Render: d2 FLOW.d2 FLOW.svg   (or paste into https://play.d2lang.com)
 
 direction: right
@@ -35,13 +36,13 @@ collect: 1. Collect — 18:00 T0 {
   adapter -> nimble: "--real"
 }
 
-nimble_mcp: "Nimble MCP server\nmcp.nimbleway.com/mcp\nnimble_extract ×5 (parallel)\ncountry=US, locale=en" {class: ext}
+nimble_mcp: "Nimble MCP server\nmcp.nimbleway.com/mcp\nnimble_extract ×5 (parallel)\nnimble_search (re-plan a lost page)\ncountry=US, locale=en" {class: ext}
 amazon: "Amazon product pages\npages.real.txt (5 ASINs)" {class: ext}
 collect.nimble -> nimble_mcp: "Bearer NIMBLE_API_KEY"
 nimble_mcp -> amazon: live fetch (~10s)
 
 # ---------- 2. Pin ----------
-pin: "2. Pin — pins.ts\n5 facts / page: title, price, stock, rating, seller\npin_id = sha256(canonical fact)[:12] + fetched_at\nINSERT OR IGNORE (first timestamp wins)" {class: det}
+pin: "2. Pin — pins.ts\nL1: parser + Liquid LFM2-1.2B-Extract must agree\n5 facts / page: title, price, stock, rating, seller\npin_id = sha256(canonical fact)[:12] + fetched_at\nINSERT OR IGNORE (first timestamp wins)" {class: det}
 pinsdb: "pins.db\n{pin_id, fact_text, sha256, fetched_at, source_url}\n+ session id" {class: store}
 collect -> pin: FetchResult
 pin -> pinsdb
@@ -49,7 +50,9 @@ pin -> pinsdb
 # ---------- 3. Reason (overnight) ----------
 reason: 3. Reason — overnight {
   template: "report.ts\ntemplate table + findings\nevery claim [pin:…], 0 URLs" {class: det}
-  agent: "agent.ts — Liquid LFM2.5\nliquid/lfm-2.5-2.6b:free (OpenRouter)\nreasoning: low · sees ONLY pinned facts" {class: model}
+  agent: "agent.ts — Liquid LFM2.5-1.2B-Instruct
+on-device (Ollama); OpenRouter fallback
+JSON claims · sees ONLY pinned facts" {class: model}
   checker: "Claim checker (deterministic)\ndrop if: uncited · pin not in basis\n· URL · number not in cited facts" {class: det}
   agent -> checker: 3–5 sentences
   checker -> template: verified sentences → "## Agent analysis"
@@ -83,7 +86,7 @@ ship -> unreach
 report: "report.md\npin-cited · 0 URLs" {class: store}
 clean -> report
 
-rebase: "--rebase (optional)\nre-pin on fresh facts\nold facts shown as [was-pin:…]\nre-gate → ship (G2)" {class: det; style.stroke-dash: 4}
+rebase: "P8 self-correct: targeted re-base\nimpact analysis → re-fetch only drifted pages\nunstable facts not relied on · up to 3 attempts\nre-pin on fresh facts\nold facts shown as [was-pin:…]\nre-gate → ship (G2)" {class: det; style.stroke-dash: 4}
 drifted -> rebase
 rebase -> report: {style.stroke-dash: 4}
 

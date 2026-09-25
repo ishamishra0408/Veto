@@ -7,14 +7,15 @@ let sent = 0;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function eventsFor(session: string, pins: { pin_id: string; fetched_at: string }[], receipts: any[], runs: any[]): VetoEvent[] {
-  const base = { session, n_drifted: 0, verdict: "", mode: "", shipped: 0, rebased: 0, adapter: "", gate_ms: 0, url: "", field: "", drifted: 0 };
+  const base = { session, n_drifted: 0, verdict: "", mode: "", shipped: 0, rebased: 0, adapter: "", gate_ms: 0, url: "", field: "", drifted: 0, false_refusal: 0 };
   return [
     ...pins.map((p) => ({ ...base, kind: "pin" as const, event_id: p.pin_id, ts: p.fetched_at })),
     ...receipts.map((r) => ({ ...base, kind: "receipt" as const, event_id: `${r.refused_at}|${r.reason}`, ts: r.refused_at, n_drifted: r.drifted_facts.length })),
     ...runs.flatMap((r) => [
       { ...base, kind: "run" as const, event_id: `${r.run_at}|${r.mode}`, ts: r.run_at, verdict: r.verdict, mode: r.mode,
         shipped: r.shipped ? 1 : 0, rebased: r.rebased ? 1 : 0, adapter: r.adapter ?? "", gate_ms: r.gate_ms ?? 0,
-        drifted: r.contradiction ? 1 : 0 }, // for kind=run, `drifted` = shipped contradiction
+        drifted: r.contradiction ? 1 : 0, // for kind=run, `drifted` = shipped contradiction
+        false_refusal: r.false_refusal ? 1 : 0 },
       ...(r.checks ?? []).map((c: { url: string; field: string; drifted: number }) => (
         { ...base, kind: "check" as const, event_id: `${r.run_at}|${c.url}|${c.field}`, ts: r.run_at, mode: r.mode,
           adapter: r.adapter ?? "", url: c.url, field: c.field, drifted: c.drifted })),

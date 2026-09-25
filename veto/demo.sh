@@ -7,7 +7,7 @@ NODE="node --disable-warning=ExperimentalWarning"
 [ -f .env ] && { set -a; . ./.env; set +a; }   # optional: NIMBLE_API_KEY=... (gitignored)
 # On-device Liquid: make sure the local model server is up (models stay on this machine).
 if [ -n "$VETO_LIQUID_URL" ] && ! curl -s -m 2 -o /dev/null "${VETO_LIQUID_URL%%/v1/*}/api/tags"; then
-  (OLLAMA_NUM_PARALLEL=4 nohup ollama serve >/dev/null 2>&1 &); sleep 2
+  (nohup ollama serve >/dev/null 2>&1 &); sleep 2   # default parallelism: two 1.2B models on 16 GB
 fi
 # Warm both Liquid models into memory before the clock starts (a cold load can exceed the per-call timeout).
 if [ -n "$VETO_LIQUID_URL" ]; then
@@ -25,10 +25,12 @@ rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl plan.json re
 
 bar() { printf '\n\033[1m━━ %s ━━\033[0m\n' "$1"; }
 bar "PINNED EVIDENCE VAULT — adapter: ${VETO_ADAPTER:-mock}"
-if [ "${VETO_ADAPTER:-mock}" = mock ]; then bar "Night 1 — the world holds"; else bar "Night 1 — nothing injected: whatever moves is the real page"; fi
-$NODE scenario.ts --clean --rebase; c=$?
+if [ "$2" = "--night2" ] || [ "$1" = "--night2" ]; then c=0; else   # --night2: run only the villain night (fits a 3-min slot live)
+bar "Night 1 — a competitor page goes dark at 18:00 (simulated); no price injected"
+$NODE scenario.ts --clean --rebase --lose-page; c=$?
 # Mock is deterministic: a clean-night refusal is a bug. Live: it is the real world moving — report it and continue.
 [ $c -ne 0 ] && [ "${VETO_ADAPTER:-mock}" = mock ] && { echo "demo: clean night failed to ship"; exit 1; }
+fi
 bar "Night 2 — the villain"
 $NODE scenario.ts --rebase; rc=$?
 bar "Evidence"

@@ -171,4 +171,105 @@ if [ $rc -eq 0 ] && [ "$r23" = "true,true,true,true,true,true,true,true" ] && gr
   echo "R23 PASS (plan P1–P8 logged; drift on the anchor breaks exactly the conclusions citing it (anchor, recommendation, …) while the comparable set still holds; recommendation recomputed; re-based report verifies)"
 else echo "R23 FAIL (rc=$rc checks=$r23 verify=$vr)"; echo "$out" | grep -E '^\[plan' | head -12; fail=1; fi
 
+# R24 — the reviewer's 5 probes: partial-number, boilerplate "5", reversed comparison, speculation, wrong field
+r24=$($NODE --input-type=module -e '
+const { checkClaims } = await import("./veto/agent.ts");
+const B = [{ pin_id:"aaaa00000001", fact:"price of Sony WH-1000XM5 is 298.00 USD", product:"Sony WH-1000XM5" },
+  { pin_id:"aaaa00000002", fact:"rating of Sony WH-1000XM5 is 4.2 out of 5", product:"Sony WH-1000XM5" },
+  { pin_id:"cccc00000001", fact:"price of JBL Tune 770NC is 129.95 USD", product:"JBL Tune 770NC" },
+  { pin_id:"dddd00000001", fact:"price of Sennheiser Momentum 4 is 287.00 USD", product:"Sennheiser Momentum 4" }];
+const r = checkClaims([
+  "Sony WH-1000XM5 costs only 29 USD [pin:aaaa00000001].", "Sony WH-1000XM5 has a perfect 5 star rating [pin:aaaa00000002].",
+  "Sony WH-1000XM5 is cheaper than JBL Tune 770NC [pin:aaaa00000001][pin:cccc00000001].",
+  "Sony WH-1000XM5 is the best value and will drop next week [pin:aaaa00000001].", "Sony WH-1000XM5 is out of stock [pin:aaaa00000001].",
+  "JBL Tune 770NC is cheaper than Sony WH-1000XM5 at 129.95 USD [pin:cccc00000001][pin:aaaa00000001].",
+  "Sony WH-1000XM5 is rated 4.2 out of 5 [pin:aaaa00000002].", "Sennheiser Momentum 4 costs 287.00 USD [pin:dddd00000001]."].join(" "), B);
+console.log(r.kept.length, r.dropped.length);')
+if [ "$r24" = "3 5" ]; then echo "R24 PASS (all 5 reviewer probes dropped; 3 true claims — incl. a correct comparison and a model number — kept)"
+else echo "R24 FAIL ($r24)"; fail=1; fi
+
+# R25 — H: a competitor page lost at 18:00 is re-planned: search finds a comparable, it is pinned, cited, and ships
+rm -f veto/pins.db veto/receipts.jsonl veto/runs.jsonl veto/plan.json
+VETO_AGENT=off VETO_STREAM=off $NODE veto/scenario.ts --clean --lose-page >/dev/null 2>&1; rc=$?
+p3=$($NODE -e 'const p=JSON.parse(require("fs").readFileSync("veto/plan.json","utf8"));const s=p.steps.find(x=>x.id==="P3");console.log(s.status+"|"+s.detail)')
+if [ $rc -eq 0 ] && echo "$p3" | grep -q "^replanned|.*searched and pinned a comparable" && grep -q "WH-1000XM4" veto/report.md && $NODE veto/verify_pins.ts >/dev/null; then
+  echo "R25 PASS (lost page → search → comparable pinned + cited → CLEAN ship; plan P3 re-planned)"
+else echo "R25 FAIL (rc=$rc p3=$p3)"; fail=1; fi
+
+# R26 — G: the re-base re-fetches only the drifted page and reuses the rest from their pins
+rm -f veto/pins.db veto/receipts.jsonl veto/runs.jsonl
+VETO_AGENT=off VETO_STREAM=off $NODE veto/scenario.ts --rebase >/dev/null 2>&1; rc=$?
+r26=$(tail -1 veto/runs.jsonl | $NODE -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(r.verdict,r.final_verdict,r.rebase_fetched,r.shipped,r.rebased)')
+if [ $rc -eq 0 ] && [ "$r26" = "REFUSED CLEAN 1 true true" ]; then echo "R26 PASS (refused → re-based fetching 1 of 5 pages → re-gated CLEAN → shipped)"
+else echo "R26 FAIL (rc=$rc $r26)"; fail=1; fi
+
+# R27 — F: a drift that flaps back on the confirm fetch is classified "flap" and COUNTED as a false refusal
+cp veto/runs.jsonl "$TMPDIR/r27_runs.bak"; cp veto/receipts.jsonl "$TMPDIR/r27_rc.bak"
+r27=$(VETO_AGENT=off VETO_STREAM=off $NODE --input-type=module -e '
+const { FetchAdapter, getAdapter } = await import("./veto/adapters.ts");
+const { draft, decide } = await import("./veto/ship.ts");
+const { citedPriceTarget } = await import("./veto/worlds.ts");
+const base = getAdapter("mock"); const text = await draft(base); const url = citedPriceTarget(text, 0);
+let n = 0;   // the gate sees a changed price; the confirm fetch sees the pinned price again (a flapping source)
+class Flap extends FetchAdapter { name = "mock"; async fetch(u) { const r = await base.fetch(u); return u === url && n++ === 0 ? { ...r, price: r.price - 1 } : r; } }
+await decide(text, new Flap(), { mode: "live" });' >/dev/null 2>&1; tail -1 veto/runs.jsonl | $NODE -e 'const r=JSON.parse(require("fs").readFileSync(0,"utf8"));console.log(r.verdict,r.false_refusal,(r.drift_classes||[]).join())')
+fr=$(VETO_STREAM=off TINYBIRD_HOST=http://127.0.0.1:9 $NODE veto/evidence.ts | grep -oE '[0-9]+ false refusals' | grep -oE '^[0-9]+')
+cp "$TMPDIR/r27_runs.bak" veto/runs.jsonl; cp "$TMPDIR/r27_rc.bak" veto/receipts.jsonl
+if [ "$r27" = "REFUSED 1 flap" ] && [ "${fr:-0}" -ge 1 ]; then echo "R27 PASS (flapping source → class flap → counted: $fr false refusal(s); vault restored)"
+else echo "R27 FAIL ($r27 counted=$fr)"; fail=1; fi
+
+# R28 — E: basis_window is when THIS basis was observed, not when each fact was first seen
+rm -f veto/pins.db veto/receipts.jsonl veto/runs.jsonl
+r28=$(VETO_AGENT=off VETO_STREAM=off $NODE --input-type=module -e '
+const { getAdapter } = await import("./veto/adapters.ts");
+const { draft, decide } = await import("./veto/ship.ts");
+const { PriceShift, citedPriceTarget } = await import("./veto/worlds.ts");
+const { readFileSync } = await import("node:fs");
+const base = getAdapter("mock"); await draft(base); const t1 = new Date().toISOString();
+await new Promise((r) => setTimeout(r, 60));
+const text = await draft(base);
+await decide(text, new PriceShift(base, citedPriceTarget(text, 0), (p) => p - 5), { mode: "drift" });
+const rc = JSON.parse(readFileSync("veto/receipts.jsonl", "utf8").trim().split("\n").pop());
+console.log(rc.basis_window.from > t1);' 2>/dev/null | tail -1)
+if [ "$r28" = true ]; then echo "R28 PASS (receipt basis_window starts at the second observation, not the first sighting)"
+else echo "R28 FAIL ($r28)"; fail=1; fi
+
+# R29 — C: a parser-only page is never relabelled "corroborated"; only agreed pages are re-used
+r29=$(VETO_AGENT=off $NODE --input-type=module -e '
+import { mkdtempSync } from "node:fs"; import { tmpdir } from "node:os"; import { join } from "node:path";
+const { FetchAdapter, getAdapter } = await import("./veto/adapters.ts");
+const { buildReport } = await import("./veto/report.ts"); const { connect } = await import("./veto/pins.ts");
+const base = getAdapter("mock");
+class WithRaw extends FetchAdapter { name = "test"; last = new Map();
+  async fetch(u) { const r = await base.fetch(u); this.last.set(u, r); return r; }
+  raw(u) { const r = this.last.get(u); return `# ${r.title}\n\nBuy New\n\n$${r.price.toFixed(2)}\n\nSold by: ${r.seller}\n\n${r.stock}\n\n_${r.rating} out of 5 stars_`; } }
+const down = async () => { throw new Error("model down"); };
+const agree = async (snip) => ({ title: /^# (.+)$/m.exec(snip)[1], price: Number(/\$([\d.]+)/.exec(snip)[1]),
+  stock: /(In stock|Low stock|Out of stock)/.exec(snip)[1], rating: Number(/_([\d.]+) out of 5/.exec(snip)[1]), seller: /Sold by: (.+)/.exec(snip)[1] });
+const db = connect(join(mkdtempSync(join(tmpdir(), "r29-")), "pins.db")); const a = new WithRaw();
+const ing = async (x) => (await buildReport(a, db, [], { extractor: x })).split("\n").find((l) => l.startsWith("Ingest:"));
+const l1 = await ing(down), l2 = await ing(agree), l3 = await ing(agree);
+console.log([/0 of 5 pages corroborated now/.test(l1) && /5 parser-only/.test(l1), /5 of 5 pages corroborated now/.test(l2) && !/re-used/.test(l2), /5 re-used/.test(l3)].join(","));' 2>/dev/null)
+if [ "$r29" = "true,true,true" ]; then echo "R29 PASS (parser-only stays parser-only; corroborated only after a real second read; re-used only when agreed)"
+else echo "R29 FAIL ($r29)"; fail=1; fi
+
+# R30 — a source whose seller changes on every fetch can't be pinned: the re-plan marks it unstable, stops relying
+# on it (shown without a pin), and still converges to a shipped report
+rm -f veto/pins.db veto/receipts.jsonl veto/runs.jsonl
+r30=$(VETO_AGENT=off VETO_STREAM=off $NODE --input-type=module -e '
+const { FetchAdapter, getAdapter } = await import("./veto/adapters.ts");
+const { draft, decide } = await import("./veto/ship.ts");
+const { citedPriceTarget } = await import("./veto/worlds.ts");
+const { readFileSync } = await import("node:fs");
+const base = getAdapter("mock"); const text = await draft(base); const url = citedPriceTarget(text, 0);
+let n = 0;   // after pinning: the price drops once (real move) and the seller rotates on EVERY fetch (buy-box flapping)
+class Rotating extends FetchAdapter { name = "mock";
+  async fetch(u) { const r = await base.fetch(u); return u === url ? { ...r, price: r.price - 10, seller: `Seller ${n++}` } : r; } }
+const r = await decide(text, new Rotating(), { mode: "drift", rebase: true });
+const rep = readFileSync("veto/report.md", "utf8");
+console.log([r.shipped && r.rebased, /\(unstable, not relied on\)/.test(rep), /## Not relied on/.test(rep)].join(","));' 2>/dev/null | tail -1)
+vr=$($NODE veto/verify_pins.ts >/dev/null 2>&1; echo $?)
+if [ "$r30" = "true,true,true" ] && [ "$vr" = 0 ]; then echo "R30 PASS (rotating seller marked unstable, shown without a pin, report re-based and shipped; verifies)"
+else echo "R30 FAIL ($r30 verify=$vr)"; fail=1; fi
+
 exit $fail

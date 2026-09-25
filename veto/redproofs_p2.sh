@@ -61,8 +61,9 @@ if [ $rc -eq 0 ] && echo "$out" | grep -q "REFUSED (DRIFTED)" && echo "$out" | g
 else echo "G2 FAIL (rc=$rc verify=$vrc)"; echo "$out"; fail=1; fi
 $NODE veto/simulate.ts --clean >/dev/null   # leave a clean shipped report behind
 
-# G3: keep this mock run's artifacts as committed evidence (R4 drift, R5 outage, R6 clean, verify output)
-EV="evidence/mock-run-$(date -u +%F)"; mkdir -p "$EV"
+# G3: keep this mock run's artifacts (R4 drift, R5 outage, R6 clean, verify output). Written to the committed
+# evidence folder ONLY when VETO_EVIDENCE=1 — a normal test run never rewrites committed evidence.
+if [ "$VETO_EVIDENCE" = 1 ]; then EV="evidence/mock-run-$(date -u +%F)"; else EV="${TMPDIR:-/tmp}/veto-mock-evidence"; fi; mkdir -p "$EV"
 cp veto/receipts.jsonl "$EV/receipts.jsonl"; cp veto/runs.jsonl "$EV/runs.jsonl"; [ -f veto/ships.jsonl ] && cp veto/ships.jsonl "$EV/ships.jsonl"
 $NODE veto/verify_pins.ts > "$EV/verify_pins.txt" 2>&1
 printf 'R5 report.md before: %s\nR5 report.md after:  %s\n(format: sha256-mtime; identical = untouched)\n' "$R5_BEFORE" "$R5_AFTER" > "$EV/r5_report_sha256.txt"

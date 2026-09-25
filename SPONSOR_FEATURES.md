@@ -5,6 +5,7 @@
 |---|---|---|---|
 | MCP server (`mcp.nimbleway.com/mcp`, Streamable HTTP, `nimble_`-prefixed tools) | Collection layer; live fetches visible in the first 60s | Phase 3 adapter, Phase 4 live key | Y |
 | Plugin (`/plugin install nimble`) | OPEN (C3): agent runs on OpenRouter, not Claude Code — plugin is not in the runtime path | — | N (pending) |
+| Search (`nimble_search`) | Planner re-plan: a lost competitor page (unreachable or no extractable price) is replaced by a comparable listing found by search, then corroborated and pinned — used live in the final run | veto/adapters.ts, veto/report.ts, R25 | Y |
 | Extract (`nimble_extract`) | The 5 live Amazon product pages in the villain scenario, fetched concurrently (~10s) | adapters.ts / scenario.ts | Y |
 | Extract Template | Tried: `best_buy_pdp` timed out (463s), `amazon_pdp` returned no parsed results — not used (C1) | — | N |
 | Agent Skills format | The cite-pins rule ships as a one-file skill in their publish format | veto/skill/SKILL.md, R15 | Y |

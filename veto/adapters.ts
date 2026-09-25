@@ -18,6 +18,8 @@ export abstract class FetchAdapter {
   abstract fetch(url: string): Promise<FetchResult>;
   // Raw page text from the last fetch of `url`, when the adapter has one (used only at ingest, for L1).
   raw(_url: string): string | undefined { return undefined; }
+  // Find replacement listings for a query (Nimble: nimble_search). Adapters without search return [].
+  async search(_query: string): Promise<string[]> { return []; }
 }
 
 type Fixture = Omit<FetchResult, "url" | "fetched_at">;
@@ -27,7 +29,7 @@ const dataLines = (file: URL) =>
 
 function loadFixtures(): Map<string, Fixture> {
   const rows = new Map<string, Fixture>();
-  for (const line of dataLines(FIXTURES)) {
+  for (const line of dataLines(FIXTURES).map((l) => l.replace(/^\+/, ""))) {
     const [url, title, price, stock, rating, seller] = line.split("|").map((p) => p.trim());
     rows.set(url, { title, price: Number(price), stock, rating: Number(rating), seller });
   }
@@ -37,6 +39,10 @@ function loadFixtures(): Map<string, Fixture> {
 class MockAdapter extends FetchAdapter {
   readonly name = "mock";
   private fixtures = loadFixtures();
+
+  async search(_query: string): Promise<string[]> {
+    return dataLines(FIXTURES).filter((l) => l.startsWith("+")).map((l) => l.slice(1).split("|")[0].trim());
+  }
 
   // Deterministic fixtures from pages.txt; only fetched_at varies.
   async fetch(url: string): Promise<FetchResult> {
@@ -78,6 +84,7 @@ function findKey(node: Json, keys: string[], depth = 0): Json {
 // Canonical extracted values: the same fact must hash the same wherever on the page it was read.
 export const clean = (v: string) =>
   v.replace(/\[([^\]]*)\]\([^)]*\)/g, "$1") // markdown links -> text
+    .replace(/\\([\\`*_{}\[\]()#+\-.!|])/g, "$1") // markdown escapes ("GLAM\_AZON" -> "GLAM_AZON")
     .replace(/https?:\/\/\S+/g, "") // bare URLs never enter a fact
     .replace(/\s+and (ships|fulfilled) (from|by) .*$/i, "")
     .replace(/^ships from and sold by\s+/i, "")
@@ -185,6 +192,19 @@ class NimbleMCPAdapter extends FetchAdapter {
     return want;
   }
 
+  async search(query: string): Promise<string[]> {
+    await (this.ready ??= this.init());
+    const t0 = Date.now();
+    trace(`tools/call nimble_search "${query}" (amazon.com, lite)`);
+    const result = await this.rpc("tools/call", { name: "nimble_search", arguments: {
+      query, max_results: 20, include_domains: ["amazon.com"], search_depth: "lite", country: "US", locale: "en" } });
+    const text: string = (result?.content ?? []).map((c: Json) => c.text ?? "").join("\n");
+    const urls = [...text.matchAll(/https?:\/\/www\.amazon\.com\/(?:[^\s"]*?\/)?(?:dp|clp|gp\/product)\/([A-Z0-9]{10})/g)].map((m) => `https://www.amazon.com/dp/${m[1]}`);
+    const unique = [...new Set(urls)];
+    trace(`  ← ${Date.now() - t0}ms · ${unique.length} product listing(s)`);
+    return unique;
+  }
+
   async fetch(url: string): Promise<FetchResult> {
     const tool = await (this.ready ??= this.init());
     const args = {
@@ -204,8 +224,14 @@ class NimbleMCPAdapter extends FetchAdapter {
 }
 
 // Page list: VETO_PAGES (default pages.txt). First column is the URL.
+// Optional search hint per watched page (2nd column in pages.real.txt; title column in the mock fixtures).
+export function pageHint(url: string, file = process.env.VETO_PAGES ?? "pages.txt"): string | undefined {
+  const line = dataLines(new URL(`./${file}`, import.meta.url)).find((l) => l.split("|")[0].trim() === url);
+  return line?.split("|")[1]?.trim() || undefined;
+}
+
 export function pageUrls(file = process.env.VETO_PAGES ?? "pages.txt"): string[] {
-  const urls = dataLines(new URL(`./${file}`, import.meta.url)).map((l) => l.split("|")[0].trim());
+  const urls = dataLines(new URL(`./${file}`, import.meta.url)).filter((l) => !l.startsWith("+")).map((l) => l.split("|")[0].trim());
   if (!urls.length) throw new Error(`${file} lists no URLs`);
   return urls;
 }
@@ -215,3 +241,6 @@ export function getAdapter(kind = process.env.VETO_ADAPTER ?? "mock"): FetchAdap
   if (kind === "nimble") return new NimbleMCPAdapter();
   throw new Error(`unknown VETO_ADAPTER: ${kind}`);
 }
+
+// The retailer that hosts a page (its own listings are first-party; anyone else is a third-party seller).
+export const retailerOf = (url: string) => (/amazon\./.test(url) ? "Amazon.com" : /bestbuy\./.test(url) ? "Best Buy" : new URL(url).hostname);

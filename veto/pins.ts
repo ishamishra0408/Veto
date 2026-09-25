@@ -28,6 +28,10 @@ export function connect(path: string = DB_PATH): DatabaseSync {
       " sha256 TEXT NOT NULL, fetched_at TEXT NOT NULL, source_url TEXT NOT NULL)",
   );
   db.exec("CREATE TABLE IF NOT EXISTS meta (k TEXT PRIMARY KEY, v TEXT NOT NULL)");
+  // Every sighting of a fact (a pin keeps its FIRST fetch time as identity; observations record each fetch).
+  db.exec("CREATE TABLE IF NOT EXISTS observations (pin_id TEXT NOT NULL, observed_at TEXT NOT NULL, PRIMARY KEY (pin_id, observed_at))");
+  // L1 status per pin: agreed (two extractors) | parser-only (second extractor unavailable).
+  db.exec("CREATE TABLE IF NOT EXISTS corroboration (pin_id TEXT PRIMARY KEY, status TEXT NOT NULL)");
   db.prepare("INSERT OR IGNORE INTO meta VALUES ('session', ?)").run(randomUUID());
   return db;
 }
@@ -51,6 +55,7 @@ export const factValue = (p: Pin): string => p.fact_text.split(" is ").slice(1).
 // One pin per fact. Same fact -> same pin; first fetch's timestamp wins (INSERT OR IGNORE).
 export function pinResult(db: DatabaseSync, r: FetchResult): Record<Field, Pin> {
   const insert = db.prepare("INSERT OR IGNORE INTO pins VALUES (?,?,?,?,?)");
+  const observe = db.prepare("INSERT OR IGNORE INTO observations VALUES (?,?)");
   const select = db.prepare("SELECT * FROM pins WHERE pin_id = ?");
   const facts = factsFor(r);
   const out = {} as Record<Field, Pin>;
@@ -59,6 +64,7 @@ export function pinResult(db: DatabaseSync, r: FetchResult): Record<Field, Pin> 
     const sha = digest(text);
     const pinId = sha.slice(0, PIN_LEN);
     insert.run(pinId, text, sha, r.fetched_at, r.url);
+    observe.run(pinId, r.fetched_at);
     out[field] = select.get(pinId) as unknown as Pin;
   }
   return out;
@@ -87,3 +93,13 @@ export const citedPinIds = (text: string): string[] =>
 // Superseded facts disclosed after a re-base: must still resolve, but are not revalidated.
 export const supersededPinIds = (text: string): string[] =>
   [...new Set([...text.matchAll(/\[was-pin:([0-9a-f]+)\]/g)].map((m) => m[1]))];
+
+// Rebuild a page's FetchResult from its pinned facts (used by a targeted re-base for pages that did not drift).
+export function resultFromPins(db: DatabaseSync, url: string, pinIds: string[]): FetchResult | null {
+  const get = db.prepare("SELECT * FROM pins WHERE pin_id = ?");
+  const ps = pinIds.map((id) => get.get(id) as unknown as Pin | undefined).filter((p): p is Pin => !!p && p.source_url === url);
+  const f = Object.fromEntries(ps.map((p) => { const x = parseFact(p.fact_text); return [x.field, x.value]; })) as Record<string, string>;
+  if (!FIELDS.every((k) => k in f)) return null;
+  const seen = (db.prepare(`SELECT MAX(observed_at) AS t FROM observations WHERE pin_id IN (${ps.map(() => "?").join(",")})`).get(...ps.map((p) => p.pin_id)) as { t: string | null }).t;
+  return { url, title: f.title, price: parseFloat(f.price), stock: f.stock, rating: parseFloat(f.rating), seller: f.seller, fetched_at: seen ?? ps[0].fetched_at };
+}

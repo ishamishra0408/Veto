@@ -7,7 +7,7 @@ export interface Counts {
 export interface VetoEvent {
   session: string; kind: "pin" | "receipt" | "run" | "check"; event_id: string; ts: string;
   n_drifted: number; verdict: string; mode: string; shipped: number; rebased: number;
-  adapter: string; gate_ms: number; url: string; field: string; drifted: number;
+  adapter: string; gate_ms: number; url: string; field: string; drifted: number; false_refusal: number;
 }
 
 export const chTime = (iso: string) => iso.replace("T", " ").replace("Z", ""); // DateTime64(3) text form

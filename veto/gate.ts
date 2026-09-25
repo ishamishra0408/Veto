@@ -36,10 +36,17 @@ export async function revalidate(dbPath: string, adapter: FetchAdapter, basisPin
   const db = new DatabaseSync(dbPath, { readOnly: true });
   const get = db.prepare("SELECT * FROM pins WHERE pin_id = ?");
   const pins = basisPinIds.map((id) => get.get(id) as unknown as Pin | undefined);
+  // basis_window = when THIS basis was observed (latest sighting of each cited fact), not when a fact was first seen.
+  let lastSeen = (p: Pin) => p.fetched_at;
+  try {
+    const obs = db.prepare("SELECT MAX(observed_at) AS t FROM observations WHERE pin_id = ?");
+    lastSeen = (p: Pin) => ((obs.get(p.pin_id) as { t: string | null } | undefined)?.t ?? p.fetched_at);
+  } catch { /* older vault without observations */ }
+  const seen = new Map(pins.filter((p): p is Pin => !!p).map((p) => [p.pin_id, lastSeen(p)]));
   db.close();
 
   const found = pins.filter((p): p is Pin => p !== undefined);
-  const stamps = found.map((p) => p.fetched_at).sort();
+  const stamps = found.map((p) => seen.get(p.pin_id) ?? p.fetched_at).sort();
   const basis = (): Basis => ({
     pin_hashes: found.map((p) => p.sha256),
     basis_window: stamps.length ? { from: stamps[0], to: stamps[stamps.length - 1] } : null,

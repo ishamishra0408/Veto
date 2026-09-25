@@ -23,7 +23,8 @@ const local: Counts = {
   drifted_flagged: receipts.reduce((s, r) => s + r.drifted_facts.length, 0),
   shipped_contradictions: runs.filter((r) => r.contradiction === 1).length,
   clean_shipped: runs.filter((r) => r.verdict === "CLEAN" && r.shipped).length,
-  false_refusals: runs.filter((r) => r.verdict === "REFUSED" && r.mode === "clean").length,
+  // False refusal: refused on a clean mock world, OR refused live where every drift flapped back on the confirm fetch.
+  false_refusals: runs.filter((r) => r.verdict === "REFUSED" && (r.mode === "clean" || r.false_refusal === 1)).length,
   unforced_refusals: runs.filter((r) => r.verdict === "REFUSED" && r.mode === "live").length,
   // T1 guardrail: nearest-rank p95 of gate wall time (same formula as the Tinybird pipe).
   gate_p95_ms: (() => { const ms = runs.map((r) => Number(r.gate_ms ?? 0)).sort((a, b) => a - b);
@@ -33,6 +34,8 @@ const local: Counts = {
 console.log(`north star: ${local.pinned} facts pinned · ${local.drifted_flagged} drifted-and-flagged · ${local.shipped_contradictions} shipped contradictions`);
 console.log(`counter: ${local.clean_shipped} clean runs shipped · ${local.false_refusals} false refusals`);
 // Live runs with no injection have no ground truth; a refusal there is the real world moving, reported separately.
+const classes = runs.flatMap((r) => r.drift_classes ?? []);
+if (classes.length) console.log(`drift classes (confirm fetch): ${["moved", "flap", "moving", "unknown"].map((c) => `${classes.filter((x) => x === c).length} ${c}`).join(" · ")}`);
 const selfCorrected = runs.filter((r) => r.verdict === "REFUSED" && r.rebased && r.shipped).length;
 if (selfCorrected) console.log(`self-correct: ${selfCorrected} refusal(s) re-planned, re-pinned and shipped with the change disclosed`);
 console.log(`guardrail: gate p95 ${local.gate_p95_ms} ms over ${runs.length} run(s)`);

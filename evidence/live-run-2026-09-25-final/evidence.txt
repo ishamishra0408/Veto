@@ -1,0 +1,8 @@
+north star: 30 facts pinned · 8 drifted-and-flagged · 0 shipped contradictions
+counter: 0 clean runs shipped · 1 false refusals
+drift classes (confirm fetch): 4 moved · 3 flap · 0 moving · 0 unknown
+self-correct: 1 refusal(s) re-planned, re-pinned and shipped with the change disclosed
+guardrail: gate p95 12018 ms over 2 run(s)
+live: 1 unforced drift refusal(s) — nothing injected, the real page changed
+evidence source: Tinybird pipe vault_evidence — matches local (session 63fd947a)
+volatility (all live runs, Tinybird): Bose QuietComfort Ultra Bluetoot price 10/20 · Bose QuietComfort Ultra Bluetoot seller 8/20 · Sony WH seller 6/22

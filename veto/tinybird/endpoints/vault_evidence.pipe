@@ -9,7 +9,7 @@ SQL >
         sumIf(n_drifted, kind = 'receipt') AS drifted_flagged,
         countIf(kind = 'run' AND drifted = 1) AS shipped_contradictions,
         countIf(kind = 'run' AND verdict = 'CLEAN' AND shipped = 1) AS clean_shipped,
-        countIf(kind = 'run' AND verdict = 'REFUSED' AND mode = 'clean') AS false_refusals,
+        countIf(kind = 'run' AND verdict = 'REFUSED' AND (mode = 'clean' OR false_refusal = 1)) AS false_refusals,
         countIf(kind = 'run' AND verdict = 'REFUSED' AND mode = 'live') AS unforced_refusals,
         arrayElement(arraySort(groupArrayIf(gate_ms, kind = 'run')), toUInt32(ceil(0.95 * countIf(kind = 'run')))) AS gate_p95_ms
     FROM (

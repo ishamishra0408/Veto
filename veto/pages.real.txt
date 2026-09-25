@@ -1,7 +1,7 @@
-# Live product URLs for demo.sh --real. Same 5 products as pages.txt, on Amazon (Best Buy timed out via Nimble).
+# Live product URLs for demo.sh --real (url | search hint used to find a comparable if the page is lost). Same 5 products as pages.txt, on Amazon (Best Buy timed out via Nimble).
 # Sourced 2026-09-24 via web search of amazon.com; Veto never invents a URL.
-https://www.amazon.com/dp/B09XS7JWHH
-https://www.amazon.com/dp/B0CCZ1L489
-https://www.amazon.com/dp/B0DGJC52FP
-https://www.amazon.com/dp/B0B6GHW1SX
-https://www.amazon.com/dp/B0CT9XTKKM
+https://www.amazon.com/dp/B09XS7JWHH | Sony WH-1000XM5 headphones
+https://www.amazon.com/dp/B0CCZ1L489 | Bose QuietComfort Ultra headphones
+https://www.amazon.com/dp/B0DGJC52FP | Apple AirPods Max over-ear headphones
+https://www.amazon.com/dp/B0B6GHW1SX | Sennheiser Momentum 4 wireless headphones
+https://www.amazon.com/dp/B0CT9XTKKM | JBL Tune 770NC headphones

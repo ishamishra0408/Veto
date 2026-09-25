@@ -1,0 +1,221 @@
+
+━━ PINNED EVIDENCE VAULT — adapter: nimble ━━
+
+━━ Night 1 — a competitor page goes dark at 18:00 (simulated); no price injected ━━
+[plan] goal: recommend a price for our headphones: undercut the cheapest comparable competitor (in stock, rated ≥ 4.0) by 3%
+[plan P1 plan] ✓ decompose goal into facts + conclusions: needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings
+[18:00 T0] fetching 5 competitor pages via nimble-mcp; pinning every fact (simulated: B0DGJC52FP is unreachable)
+[nimble mcp] connect https://mcp.nimbleway.com/mcp
+[nimble mcp] session <id> · server Nimble 3.4.3
+[nimble mcp] tools/list → nimble_crawl_run, nimble_crawl_status, nimble_crawl_list, nimble_crawl_terminate, nimble_extract_templates_list, nimble_extract_templates_get, nimble_extract_templates_run, nimble_extract_templates_generate, nimble_extract_templates_generation_status, nimble_extract_templates_update_from_template, nimble_map, nimble_task_results, nimble_extract_templates_run_async, nimble_search, nimble_extract, nimble_extract_async, nimble_agents_list, nimble_agents_get, nimble_agents_create, nimble_agents_update, nimble_agents_delete, nimble_agents_run, nimble_agents_run_status, nimble_agents_runs_list, nimble_agents_run_result, nimble_agent_templates_list, nimble_agent_templates_get
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp]   ← 12497ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[nimble mcp]   ← 12608ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[nimble mcp]   ← 13444ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+[nimble mcp]   ← 15407ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[liquid extract] agreed Sony WH-1000XM5 Premium Noise Cancelling (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid extract] agreed Sennheiser Momentum 4 Wireless Headphone (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid extract] agreed JBL Tune 770NC - Wireless Over-Ear Headp (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid extract] agreed Bose QuietComfort Ultra Bluetooth Headph (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[nimble mcp] tools/call nimble_search "Apple AirPods Max over-ear headphones" (amazon.com, lite)
+[nimble mcp]   ← 12589ms · 8 product listing(s)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B08PZHYWJS (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 6908ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[liquid extract] agreed Apple AirPods Max 2 Wireless Over-Ear He (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid agent] LFM2.5-1.2B-Instruct-GGUF:Q4_K_M (on-device) · reasoning over 25 pinned facts
+[liquid agent]   ← 6350ms · 2 claim(s) verified · 1 dropped · 2 citation(s) repaired deterministically
+[liquid agent]     dropped (number(s) 4 not in the cited facts): Sennheiser Momentum 4 Wireless is listed at $249.95 with a solid 4.0 rating [pin:84c44e5a2
+[plan P2 act] ↻ collect 5 competitor pages via nimble-mcp: 5 pages fetched, 1 lost (unreachable or no extractable price — never invented)
+[plan P3 observe] ↻ corroborate (2 extractors) and pin every fact: 5 corroborated now; re-planned: lost B0DGJC52FP → searched and pinned a comparable: Apple AirPods Max 2 Wireless Over-Ear He
+[plan P4 reason] ✓ select comparables: 5 comparable competitor(s)
+[plan P5 reason] ✓ anchor → recommended price: recommended $126.05
+[plan P6 act] ✓ draft report (every conclusion cites its pins): 9 conclusions citing 25 pins, 0 URLs
+[overnight] agent reasons over the pinned basis only → draft cites 25 pins, 0 URLs
+[21:00 T1] nothing injected — any change from here on is the live page itself
+[06:00 gate] re-fetch → re-hash → compare, before anything ships
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 6432ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[nimble mcp]   ← 10956ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+[nimble mcp]   ← 11287ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 11676ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[nimble mcp]   ← 12013ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.19 · Low stock
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp]   ← 10686ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+VERDICT: REFUSED (DRIFTED) — report.md not written
+  drift [pin:1e4fcedb999e] price: 329.00 USD -> 329.19 USD
+  drift [pin:2aa1f8c8b8fc] stock: In stock -> Low stock
+  drift [pin:860975823199] seller: Amazon.com -> Tech Geeks
+  WHY: Bose QuietComfort Ultra Bluetooth price changed from 329.00 USD [pin:1e4fcedb999e] to 329.19 USD [pin:dd23fbd1598c] after the draft cited it.
+  WHY: Bose QuietComfort Ultra Bluetooth stock changed from In stock [pin:2aa1f8c8b8fc] to Low stock [pin:37db6f0a7c95] after the draft cited it.
+  WHY: Bose QuietComfort Ultra Bluetooth seller changed from Amazon.com [pin:860975823199] to Tech Geeks [pin:982233468c86] after the draft cited it.
+  confirm fetch: price flap, stock flap, seller flap
+RECEIPT: {"refused_at":"2026-09-25T20:26:13.442Z","reason":"DRIFTED","drifted_facts":[{"pin_id":"1e4fcedb999e","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"price","old_hash":"1e4fcedb999e33cb4353bd3363d152b7c1c76b4b7f22759fe610f6c8db310c5b","new_hash":"dd23fbd1598c1fb39634d5f4fad3153a8e454f92cdda8b55176c8ba9c715857b","old_value":"329.00 USD","new_value":"329.19 USD"},{"pin_id":"2aa1f8c8b8fc","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"stock","old_hash":"2aa1f8c8b8fc7eabe3b1893a29f5cc12c2b6d4e980c756cfcefe4f954dee7083","new_hash":"37db6f0a7c95a10a93461cc4b63dadeb2e4e7e1cde8c4715dfa9182c1efa76d9","old_value":"In stock","new_value":"Low stock"},{"pin_id":"860975823199","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"seller","old_hash":"860975823199b0134ecb78481fb890ff5f13e161a953824b59cce8731d3919a6","new_hash":"982233468c869c93e597e43ca9119c717ebaf4bea174154591c382a3b038c83a","old_value":"Amazon.com","new_value":"Tech Geeks"}],"error":null,"pin_hashes":["491d8d433de464dc255e1b1d34a6047e72145adabd4d6b3c3ad553ec089c8f27","461e1caa31575ec032f91fc7d9d84e5ff16fb5c784a2b2451d96cecdc262c5fe","c17f4f4a21a794df3184d064b35fbaa9c3afb7e3e2d9fb7bff966a7f6f9ec0a7","11e138066e1b1079bc2c093b03e74855ed60155d20366f7872ad6d50b2960393","d0af4ea4d0750e103ab089557fabb4f12e9124d26f4b9b76714d0fd54c431ddf","84d33b3ce9fa4c8cab69cedc8371c38c64cba7d5586804c8bf60bc8f2ca046d2","1e4fcedb999e33cb4353bd3363d152b7c1c76b4b7f22759fe610f6c8db310c5b","2aa1f8c8b8fc7eabe3b1893a29f5cc12c2b6d4e980c756cfcefe4f954dee7083","e4e39fca36e63f450fc0cadfc674f12252a09824246ff45445fed08327049ee0","860975823199b0134ecb78481fb890ff5f13e161a953824b59cce8731d3919a6","029b8a1121811b55d3d4a2b66bea15fea009a5cda9ba19bab75f84d414368053","84c44e5a28bd9ff11b97ee81c62bb739c286ad44476d022286bf8776f8d1e3ae","fbaa7c06ffb5962255f04013c6331eda0fbf7153d1a310f905edf9c3b081202c","0238af8b5483f23de41bf210463b0175cdc0942c3e73c4f29bf1e7fe68cf4a69","65ffc7850ff4f13b4f20377f1283edc436b4fe8e65a7f469681856ba210fc77b","4528b3390a557095cb49d7bdd082c44a0b5f823ef3e2d1f6829533e15433b721","b4ea4dd0edac51625923856e7f9a679c15101e43b9900f3c9fa5e436398d4646","abb0be827ed0fd941e49a1739e1c188902ed0801153a04121e7123784e5e6d98","efa1e5d2f3fa3a7dd5d9ac60cce6d7b16f5c111a59d22fb3ecdb69ac69a8a359","cf69030d2dac20875917e0c07498bea1a3946da3eefd7d60fd9e9b16da85326e","1787984d65dd84e2a2c63d863311f6b0912c1b1666605e12e6907980144cff73","9628e3ad234b7f96b01f1a3bb97fe357c1790ca1d183febd416a4e9c79f7840b","0eb7bf557431d9413ec60b972d77050483ebbe06a75df9b57a909383110afcf2","0d03b06d250af4c6d2b9499262c8edba6f90d7f969ec7de128fc48194909acdb","26df19b678bee6acde00bfb98751886369ebfb8f9cac7356eb6d3d1dc7692229"],"basis_window":{"from":"2026-09-25T20:25:03.771Z","to":"2026-09-25T20:25:42.253Z"},"explanation":["Bose QuietComfort Ultra Bluetooth price changed from 329.00 USD [pin:1e4fcedb999e] to 329.19 USD [pin:dd23fbd1598c] after the draft cited it.","Bose QuietComfort Ultra Bluetooth stock changed from In stock [pin:2aa1f8c8b8fc] to Low stock [pin:37db6f0a7c95] after the draft cited it.","Bose QuietComfort Ultra Bluetooth seller changed from Amazon.com [pin:860975823199] to Tech Geeks [pin:982233468c86] after the draft cited it."],"confirm":[{"pin_id":"1e4fcedb999e","field":"price","confirm_value":"329.00 USD","class":"flap"},{"pin_id":"2aa1f8c8b8fc","field":"stock","confirm_value":"In stock","class":"flap"},{"pin_id":"860975823199","field":"seller","confirm_value":"Amazon.com","class":"flap"}]}
+[plan P7 observe] ✗ 06:00 gate: re-fetch, re-hash, compare: REFUSED (DRIFTED)
+
+No price was injected — the live page moved on its own between 18:00 and 06:00.
+
+The draft that would have shipped:
+  | 2 | Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black [pin:84d33b3ce9fa] | $329.00 [pin:1e4fcedb999e] | In stock [pin:2aa1f8c8b8fc] | 4.2 out of 5 [pin:e4e39fca36e6] | Amazon.com [pin:860975823199] |
+  ↳ pinned price 329.00 USD; live at 6am: 329.19 USD.
+  ↳ pinned stock In stock; live at 6am: Low stock.
+  ↳ pinned seller Amazon.com; live at 6am: Tech Geeks.
+  Shipping this = pricing against a ghost.
+
+[plan impact] drift breaks 1 of 9 conclusions: Comparable set; 8 still hold
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp]   ← 13997ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.19 · Low stock
+[liquid extract] agreed Bose QuietComfort Ultra Bluetooth Headph (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid agent] LFM2.5-1.2B-Instruct-GGUF:Q4_K_M (on-device) · reasoning over 22 pinned facts
+[liquid agent]   ← 5778ms · 1 claim(s) verified · 2 dropped · 1 citation(s) repaired deterministically
+[liquid agent]     dropped (talks about stock without citing it): Bose QuietComfort Ultra Bluetooth has a 4.2 rating and is available on Amazon.com [pin:e4e
+[liquid agent]     dropped (number(s) 4 not in the cited facts): Sennheiser Momentum 4 Wireless costs 249.95 USD, rated 4.0 with Amazon stock [pin:84c44e5a
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 8686ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 9625ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[nimble mcp]   ← 10415ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[nimble mcp]   ← 11947ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[nimble mcp]   ← 12033ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+REBASE: re-fetched 1 drifted page(s), reused 4 from their pins; 3 drift(s) disclosed as [was-pin:]; 3 unstable fact(s) not relied on
+VERDICT: CLEAN — shipped re-based report.md (22 pins revalidated)
+[tinybird] streamed 52 events
+[plan P8 correct] ✓ self-correct: impact → re-pin → recompute → disclose → re-gate: re-fetched only the drifted page(s), reused the rest from pins, recomputed (recommendation unchanged), disclosed as [was-pin:], re-gated CLEAN, shipped
+
+━━ Night 2 — the villain ━━
+[plan] goal: recommend a price for our headphones: undercut the cheapest comparable competitor (in stock, rated ≥ 4.0) by 3%
+[plan P1 plan] ✓ decompose goal into facts + conclusions: needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings
+[18:00 T0] fetching 5 competitor pages via nimble-mcp; pinning every fact
+[nimble mcp] connect https://mcp.nimbleway.com/mcp
+[nimble mcp] session <id> · server Nimble 3.4.3
+[nimble mcp] tools/list → nimble_crawl_run, nimble_crawl_status, nimble_crawl_list, nimble_crawl_terminate, nimble_extract_templates_list, nimble_extract_templates_get, nimble_extract_templates_run, nimble_extract_templates_generate, nimble_extract_templates_generation_status, nimble_extract_templates_update_from_template, nimble_map, nimble_task_results, nimble_extract_templates_run_async, nimble_search, nimble_extract, nimble_extract_async, nimble_agents_list, nimble_agents_get, nimble_agents_create, nimble_agents_update, nimble_agents_delete, nimble_agents_run, nimble_agents_run_status, nimble_agents_runs_list, nimble_agents_run_result, nimble_agent_templates_list, nimble_agent_templates_get
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0DGJC52FP (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp]   ← 8610ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+[nimble mcp]   ← 10256ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 11397ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[nimble mcp]   ← 12477ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[liquid extract] agreed Sony WH-1000XM5 Premium Noise Cancelling (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[nimble mcp] tools/call nimble_search "Apple AirPods Max over-ear headphones" (amazon.com, lite)
+[nimble mcp]   ← 1447ms · 7 product listing(s)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B08PZHYWJS (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B08PZD76NP (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 7181ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[liquid agent] LFM2.5-1.2B-Instruct-GGUF:Q4_K_M (on-device) · reasoning over 25 pinned facts
+[liquid agent]   ← 4802ms · 2 claim(s) verified · 1 dropped · 2 citation(s) repaired deterministically
+[liquid agent]     dropped (number(s) 4 not in the cited facts): Sennheiser Momentum 4 Wireless is listed at $249.95 with a solid 4.0 rating [pin:84c44e5a2
+[plan P2 act] ↻ collect 5 competitor pages via nimble-mcp: 5 pages fetched, 1 lost (unreachable or no extractable price — never invented)
+[plan P3 observe] ↻ corroborate (2 extractors) and pin every fact: 1 corroborated now; 4 re-used (corroborated earlier); re-planned: lost B0DGJC52FP → searched and pinned a comparable: Apple AirPods Max 2 Wireless Over-Ear He
+[plan P4 reason] ✓ select comparables: 5 comparable competitor(s)
+[plan P5 reason] ✓ anchor → recommended price: recommended $126.05
+[plan P6 act] ✓ draft report (every conclusion cites its pins): 10 conclusions citing 25 pins, 0 URLs
+[overnight] agent reasons over the pinned basis only → draft cites 25 pins, 0 URLs
+[21:00 T1] competitor drops one price 15% (simulated) — the pipeline doesn't notice
+[06:00 gate] re-fetch → re-hash → compare, before anything ships
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 7748ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[nimble mcp]   ← 10324ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 10476ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.19 · Low stock
+[nimble mcp]   ← 11216ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[nimble mcp]   ← 11460ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp]   ← 10057ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.19 · Low stock
+[nimble mcp]   ← 10661ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+VERDICT: REFUSED (DRIFTED) — report.md not written
+  drift [pin:1e4fcedb999e] price: 329.00 USD -> 329.19 USD
+  drift [pin:2aa1f8c8b8fc] stock: In stock -> Low stock
+  drift [pin:860975823199] seller: Amazon.com -> Tech Geeks
+  drift [pin:b4ea4dd0edac] price: 129.95 USD -> 110.46 USD
+  WHY: Bose QuietComfort Ultra Bluetooth price changed from 329.00 USD [pin:1e4fcedb999e] to 329.19 USD [pin:dd23fbd1598c] after the draft cited it.
+  WHY: Bose QuietComfort Ultra Bluetooth stock changed from In stock [pin:2aa1f8c8b8fc] to Low stock [pin:37db6f0a7c95] after the draft cited it.
+  WHY: Bose QuietComfort Ultra Bluetooth seller changed from Amazon.com [pin:860975823199] to Tech Geeks [pin:982233468c86] after the draft cited it.
+  WHY: JBL Tune 770NC price changed from 129.95 USD [pin:b4ea4dd0edac] to 110.46 USD [pin:03253d80fda4] after the draft cited it.
+  confirm fetch: price moved, stock moved, seller moved, price moved
+RECEIPT: {"refused_at":"2026-09-25T20:27:56.177Z","reason":"DRIFTED","drifted_facts":[{"pin_id":"1e4fcedb999e","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"price","old_hash":"1e4fcedb999e33cb4353bd3363d152b7c1c76b4b7f22759fe610f6c8db310c5b","new_hash":"dd23fbd1598c1fb39634d5f4fad3153a8e454f92cdda8b55176c8ba9c715857b","old_value":"329.00 USD","new_value":"329.19 USD"},{"pin_id":"2aa1f8c8b8fc","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"stock","old_hash":"2aa1f8c8b8fc7eabe3b1893a29f5cc12c2b6d4e980c756cfcefe4f954dee7083","new_hash":"37db6f0a7c95a10a93461cc4b63dadeb2e4e7e1cde8c4715dfa9182c1efa76d9","old_value":"In stock","new_value":"Low stock"},{"pin_id":"860975823199","source_url":"https://www.amazon.com/dp/B0CCZ1L489","field":"seller","old_hash":"860975823199b0134ecb78481fb890ff5f13e161a953824b59cce8731d3919a6","new_hash":"982233468c869c93e597e43ca9119c717ebaf4bea174154591c382a3b038c83a","old_value":"Amazon.com","new_value":"Tech Geeks"},{"pin_id":"b4ea4dd0edac","source_url":"https://www.amazon.com/dp/B0CT9XTKKM","field":"price","old_hash":"b4ea4dd0edac51625923856e7f9a679c15101e43b9900f3c9fa5e436398d4646","new_hash":"03253d80fda4584eda5c86ccd85a084b70002612c3e9352fd752f1b218d20971","old_value":"129.95 USD","new_value":"110.46 USD"}],"error":null,"pin_hashes":["491d8d433de464dc255e1b1d34a6047e72145adabd4d6b3c3ad553ec089c8f27","461e1caa31575ec032f91fc7d9d84e5ff16fb5c784a2b2451d96cecdc262c5fe","c17f4f4a21a794df3184d064b35fbaa9c3afb7e3e2d9fb7bff966a7f6f9ec0a7","11e138066e1b1079bc2c093b03e74855ed60155d20366f7872ad6d50b2960393","83eedf5691e1f34a47eb142a7a895d2982b4b003e35ad7c102f16a2c36045d78","84d33b3ce9fa4c8cab69cedc8371c38c64cba7d5586804c8bf60bc8f2ca046d2","1e4fcedb999e33cb4353bd3363d152b7c1c76b4b7f22759fe610f6c8db310c5b","2aa1f8c8b8fc7eabe3b1893a29f5cc12c2b6d4e980c756cfcefe4f954dee7083","e4e39fca36e63f450fc0cadfc674f12252a09824246ff45445fed08327049ee0","860975823199b0134ecb78481fb890ff5f13e161a953824b59cce8731d3919a6","029b8a1121811b55d3d4a2b66bea15fea009a5cda9ba19bab75f84d414368053","84c44e5a28bd9ff11b97ee81c62bb739c286ad44476d022286bf8776f8d1e3ae","fbaa7c06ffb5962255f04013c6331eda0fbf7153d1a310f905edf9c3b081202c","0238af8b5483f23de41bf210463b0175cdc0942c3e73c4f29bf1e7fe68cf4a69","65ffc7850ff4f13b4f20377f1283edc436b4fe8e65a7f469681856ba210fc77b","4528b3390a557095cb49d7bdd082c44a0b5f823ef3e2d1f6829533e15433b721","b4ea4dd0edac51625923856e7f9a679c15101e43b9900f3c9fa5e436398d4646","abb0be827ed0fd941e49a1739e1c188902ed0801153a04121e7123784e5e6d98","efa1e5d2f3fa3a7dd5d9ac60cce6d7b16f5c111a59d22fb3ecdb69ac69a8a359","cf69030d2dac20875917e0c07498bea1a3946da3eefd7d60fd9e9b16da85326e","1787984d65dd84e2a2c63d863311f6b0912c1b1666605e12e6907980144cff73","9628e3ad234b7f96b01f1a3bb97fe357c1790ca1d183febd416a4e9c79f7840b","0eb7bf557431d9413ec60b972d77050483ebbe06a75df9b57a909383110afcf2","0d03b06d250af4c6d2b9499262c8edba6f90d7f969ec7de128fc48194909acdb","26df19b678bee6acde00bfb98751886369ebfb8f9cac7356eb6d3d1dc7692229"],"basis_window":{"from":"2026-09-25T20:26:58.224Z","to":"2026-09-25T20:27:29.212Z"},"explanation":["Bose QuietComfort Ultra Bluetooth price changed from 329.00 USD [pin:1e4fcedb999e] to 329.19 USD [pin:dd23fbd1598c] after the draft cited it.","Bose QuietComfort Ultra Bluetooth stock changed from In stock [pin:2aa1f8c8b8fc] to Low stock [pin:37db6f0a7c95] after the draft cited it.","Bose QuietComfort Ultra Bluetooth seller changed from Amazon.com [pin:860975823199] to Tech Geeks [pin:982233468c86] after the draft cited it.","JBL Tune 770NC price changed from 129.95 USD [pin:b4ea4dd0edac] to 110.46 USD [pin:03253d80fda4] after the draft cited it."],"confirm":[{"pin_id":"1e4fcedb999e","field":"price","confirm_value":"329.19 USD","class":"moved"},{"pin_id":"2aa1f8c8b8fc","field":"stock","confirm_value":"Low stock","class":"moved"},{"pin_id":"860975823199","field":"seller","confirm_value":"Tech Geeks","class":"moved"},{"pin_id":"b4ea4dd0edac","field":"price","confirm_value":"110.46 USD","class":"moved"}]}
+[plan P7 observe] ✗ 06:00 gate: re-fetch, re-hash, compare: REFUSED (DRIFTED)
+
+The draft that would have shipped:
+  | 2 | Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black [pin:84d33b3ce9fa] | $329.00 [pin:1e4fcedb999e] | In stock [pin:2aa1f8c8b8fc] | 4.2 out of 5 [pin:e4e39fca36e6] | Amazon.com [pin:860975823199] |
+  ↳ pinned price 329.00 USD; live at 6am: 329.19 USD.
+  ↳ pinned stock In stock; live at 6am: Low stock.
+  ↳ pinned seller Amazon.com; live at 6am: Tech Geeks.
+  | 4 | JBL Tune 770NC - Wireless Over-Ear Headphones - Black [pin:4528b3390a55] | $129.95 [pin:b4ea4dd0edac] | In stock [pin:abb0be827ed0] | 4.5 out of 5 [pin:efa1e5d2f3fa] | Electronics Expo (Authorized Dealer) [pin:cf69030d2dac] |
+  ↳ pinned price 129.95 USD; live at 6am: 110.46 USD.
+  Shipping this = pricing against a ghost.
+
+[plan impact] drift breaks 6 of 10 conclusions: Comparable set, Anchor price, Recommended price, Cheapest listed: JBL Tune 770NC - Wire, Spread: $349.05, Cheapest you can buy now: JBL Tune 770; 4 still hold
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp]   ← 10481ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[nimble mcp]   ← 11685ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[liquid extract] agreed JBL Tune 770NC - Wireless Over-Ear Headp (5/5 fields · LFM2-1.2B-Extract-GGUF:Q4_K_M, on-device)
+[liquid agent] LFM2.5-1.2B-Instruct-GGUF:Q4_K_M (on-device) · reasoning over 25 pinned facts
+[liquid agent]   ← 4293ms · 2 claim(s) verified · 1 dropped · 2 citation(s) repaired deterministically
+[liquid agent]     dropped (number(s) 4 not in the cited facts): Sennheiser Momentum 4 Wireless is listed at $249.95 with a solid 4.0 rating [pin:84c44e5a2
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 7412ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[nimble mcp]   ← 9494ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 10225ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+[nimble mcp]   ← 10429ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.19 · Low stock
+[nimble mcp]   ← 10587ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+REBASE: attempt 1 — the page moved again during re-pin
+REBASE: price, stock, seller moved again → marked unstable; re-planning without relying on them
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp]   ← 11143ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 11581ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[liquid agent] LFM2.5-1.2B-Instruct-GGUF:Q4_K_M (on-device) · reasoning over 22 pinned facts
+[liquid agent]   ← 4612ms · 2 claim(s) verified · 1 dropped · 1 citation(s) repaired deterministically
+[liquid agent]     dropped (number(s) 4 not in the cited facts): Sennheiser Momentum 4 Wireless costs 249.95 USD, rated 4.0 with Amazon.com availability [p
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B09XS7JWHH (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CCZ1L489 (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0B6GHW1SX (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0CT9XTKKM (country=US)
+[nimble mcp] tools/call nimble_extract https://www.amazon.com/dp/B0GSS4SGZR (country=US)
+[nimble mcp]   ← 7069ms · Apple AirPods Max 2 Wireless Over-Ear Headphones – Midnight · $479.00 · In stock
+[nimble mcp]   ← 9196ms · Bose QuietComfort Ultra Bluetooth Headphones, Wireless Headphones with Spatial Audio, Over Ear Noise Cancelling with Mic, Up to 24 Hours of Playtime, Black · $329.00 · In stock
+[nimble mcp]   ← 10662ms · Sony WH-1000XM5 Premium Noise Cancelling Wireless Headphones, Black · $298.00 · In stock
+[nimble mcp]   ← 12025ms · JBL Tune 770NC - Wireless Over-Ear Headphones - Black · $129.95 · In stock
+[nimble mcp]   ← 17445ms · Sennheiser Momentum 4 Wireless Headphones, ANC, 60 Hr Battery, Black · $249.95 · In stock
+REBASE: attempt 2 — the page moved again during re-pin
+VERDICT: REFUSED (DRIFTED) — report.md not written
+  drift [pin:83eedf5691e1] seller: Video & Audio Center - Same Day Shipping -> Amazon.com
+  WHY: Sony WH-1000XM5 Premium Noise seller changed from Video & Audio Center - Same Day Shipping [pin:83eedf5691e1] to Amazon.com [pin:d0af4ea4d075] after the draft cited it.
+RECEIPT: {"refused_at":"2026-09-25T20:28:59.041Z","reason":"DRIFTED","drifted_facts":[{"pin_id":"83eedf5691e1","source_url":"https://www.amazon.com/dp/B09XS7JWHH","field":"seller","old_hash":"83eedf5691e1f34a47eb142a7a895d2982b4b003e35ad7c102f16a2c36045d78","new_hash":"d0af4ea4d0750e103ab089557fabb4f12e9124d26f4b9b76714d0fd54c431ddf","old_value":"Video & Audio Center - Same Day Shipping","new_value":"Amazon.com"}],"error":null,"pin_hashes":["491d8d433de464dc255e1b1d34a6047e72145adabd4d6b3c3ad553ec089c8f27","461e1caa31575ec032f91fc7d9d84e5ff16fb5c784a2b2451d96cecdc262c5fe","c17f4f4a21a794df3184d064b35fbaa9c3afb7e3e2d9fb7bff966a7f6f9ec0a7","11e138066e1b1079bc2c093b03e74855ed60155d20366f7872ad6d50b2960393","83eedf5691e1f34a47eb142a7a895d2982b4b003e35ad7c102f16a2c36045d78","84d33b3ce9fa4c8cab69cedc8371c38c64cba7d5586804c8bf60bc8f2ca046d2","e4e39fca36e63f450fc0cadfc674f12252a09824246ff45445fed08327049ee0","029b8a1121811b55d3d4a2b66bea15fea009a5cda9ba19bab75f84d414368053","84c44e5a28bd9ff11b97ee81c62bb739c286ad44476d022286bf8776f8d1e3ae","fbaa7c06ffb5962255f04013c6331eda0fbf7153d1a310f905edf9c3b081202c","0238af8b5483f23de41bf210463b0175cdc0942c3e73c4f29bf1e7fe68cf4a69","65ffc7850ff4f13b4f20377f1283edc436b4fe8e65a7f469681856ba210fc77b","4528b3390a557095cb49d7bdd082c44a0b5f823ef3e2d1f6829533e15433b721","03253d80fda4584eda5c86ccd85a084b70002612c3e9352fd752f1b218d20971","abb0be827ed0fd941e49a1739e1c188902ed0801153a04121e7123784e5e6d98","efa1e5d2f3fa3a7dd5d9ac60cce6d7b16f5c111a59d22fb3ecdb69ac69a8a359","cf69030d2dac20875917e0c07498bea1a3946da3eefd7d60fd9e9b16da85326e","1787984d65dd84e2a2c63d863311f6b0912c1b1666605e12e6907980144cff73","9628e3ad234b7f96b01f1a3bb97fe357c1790ca1d183febd416a4e9c79f7840b","0eb7bf557431d9413ec60b972d77050483ebbe06a75df9b57a909383110afcf2","0d03b06d250af4c6d2b9499262c8edba6f90d7f969ec7de128fc48194909acdb","26df19b678bee6acde00bfb98751886369ebfb8f9cac7356eb6d3d1dc7692229"],"basis_window":{"from":"2026-09-25T20:26:58.224Z","to":"2026-09-25T20:28:36.957Z"},"explanation":["Sony WH-1000XM5 Premium Noise seller changed from Video & Audio Center - Same Day Shipping [pin:83eedf5691e1] to Amazon.com [pin:d0af4ea4d075] after the draft cited it."]}
+[tinybird] streamed 53 events
+[plan P8 correct] ✗ self-correct: impact → re-pin → recompute → disclose → re-gate: re-base could not reach a clean basis
+
+━━ Evidence ━━
+north star: 30 facts pinned · 8 drifted-and-flagged · 0 shipped contradictions
+counter: 0 clean runs shipped · 1 false refusals
+drift classes (confirm fetch): 4 moved · 3 flap · 0 moving · 0 unknown
+self-correct: 1 refusal(s) re-planned, re-pinned and shipped with the change disclosed
+guardrail: gate p95 12018 ms over 2 run(s)
+live: 1 unforced drift refusal(s) — nothing injected, the real page changed
+evidence source: Tinybird pipe vault_evidence — matches local (session 63fd947a)
+volatility (all live runs, Tinybird): Bose QuietComfort Ultra Bluetoot price 10/20 · Bose QuietComfort Ultra Bluetoot seller 8/20 · Sony WH seller 6/22
+
+The brief cited six cases. None of them existed. This report cites pins — when they moved, it refused, re-planned, and shipped the truth.

@@ -1,0 +1,108 @@
+{
+  "goal": "recommend a price for our headphones: undercut the cheapest comparable competitor (in stock, rated ≥ 4.0) by 3%",
+  "steps": [
+    {
+      "id": "P1",
+      "kind": "plan",
+      "title": "decompose goal into facts + conclusions",
+      "status": "done",
+      "detail": "needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings",
+      "at": "2026-09-25T20:26:48.629Z"
+    },
+    {
+      "id": "P2",
+      "kind": "act",
+      "title": "collect 5 competitor pages via nimble-mcp",
+      "status": "replanned",
+      "detail": "5 pages fetched, 1 lost (unreachable or no extractable price — never invented)",
+      "at": "2026-09-25T20:27:34.041Z"
+    },
+    {
+      "id": "P3",
+      "kind": "observe",
+      "title": "corroborate (2 extractors) and pin every fact",
+      "status": "replanned",
+      "detail": "1 corroborated now; 4 re-used (corroborated earlier); re-planned: lost B0DGJC52FP → searched and pinned a comparable: Apple AirPods Max 2 Wireless Over-Ear He",
+      "at": "2026-09-25T20:27:34.042Z"
+    },
+    {
+      "id": "P4",
+      "kind": "reason",
+      "title": "select comparables",
+      "status": "done",
+      "detail": "5 comparable competitor(s)",
+      "at": "2026-09-25T20:27:34.043Z"
+    },
+    {
+      "id": "P5",
+      "kind": "reason",
+      "title": "anchor → recommended price",
+      "status": "done",
+      "detail": "recommended $126.05",
+      "at": "2026-09-25T20:27:34.043Z"
+    },
+    {
+      "id": "P6",
+      "kind": "act",
+      "title": "draft report (every conclusion cites its pins)",
+      "status": "done",
+      "detail": "10 conclusions citing 25 pins, 0 URLs",
+      "at": "2026-09-25T20:27:34.043Z"
+    },
+    {
+      "id": "P7",
+      "kind": "observe",
+      "title": "06:00 gate: re-fetch, re-hash, compare",
+      "status": "failed",
+      "detail": "REFUSED (DRIFTED)",
+      "at": "2026-09-25T20:27:56.179Z"
+    },
+    {
+      "id": "P8",
+      "kind": "correct",
+      "title": "self-correct: impact → re-pin → recompute → disclose → re-gate",
+      "status": "failed",
+      "detail": "re-base could not reach a clean basis",
+      "at": "2026-09-25T20:28:59.214Z"
+    }
+  ],
+  "impact": {
+    "affected": [
+      {
+        "id": "comparables",
+        "label": "Comparable set"
+      },
+      {
+        "id": "anchor",
+        "label": "Anchor price"
+      },
+      {
+        "id": "recommendation",
+        "label": "Recommended price"
+      },
+      {
+        "id": "finding-1",
+        "label": "Cheapest listed: JBL Tune 770NC - Wire"
+      },
+      {
+        "id": "finding-3",
+        "label": "Spread: $349.05"
+      },
+      {
+        "id": "finding-5",
+        "label": "Cheapest you can buy now: JBL Tune 770"
+      }
+    ],
+    "unaffected": 4,
+    "drifted_pins": [
+      "1e4fcedb999e",
+      "2aa1f8c8b8fc",
+      "860975823199",
+      "b4ea4dd0edac"
+    ]
+  },
+  "recommendation": {
+    "before": 126.05,
+    "after": null
+  }
+}
