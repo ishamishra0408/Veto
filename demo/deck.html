@@ -210,30 +210,22 @@ body.presenter #presenter { display: block; }
   </section>
 
   <!-- OPEN-LOOP STAKES: the villain's clock -->
-  <section class="slide" data-beat="Open-loop stakes · the villain" data-time="0:20–0:30">
+  <section class="slide" data-beat="Open-loop stakes · the villain" data-time="0:20–0:40">
     <div class="eyebrow">The seam · fetch-time vs ship-time · we read Nimble's grounding stack and built the stage after it</div>
     <div class="stack">
       <h2 class="muted" data-step="1">6 pm — a pricing agent fetches five competitor prices.</h2>
       <h2 data-step="2">9 pm — one competitor drops 15 %.</h2>
       <div class="big-quote" data-step="3">6 am — the report ships.<br><span class="accent">The model did everything right. The data moved.</span></div>
     </div>
-    <script type="text/notes">"We read Nimble's grounding stack: source control, grounding, confidence. All of it runs at fetch time, while the agent works. Veto is the stage after it: ship time."
-"A pricing agent fetches at 6 pm, works overnight, ships at 6 am. At 9 pm one competitor drops 15 percent. The 6 am report recommends matching a price that no longer exists. The model did everything right. The data moved."
+    <script type="text/notes">"A pricing agent fetches five competitor prices at 6 pm. At 9 pm, one drops 15 percent. The 6 am report recommends matching a price that no longer exists. The model did everything right. The data moved. Every trust check ran before 9 pm. Nothing checks the basis at 6 am."
+(51 words for 20 s. The seam is on screen in the eyebrow and on the title card; do not say it here. Next slide is the hand-off.)
 This is the segment's daily world (TechCrunch names Fortune 10 retailers among Nimble's customers). Never say a real customer's agent broke.</script>
-  </section>
-
-  <section class="slide" data-beat="The gap on a clock" data-time="0:30–0:40">
-    <h2>Every trust check ran before 9 pm —<br><span class="accent">nothing checks the basis at 6 am.</span></h2>
-    <img class="d2" data-step="1" src="diagrams/timeline.svg" alt="6 pm fetch and pin, 9 pm competitor drops 15 percent, overnight reasoning on the pinned basis, 6 am ship question" style="width:1500px; margin-top:80px">
-    <div class="d2-src" data-step="1">diagrams/timeline.d2 · SPEC §Villain · re-read against veto/scenario.ts</div>
-    <script type="text/notes">"Every trust check in the stack ran before 9 pm. Nothing checks the basis at the moment the report ships."
-→ the timeline. Next slide is the hand-off to the terminal.</script>
   </section>
 
   <!-- HAND-OFF: the last slide before cutting to the terminal -->
   <section class="slide" data-beat="Hand-off → terminal" data-time="0:40 → cut to terminal until 2:40">
     <div class="cue">▶ SWITCH TO THE TERMINAL NOW · 0:40<small>bash veto/demo.sh --real --night2 · about 2 min · come back to this deck at 2:40 and press →</small></div>
-    <div class="eyebrow">Live · Veto · slide 5 of 12 · the hand-off</div>
+    <div class="eyebrow">Live · Veto · slide 4 of 11 · the hand-off</div>
     <h2>This is the 6 pm fetch.</h2>
     <img class="d2" data-step="1" src="diagrams/lifecycle.svg" alt="reset, fetch via Nimble MCP, pin, report, drift, gate, REFUSED, receipt, counts" style="width:1640px; margin-top:56px">
     <div class="d2-src" data-step="1">diagrams/lifecycle.d2 · read from veto/demo.sh</div>
@@ -254,7 +246,8 @@ OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liqu
     <h2>Nimble grounds the claim while the agent works.<br><span class="accent">Veto verifies the basis when the work ships.</span></h2>
     <img class="d2" data-step="1" src="diagrams/seam.svg" alt="Top row: source control, grounding, confidence, run complete. Bottom row: pin, reason, revalidate, ship or refuse. Hours later connects them." style="width:1500px; margin-top:70px">
     <div class="d2-src" data-step="1">diagrams/seam.d2 · Nimble Trust post, Sep 23 2026 · veto/gate.ts</div>
-    <script type="text/notes">"Nimble grounds the claim while the agent works. Veto verifies the basis when the work ships. Grounding is fetch-time. This is ship-time."
+    <script type="text/notes">"You just watched a grounded claim get refused at ship time. Nimble grounded it while the agent worked; Veto verified it when the work shipped."
+"Every new agent multiplies the blast radius of a stale fetch. Veto doesn't compete with Nimble's trust stack; it completes it, at the one moment the stack doesn't cover."
 Say it as their documented design, never as a defect. Their stack ends when the run ends; the 9 pm drop lives after their last check.</script>
   </section>
 
@@ -307,8 +300,8 @@ The quoted words are the judge's, from a court filing, as quoted by Rohan Goswam
       <figcaption class="src">Nimble expert web search is now on ChatGPT and Codex · nimbleway.com/blog/nimble-expert-web-search-is-now-on-chatgpt-and-codex</figcaption>
     </figure>
     <p class="pull" data-step="3" style="margin-top:44px">Trust is a property of the moment of action, <em>not the moment of retrieval.</em></p>
-    <script type="text/notes">"You wrote this on Monday: inspect how information was retrieved, and evaluate the data before acting on it. We built the 'before acting on it' part."
-His byline, two days before he judges. Quote it next to the mechanism, never as flattery.</script>
+    <script type="text/notes">"Yaniv wrote this on Monday: inspect how information was retrieved, and evaluate the data before acting on it. We built the 'before acting on it' part."
+SLOW DOWN HERE. This is the peak; give it the full ten seconds. His byline, two days before he judges. Quote it next to the mechanism, never as flattery.</script>
   </section>
 
   <!-- CLOSE -->
