@@ -247,7 +247,6 @@ OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liqu
     <img class="d2" data-step="1" src="diagrams/seam.svg" alt="Top row: source control, grounding, confidence, run complete. Bottom row: pin, reason, revalidate, ship or refuse. Hours later connects them." style="width:1500px; margin-top:70px">
     <div class="d2-src" data-step="1">diagrams/seam.d2 · Nimble Trust post, Sep 23 2026 · veto/gate.ts</div>
     <script type="text/notes">"You just watched a grounded claim get refused at ship time. Nimble grounded it while the agent worked; Veto verified it when the work shipped."
-"Every new agent multiplies the blast radius of a stale fetch. Veto doesn't compete with Nimble's trust stack; it completes it, at the one moment the stack doesn't cover."
 Say it as their documented design, never as a defect. Their stack ends when the run ends; the 9 pm drop lives after their last check.</script>
   </section>
 
@@ -259,7 +258,7 @@ Say it as their documented design, never as a defect. Their stack ends when the 
       <figcaption class="src">Trustworthy web search for AI Agents · nimbleway.com/blog/trustworthy-web-search-for-ai-agents-sources-grounding-and-confidence</figcaption>
     </figure>
     <p class="pull" data-step="3" style="margin-top:44px">A citation shows where it came from. Grounding checks it was supported. <em>Veto checks it still is.</em></p>
-    <script type="text/notes">"Their words, two days ago: a citation shows where information came from, grounding checks the evidence supports the output. We add the third line: Veto checks it still does, at the moment you act."
+    <script type="text/notes">"Their words, two days ago: grounding checks the evidence supports the output. We add the third line: it still does, at the moment you act."
 Nimble's grounding runs "while the agent is producing the output … before the run is complete" — in-run. Ours runs at ship. One axis they do not cover: time.</script>
   </section>
 
@@ -272,7 +271,7 @@ Nimble's grounding runs "while the agent is producing the output … before the 
       <figcaption class="src">Long Horizon Agents Hackathon · luma.com/horizonagentshack</figcaption>
     </figure>
     <p class="pull" data-step="3" style="margin-top:44px">Never silently discarded — <em>refused, with a receipt.</em></p>
-    <script type="text/notes">"This hackathon asked agents to plan, act, observe and self-correct. Veto refused, named exactly which conclusions the drift broke, re-pinned, recomputed and shipped the truth. The pinned basis persists; a drifted one is refused, never silently discarded."
+    <script type="text/notes">"The hackathon asked agents to plan, act, observe and self-correct. Veto refused, named what broke, re-pinned, and shipped the truth. The pinned basis persists; a drifted one is refused."
 The general panel hears the theme answered; Yaniv hears the receipt again.</script>
   </section>
 
@@ -287,7 +286,7 @@ The general panel hears the theme answered; Yaniv hears the receipt again.</scri
         <figcaption class="src"><span>NBC News (CNBC) · Judge P. Kevin Castel, quoted by Rohan Goswami</span><span>May 30, 2023</span></figcaption>
       </figure>
     </div>
-    <script type="text/notes">"The brief cited six cases. None of them existed. That was a citation that was never true. Ours is a citation that was true at 6 pm — and Veto is the mechanism that catches both."
+    <script type="text/notes">"The brief cited six cases. None existed. A citation that was never true. Ours was true at 6 pm. Veto catches both."
 The quoted words are the judge's, from a court filing, as quoted by Rohan Goswami (CNBC, carried by NBC). This piece is May 30 2023; the sanctions came Jun 22 2023.</script>
   </section>
 
@@ -305,18 +304,19 @@ SLOW DOWN HERE. This is the peak; give it the full ten seconds. His byline, two 
   </section>
 
   <!-- CLOSE -->
-  <section class="slide" data-beat="Close" data-time="3:35–3:43">
+  <section class="slide" data-beat="Close" data-time="3:35–3:47">
     <div class="stack">
       <div class="tagline" data-step="1">What git did for code,</div>
       <div class="tagline" data-step="2"><span class="accent">Veto</span> does for evidence.</div>
       <p class="mono" data-step="3" style="font-size:40px; margin-top:30px; color:var(--muted)">29 facts pinned · 1 drifted-and-flagged · <span class="accent">0 shipped contradictions</span></p>
       <img class="d2" data-step="3" src="diagrams/gate.svg" alt="re-fetch, re-hash, compare; CLEAN ships, DRIFTED refuses with a receipt, UNREACHABLE refuses fail-closed" style="width:1400px; margin-top:30px">
     </div>
-    <script type="text/notes">"Content-addressed pins, drift by re-hash, refuse with a receipt. What git did for code, Veto does for evidence."
+    <script type="text/notes">"Every new agent multiplies the blast radius of a stale fetch. Veto doesn't compete with Nimble's trust stack; it completes it, at the one moment the stack doesn't cover."
+"Content-addressed pins, drift by re-hash, refuse with a receipt. What git did for code, Veto does for evidence."
 29 · 1 · 0 are the recorded demo run's numbers (evidence/live-run-2026-09-25-demo/evidence.txt, session 4d0a0d93, on-device Liquid both nights). If the recording is a different run, replace them with what evidence.ts printed on screen. Say them, do not memorise them.</script>
   </section>
 
-  <section class="slide" data-beat="Final card" data-time="3:43–3:45">
+  <section class="slide" data-beat="Final card" data-time="3:47–3:50">
     <p class="sub" data-step="1">The model did everything right. The data moved. Veto refused, re-planned, and shipped the truth.</p>
     <div class="final" data-step="2" style="margin-top:40px">Veto is <span class="accent">the ship-time gate.</span></div>
     <p class="sub" data-step="3" style="margin-top:70px; color:var(--text)">What in your stack checks the basis at the moment of action?</p>
