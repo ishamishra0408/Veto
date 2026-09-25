@@ -13,8 +13,9 @@
    its "read from <url>" comment. Tokens every slide type uses: --bg --text --accent --accent-hi
    --accent-soft --accent-glow. The rest (--panel, --line, --muted, --critical, --ok) are neutrals. */
 :root {
-  /* Palette read from https://docs.nimbleway.com/home (dark scheme) on 2026-09-25: --bg #000000, --text #FFFFFF;
-     accent from https://www.nimbleway.com/pricing on 2026-09-25: --nimble-primary #7c8dff, --primary-light #9eabff; font DM Sans. */
+  /* Palette read from https://docs.nimbleway.com/home (dark scheme) on 2026-09-25: --bg #000000, --text #FFFFFF,
+     --primary 237 198 2 (#EDC602). One source for every artifact (deck, diagrams, console) since 2026-09-25;
+     the pricing page's indigo #7c8dff was dropped so the cut from deck to console keeps one accent. Font DM Sans. */
   --bg: #000000;
   --panel: #161618;
   --panel-2: #1F1F23;
@@ -22,10 +23,10 @@
   --text: #FFFFFF;
   --muted: #A9A4A2;
   --faint: #6F6B6A;
-  --accent: #7C8DFF;
-  --accent-hi: #9EABFF;
-  --accent-soft: rgba(124, 141, 255, .12);
-  --accent-glow: rgba(124, 141, 255, .35);
+  --accent: #EDC602;
+  --accent-hi: #F5D84A;
+  --accent-soft: rgba(237, 198, 2, .12);
+  --accent-glow: rgba(237, 198, 2, .35);
   --critical: #FF5A4E;
   --critical-soft: rgba(255, 90, 78, .14);
   --ok: #5BD68A;
@@ -34,6 +35,12 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; background: #000; color: var(--text); font-family: "DM Sans", system-ui, sans-serif; overflow: hidden; }
 body.idle { cursor: none; }
+
+/* Stage cue: the one visible instruction to the presenter, on the two slides where the recording switches source. */
+.cue { position: absolute; top: 44px; right: 64px; padding: 16px 24px; border: 3px solid var(--accent); border-radius: 10px;
+       background: var(--accent-soft); color: var(--accent); font: 700 30px/1.15 "DM Sans", system-ui, sans-serif; letter-spacing: .01em; max-width: 760px; text-align: right; }
+.cue small { display: block; margin-top: 8px; font-weight: 500; font-size: 22px; color: var(--text); }
+.cue.bottom { top: auto; bottom: 72px; }
 
 /* A fixed 1920x1080 stage, scaled to fit whatever window records it. */
 #viewport { position: fixed; inset: 0; }
@@ -211,11 +218,13 @@ This is the segment's daily world (TechCrunch names Fortune 10 retailers among N
 
   <!-- HAND-OFF: the last slide before cutting to the terminal -->
   <section class="slide" data-beat="Hand-off → terminal" data-time="0:40 → cut to terminal until 2:40">
-    <div class="eyebrow">Live · Veto</div>
+    <div class="cue">▶ SWITCH TO THE TERMINAL NOW · 0:40<small>bash veto/demo.sh --real --night2 · about 2 min · come back to this deck at 2:40 and press →</small></div>
+    <div class="eyebrow">Live · Veto · slide 5 of 12 · the hand-off</div>
     <h2>This is the 6 pm fetch.</h2>
     <img class="d2" data-step="1" src="diagrams/lifecycle.svg" alt="reset, fetch via Nimble MCP, pin, report, drift, gate, REFUSED, receipt, counts" style="width:1640px; margin-top:56px">
     <div class="d2-src" data-step="1">diagrams/lifecycle.d2 · read from veto/demo.sh</div>
-    <script type="text/notes">"Here is the fetch, through Nimble's MCP server, live."
+    <script type="text/notes">>>> THIS IS THE SWITCH SLIDE. Say the line, then switch the recording source to the terminal. Do not press → until you are back at 2:40. <<<
+"Here is the fetch, through Nimble's MCP server, live."
 Then CUT TO THE TERMINAL:
 1. bash veto/demo.sh --real --night2   (about 2 min; mock fallback: bash veto/demo.sh). Nimble is visible by 0:50 from the [nimble mcp] tools/call nimble_extract lines; no plugin beat (C3 decided, spec updated).
 2. Read report.md on screen: every claim is [pin:…], zero URLs.
@@ -227,7 +236,8 @@ OFF-STAGE: the terminal also prints the Tinybird ingest and the OpenRouter (Liqu
 
   <!-- BRIDGE: the seam, pre-empted -->
   <section class="slide" data-beat="Seam · fetch-time vs ship-time" data-time="2:40–2:55">
-    <h2>Nimble grounds the claim while the agent works —<br><span class="accent">Veto verifies the basis when the work ships.</span></h2>
+    <div class="cue bottom">◀ BACK ON THE DECK · 2:40<small>the terminal is done: REFUSED, re-based CLEAN, the two count lines</small></div>
+    <h2>Nimble grounds the claim while the agent works.<br><span class="accent">Veto verifies the basis when the work ships.</span></h2>
     <img class="d2" data-step="1" src="diagrams/seam.svg" alt="Top row: source control, grounding, confidence, run complete. Bottom row: pin, reason, revalidate, ship or refuse. Hours later connects them." style="width:1500px; margin-top:70px">
     <div class="d2-src" data-step="1">diagrams/seam.d2 · Nimble Trust post, Sep 23 2026 · veto/gate.ts</div>
     <script type="text/notes">"Nimble grounds the claim while the agent works. Veto verifies the basis when the work ships. Grounding is fetch-time. This is ship-time."
