@@ -1,0 +1,74 @@
+{
+  "goal": "recommend a price for our headphones: undercut the cheapest comparable competitor (in stock, rated ≥ 4.0) by 3%",
+  "steps": [
+    {
+      "id": "P1",
+      "kind": "plan",
+      "title": "decompose goal into facts + conclusions",
+      "status": "done",
+      "detail": "needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings",
+      "at": "2026-09-25T20:37:12.889Z"
+    },
+    {
+      "id": "P2",
+      "kind": "act",
+      "title": "collect 5 competitor pages via nimble-mcp",
+      "status": "replanned",
+      "detail": "5 pages fetched, 1 lost (unreachable or no extractable price — never invented)",
+      "at": "2026-09-25T20:38:39.691Z"
+    },
+    {
+      "id": "P3",
+      "kind": "observe",
+      "title": "corroborate (2 extractors) and pin every fact",
+      "status": "replanned",
+      "detail": "4 corroborated now; 1 held (extractors disagreed); re-planned: lost B0DGJC52FP → searched and pinned a comparable: Apple AirPods Max 2 Wireless Over-Ear He",
+      "at": "2026-09-25T20:38:39.693Z"
+    },
+    {
+      "id": "P4",
+      "kind": "reason",
+      "title": "select comparables",
+      "status": "done",
+      "detail": "4 comparable competitor(s)",
+      "at": "2026-09-25T20:38:39.693Z"
+    },
+    {
+      "id": "P5",
+      "kind": "reason",
+      "title": "anchor → recommended price",
+      "status": "done",
+      "detail": "recommended $126.05",
+      "at": "2026-09-25T20:38:39.694Z"
+    },
+    {
+      "id": "P6",
+      "kind": "act",
+      "title": "draft report (every conclusion cites its pins)",
+      "status": "done",
+      "detail": "9 conclusions citing 20 pins, 0 URLs",
+      "at": "2026-09-25T20:38:39.694Z"
+    },
+    {
+      "id": "P7",
+      "kind": "observe",
+      "title": "06:00 gate: re-fetch, re-hash, compare",
+      "status": "done",
+      "detail": "CLEAN — basis still true",
+      "at": "2026-09-25T20:38:49.910Z"
+    },
+    {
+      "id": "P8",
+      "kind": "correct",
+      "title": "self-correct: impact → re-pin → recompute → disclose → re-gate",
+      "status": "skipped",
+      "detail": "nothing to correct",
+      "at": "2026-09-25T20:38:49.910Z"
+    }
+  ],
+  "impact": null,
+  "recommendation": {
+    "before": 126.05,
+    "after": null
+  }
+}

@@ -1,0 +1,101 @@
+{
+  "goal": "recommend a price for our headphones: undercut the cheapest comparable competitor (in stock, rated ≥ 4.0) by 3%",
+  "steps": [
+    {
+      "id": "P1",
+      "kind": "plan",
+      "title": "decompose goal into facts + conclusions",
+      "status": "done",
+      "detail": "needs per competitor: title, price, stock, rating, seller → conclusions: comparables, anchor, recommendation, findings",
+      "at": "2026-09-25T20:38:50.052Z"
+    },
+    {
+      "id": "P2",
+      "kind": "act",
+      "title": "collect 5 competitor pages via nimble-mcp",
+      "status": "replanned",
+      "detail": "4 pages fetched, 1 lost (unreachable or no extractable price — never invented)",
+      "at": "2026-09-25T20:39:40.129Z"
+    },
+    {
+      "id": "P3",
+      "kind": "observe",
+      "title": "corroborate (2 extractors) and pin every fact",
+      "status": "replanned",
+      "detail": "1 corroborated now; 3 re-used (corroborated earlier)",
+      "at": "2026-09-25T20:39:40.134Z"
+    },
+    {
+      "id": "P4",
+      "kind": "reason",
+      "title": "select comparables",
+      "status": "done",
+      "detail": "4 comparable competitor(s)",
+      "at": "2026-09-25T20:39:40.135Z"
+    },
+    {
+      "id": "P5",
+      "kind": "reason",
+      "title": "anchor → recommended price",
+      "status": "done",
+      "detail": "recommended $126.05",
+      "at": "2026-09-25T20:39:40.136Z"
+    },
+    {
+      "id": "P6",
+      "kind": "act",
+      "title": "draft report (every conclusion cites its pins)",
+      "status": "done",
+      "detail": "9 conclusions citing 20 pins, 0 URLs",
+      "at": "2026-09-25T20:39:40.137Z"
+    },
+    {
+      "id": "P7",
+      "kind": "observe",
+      "title": "06:00 gate: re-fetch, re-hash, compare",
+      "status": "failed",
+      "detail": "REFUSED (DRIFTED)",
+      "at": "2026-09-25T20:40:17.586Z"
+    },
+    {
+      "id": "P8",
+      "kind": "correct",
+      "title": "self-correct: impact → re-pin → recompute → disclose → re-gate",
+      "status": "done",
+      "detail": "re-fetched only the drifted page(s), reused the rest from pins, recomputed recommendation $126.05 → $107.15, disclosed as [was-pin:], re-gated CLEAN, shipped",
+      "at": "2026-09-25T20:41:18.338Z"
+    }
+  ],
+  "impact": {
+    "affected": [
+      {
+        "id": "anchor",
+        "label": "Anchor price"
+      },
+      {
+        "id": "recommendation",
+        "label": "Recommended price"
+      },
+      {
+        "id": "finding-1",
+        "label": "Cheapest listed: JBL Tune 770NC - Wire"
+      },
+      {
+        "id": "finding-3",
+        "label": "Spread: $199.05"
+      },
+      {
+        "id": "finding-5",
+        "label": "Cheapest you can buy now: JBL Tune 770"
+      }
+    ],
+    "unaffected": 4,
+    "drifted_pins": [
+      "b4ea4dd0edac"
+    ]
+  },
+  "recommendation": {
+    "before": 126.05,
+    "after": 107.15
+  }
+}

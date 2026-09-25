@@ -21,13 +21,15 @@ if [ "$1" = "--real" ]; then
   [ -n "$NIMBLE_API_KEY" ] || { echo "demo --real: NIMBLE_API_KEY not set (Nimble → Account Settings → API Keys). Veto untouched."; exit 3; }
   grep -qv '^#' pages.real.txt || { echo "demo --real: pages.real.txt has no URLs. Veto untouched."; exit 3; }
 fi
-rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl plan.json report.md report.draft.md   # deterministic: counts never accumulate
+rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl plan.json plan.night1.json report.md report.draft.md report.night1.md   # deterministic: counts never accumulate
 
 bar() { printf '\n\033[1m━━ %s ━━\033[0m\n' "$1"; }
 bar "VETO — adapter: ${VETO_ADAPTER:-mock}"
 if [ "$2" = "--night2" ] || [ "$1" = "--night2" ]; then c=0; else   # --night2: run only the villain night (fits a 3-min slot live)
 bar "Night 1 — a competitor page goes dark at 18:00 (simulated); no price injected"
 $NODE scenario.ts --clean --rebase --lose-page; c=$?
+[ -f plan.json ] && cp plan.json plan.night1.json      # keep each night's plan (night 2 rewrites plan.json)
+[ -f report.md ] && cp report.md report.night1.md      # and night 1's shipped report, if it shipped
 # Mock is deterministic: a clean-night refusal is a bug. Live: it is the real world moving — report it and continue.
 [ $c -ne 0 ] && [ "${VETO_ADAPTER:-mock}" = mock ] && { echo "demo: clean night failed to ship"; exit 1; }
 fi
