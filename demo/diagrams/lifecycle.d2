@@ -1,0 +1,30 @@
+# Hand-off slide — the demo.sh arc (both nights run with --rebase), laid out as a snake (row 2 reads right to left) so drift → gate is a short drop, from PROMPTS.md Phase 3 item 4. Re-read against veto/demo.sh once
+# Phase 3 lands: every box is a step the script prints, including the reset that makes runs repeatable.
+# Not drawn on purpose: the Tinybird ingest of pins/receipts/runs and the Liquid LFM2.5 call that writes
+# report.md (veto/agent.ts, template fallback). Both run in demo.sh and neither is on stage (spec §Scope).
+...@theme.d2
+grid-rows: 2
+grid-columns: 5
+horizontal-gap: 150
+vertical-gap: 150
+
+reset: "reset\npins.db · receipts · runs" {class: box}
+fetch: "fetch\nnimble_* via MCP" {class: hot}
+pin: "pin\n5 pages → N facts" {class: hot}
+report: "report.md\n[pin:…] only" {class: box}
+drift: "drift\none price −15 %" {class: bad}
+counts: "counts\nN · M · 0" {class: good}
+rebase: "re-base\nre-pin · recompute\n[was-pin:] · ship" {class: good}
+receipt: "receipt\none JSON line" {class: hot}
+refused: "REFUSED" {class: bad}
+gate: "gate\nre-fetch · re-hash" {class: box}
+
+reset -> fetch {class: flow}
+fetch -> pin {class: flow-hot}
+pin -> report {class: flow}
+report -> drift {class: flow-bad}
+drift -> gate {class: flow}
+gate -> refused {class: flow-bad}
+refused -> receipt {class: flow-hot}
+receipt -> rebase {class: flow-hot}
+rebase -> counts {class: flow}

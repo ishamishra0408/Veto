@@ -1,0 +1,17 @@
+# Structural-aha slide — the deterministic gate, from SPEC.md §Mechanism step 4. Re-read against
+# veto/gate.ts revalidate() once Phase 2 lands: three verdicts, no LLM, pure function.
+...@theme.d2
+direction: right
+
+refetch: "re-fetch\nsame adapter" {class: box}
+rehash: "re-hash\nsha256" {class: box}
+compare: "compare\nto pins.db" {class: ask}
+clean: "CLEAN\nship with pins" {class: good}
+drifted: "DRIFTED\nREFUSE + receipt" {class: bad}
+unreach: "UNREACHABLE\nREFUSE, fail closed" {class: bad}
+
+refetch -> rehash {class: flow}
+rehash -> compare {class: flow}
+compare -> clean: "hashes match" {class: flow}
+compare -> drifted: "a hash moved" {class: flow-bad}
+compare -> unreach: "adapter raised" {class: flow-bad}

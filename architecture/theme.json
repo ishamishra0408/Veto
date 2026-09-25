@@ -1,0 +1,209 @@
+{
+  "name": "design-loop architecture palette",
+  "description": "The one home for every architecture diagram's colours in this repo. Element keys are Structurizr's own, so this file can also be served as a theme; canvas, ramp, notOurs and floors are ours, and are what checks/diagram-contrast.mjs measures against.",
+  "scheme": "B+A, on the operator's ruling 2026-09-04: HUE says whether we own it, LIGHTNESS says how deep it sits. Two dimensions that cannot collide, because one is hue and the other is value.",
+  "authority": "The C4 Model, Simon Brown, O'Reilly 2026, ch10 Notation. Three rulings are taken from it rather than invented: (1) C4 is notation independent and the familiar blue/grey shapes are called a misconception, not a standard, so a palette here is a choice this repo makes and must defend; (2) colour must encode a DIMENSION the reader cannot already read off the page — the chapter's own first suggestion is existing versus new, which is what `notOurs` is; (3) any scheme must carry a diagram key and must survive colour vision deficiency and black-and-white printing, which is why `greyscaleStep` exists and is checked.",
+  "meaning": {
+    "violet": "ours: we build it, we can change it. It lightens as you go deeper — system, then container, then component.",
+    "muted green": "not ours: a person, or a system that already exists and that we call rather than build. Outside the ramp, and darker than all of it, so it stays distinct with the colour removed. LIGHTENED 2026-09-05 from #2b3a33 to #31423a: the old green was 1.58:1 against the canvas the renderer actually paints (#111111), so a not-ours box was a faint outline rather than a shape. #31423a reads 1.77 there and still holds the greyscale ladder at 1.38 against violet, where a lighter green collapses into it.",
+    "shape": "a store is a cylinder, a queue or topic is a pipe, and a person is a person. Shape carries what colour must not be asked to carry twice.",
+    "line": "a solid line is a call that blocks; a dashed line is a message that does not. The book offers both conventions in ch10 and requires neither, so this file is where the choice is made.",
+    "frame": "a DEPLOYMENT NODE is where things run and it CONTAINS them, so it is drawn as a frame: canvas fill, a light stroke, no hue claim, because ownership is not what a boundary says. An INFRASTRUCTURE NODE is not a frame — it holds nothing. Measured 2026-09-05: it had been given the frame treatment by analogy with the line above, and the detection worker then rendered as a 450x300 empty-looking box the operator picked out by hand. A leaf takes the element treatment.",
+    "delivery": "the STROKE says whether we are proposing it, and the DESCRIPTION carries the word. Neon pink is a Proposal — a component the harness has no seat for; amber is Modified — a rule in an extension point that already ships empty. Hue is NOT used for this, because ADR 0002 spent it on ownership. Measured on the canvas: pink 5.00:1, amber 9.06:1, and their greyscale lightness is 0.278 against 0.545, so the two stay apart with the colour removed.",
+    "accounting": "A style row that no view here draws must say ON THE ROW who it is for. The palette is seeded outward, so a row can exist for somebody else’s model; what is refused is a row nobody can account for. The field is `for`, which is the word machinery.json already uses for the same question.",
+    "instance": "an instance makes NO hue claim, for the same reason a frame does not: it says WHERE something runs, not whether we own it. Measured 2026-09-05 — styling \"Software System Instance\" violet would have painted the attacker listener, the OTel collector, the network controls and the attacker agent as OURS, and \"Container Instance\" violet would have claimed Slack's own containers. The renderer already resolves an instance from the thing it instances, so the row exists to EXPLAIN the tag on the key and nothing more.",
+    "ladder": "THE WHOLE RAMP WAS LIFTED 2026-09-05, not one colour. The canvas the renderer actually paints is #111111, far darker than the #1F2226 this file had assumed, so every fill was closer to its background than anyone had measured. Fixing only the green put it between two floors with 0.001 of luminance to spare — it passed by 0.02 and would have broken on the next change. The ramp now clears both with margin: green 1.80 against the canvas (floor 1.6), and steps of 1.39, 1.41 and 1.81 between the rungs (floor 1.3). White text reads 10.49, 7.52 and 5.35 on them."
+  },
+  "canvas": "#1F2226",
+  "ramp": [
+    "Software System",
+    "Container",
+    "Component"
+  ],
+  "notOurs": [
+    "Person",
+    "Existing System"
+  ],
+  "floors": {
+    "textOnFill": 4.5,
+    "strokeOnCanvas": 3,
+    "greyscaleStep": 1.3
+  },
+  "elements": [
+    {
+      "tag": "Element",
+      "color": "#ffffff",
+      "fontSize": 26,
+      "strokeWidth": 2
+    },
+    {
+      "tag": "Person",
+      "shape": "Person",
+      "background": "#32433b",
+      "stroke": "#6fa588"
+    },
+    {
+      "tag": "Existing System",
+      "background": "#32433b",
+      "stroke": "#6fa588"
+    },
+    {
+      "tag": "Software System",
+      "background": "#494d97",
+      "stroke": "#a5a9f0"
+    },
+    {
+      "tag": "Container",
+      "background": "#5f64af",
+      "stroke": "#b9bdf5"
+    },
+    {
+      "tag": "Component",
+      "background": "#8b92ce",
+      "stroke": "#d2d5fa",
+      "color": "#14162b"
+    },
+    {
+      "tag": "Data Store",
+      "for": "a data store deployed as its own container; ShipGate keeps its state in process, so it draws none",
+      "shape": "Cylinder",
+      "background": "#5f64af",
+      "stroke": "#b9bdf5"
+    },
+    {
+      "tag": "Channel",
+      "shape": "Pipe",
+      "background": "#5f64af",
+      "stroke": "#b9bdf5",
+      "for": "a consumer model with message queues or topics — this repo draws them in payments"
+    },
+    {
+      "tag": "Deployment Node",
+      "background": "#1F2226",
+      "stroke": "#9aa4b2",
+      "color": "#ffffff"
+    },
+    {
+      "tag": "Infrastructure Node",
+      "background": "#5f64af",
+      "stroke": "#b9bdf5",
+      "color": "#ffffff",
+      "for": "a thing that RUNS and holds nothing — a worker, a load balancer. It is a leaf, not a boundary, so it takes the element treatment and makes an ownership claim like any other element; a node we do not own says so by carrying Existing System."
+    },
+    {
+      "tag": "Modified",
+      "stroke": "#ffb454",
+      "strokeWidth": 4,
+      "for": "any repo marking a rule it adds to an extension point that already ships"
+    },
+    {
+      "tag": "Proposal",
+      "stroke": "#ff2fd0",
+      "strokeWidth": 6,
+      "for": "any repo marking a component the system it extends has no seat for"
+    },
+    {
+      "tag": "Container Instance",
+      "for": "a deployment view — the tag is explained on the key and makes NO hue claim, because an instance is a placement and the renderer resolves its appearance from the element it instances"
+    },
+    {
+      "tag": "Software System Instance",
+      "for": "a deployment view — the tag is explained on the key and makes NO hue claim, because an instance is a placement and the renderer resolves its appearance from the element it instances"
+    }
+  ],
+  "relationships": [
+    {
+      "tag": "Relationship",
+      "color": "#d7dbe3",
+      "fontSize": 24
+    },
+    {
+      "tag": "Asynchronous",
+      "color": "#d7dbe3",
+      "fontSize": 24,
+      "dashed": true,
+      "for": "a consumer model with message queues or topics — this repo draws them in payments"
+    }
+  ],
+  "deliveryLabels": {
+    "Proposal": "proposed — hover for details",
+    "Modified": "modified — hover for details"
+  },
+  "hues": {
+    "#494d97": "ours",
+    "#5f64af": "ours",
+    "#8b92ce": "ours",
+    "#32433b": "not ours",
+    "#1f2226": "no claim"
+  },
+  "_hues_why": "What each fill CLAIMS, not what it looks like. checks/palette-claim.mjs refuses a fill that is not here, and refuses an ownership fill on a row listed in noClaim.",
+  "noClaim": [
+    "Deployment Node",
+    "Container Instance",
+    "Software System Instance"
+  ],
+  "_noClaim_why": "Rows that say WHERE something runs rather than whether we own it. A frame and an instance are both placements; the renderer resolves an instance from the element it instances, so a hue here would overwrite that answer with a false one.",
+  "delivery": {
+    "_what": "The delivery state of one component, as a MACHINE rather than a tag. The shape is adapted from design-loop core/machines.json, which pairs every state with what makes it OBSERVABLE — the fact on disk that proves a thing is in it. A tag nobody can check is an assertion; a state with an observable is a measurement.",
+    "object": "component",
+    "_axes": "TWO AXES, NOT ONE LIST, and the single list was a defect rather than an untidiness. `proposed` and `modified` answer DOES A SEAT EXIST — a cost question only a human can answer, because it is about somebody else's extension points. `built` and the rungs after it answer HOW FAR HAS IT GOT — a progress question the tree can answer without being asked. The two are orthogonal: the injection scorer is `existing` seat AND will one day be built. Under one array that element carries two states and trips checks/delivery.mjs's `two-states` rule, which is correct today and becomes a false positive the moment a marked component gets written. So seat is TAGGED and stage is DERIVED.",
+    "seat": {
+      "question": "does the thing we extend already have a place for this?",
+      "states": ["new", "existing"],
+      "observable": {
+        "new": "an ADR beside it and no extension point in the host that would take it — the harness must gain a seat before the code can sit in one",
+        "existing": "an extension point that already ships, carrying a rule of ours — the seam is theirs, the content is ours"
+      },
+      "guards": {
+        "new": "checks/delivery.mjs — a decision governs it, it is drawn in some view, and the word is in the description",
+        "existing": "checks/delivery.mjs — the same three, plus change-not-surfaced at every level above it"
+      },
+      "tagFor": { "new": "Proposal", "existing": "Modified" },
+      "_tagged_why": "Seat is TYPED because nothing in this tree can read the host's plugin registry and answer whether a seat exists. It is a claim about somebody else's code, so a human makes it and an ADR carries the argument."
+    },
+    "stage": {
+      "question": "how far has it actually got?",
+      "states": ["designed", "built", "assembled", "shipped"],
+      "_derived_why": "STAGE IS NEVER TYPED. A tag reading `built` is a person asserting progress; a stage is the highest rung whose evidence holds. checks/stage.mjs computes it, and REFUSES an element that carries a stage word as a tag — because the moment progress can be typed it will be typed ahead of itself, which is the whole failure a state machine over a diagram exists to stop.",
+      "observable": {
+        "designed": "a decision beside it and no implementation claimed — the argument exists, the code does not",
+        "built": "the component names a TRACKED implementation file, and a preregistered redproof set that names that file holds every fault pinned for it",
+        "assembled": "a preregistered redproof set exercises the SEAM — our implementation and the host's own registration point in one run — and holds every fault pinned for it",
+        "shipped": "the implementation is on the default branch of the repo that owns the seam"
+      },
+      "guards": {
+        "designed": "checks/delivery.mjs — unstated-proposal",
+        "built": "checks/stage.mjs — implementation TRACKED in git, unit set registered in architecture/redproof.json, faults pinned, and the set file names the implementation",
+        "assembled": "checks/stage.mjs — seam set registered and pinned, and the set names BOTH our implementation and the host symbol it plugs into",
+        "shipped": "NOT BUILT — nothing here reads the default branch of a repo we do not own. The half that IS buildable is local: git merge-base --is-ancestor against this repo's own default branch. The upstream half needs their remote."
+      },
+      "_guards_why": "Three of the four are built and the fourth says NOT BUILT and why. A machine whose later rungs cannot be observed sits in its third rung forever and reads as progress; naming the gap is the difference between a roadmap and a claim.",
+      "_preregistered_why": "A TEST SET ALONE IS NOT A GUARD, and this is the whole substance of the two new rungs. A set written after the code, by the author of the code, to pass, certifies only that the code does what it does — which is what every repo already has. What makes a fault set evidence is that the faults were named BEFORE the fix. So architecture/redproof.json is a SEPARATE TRACKED artifact: a fault added later to turn a rung green is a diff to a registry, visible in review, rather than an invisible edit inside the test that reports on itself.",
+      "_preregistration_limit": "Nothing here can observe the ORDER two files were written in — the registry and the implementation can land in one commit. That is the same tier-D hole the review catalogue names for OSS-SEARCH, and it is stated rather than papered over. The rung above is git: the commit that first adds a fault to the registry must not be later than the one that first adds the implementation. Buildable, not built.",
+      "_seam_why": "The seam set is refused unless it names the HOST symbol as well as ours. A seam test that only exercises our own module is a unit test under a second name, and the failure it would miss is the one that actually happens to plugin architectures: registered, never invoked."
+    },
+    "properties": {
+      "implementation": "on the element — a repo-relative path to the file that implements this component. The ONE pointer out of the model, and the join that was missing: before it, nothing connected a box to code, so `built` had no observable at all and its guard said NOT BUILT.",
+      "unit": "on the element — the key of a set in architecture/redproof.json whose faults are this component's own behaviour",
+      "seam": "on the element — the key of a set in architecture/redproof.json whose faults are the JOIN between our code and the host's extension point",
+      "upstream": "on the element — owner/repo of the tree that owns the seam, for the shipped rung that is not built yet"
+    },
+    "_styled": ["new", "existing"],
+    "_styled_why": "AT REST the diagram draws SEAT only: hue is ownership, stroke-hue is seat, and there is no third channel left that survives colour vision deficiency and a black-and-white printer. Stage gets the FOURTH channel, which is time — an overlay under one key, off by default. Two meanings in the stroke at once makes both unreadable; two meanings the reader switches between makes neither.",
+    "overlay": {
+      "_what": "TEST RESULTS, on one key. While it is on, every fill is REPLACED by the stage the evidence supports, and the ownership ramp is off — so the banner is not decoration, it is the thing that stops a reader taking a green box for a system we do not own.",
+      "key": "r",
+      "banner": "TEST RESULTS — ownership colour is off",
+      "fill": {
+        "designed": "#3c414d",
+        "built": "#1d6070",
+        "assembled": "#2f7d4f",
+        "shipped": "#5b7f22",
+        "FAILED": "#8c2233"
+      },
+      "_fill_why": "designed is a neutral, not a warning: nothing claimed is not the same as something failing, and colouring it red would make the honest majority of a young model look broken. FAILED is the only red, and it means a CLAIM THAT DOES NOT HOLD — a named implementation git does not track, a set key absent from the registry, a fault count that has drifted. The ladder from designed to shipped rises in lightness so it survives the colour being removed, exactly as the ownership ramp does."
+    },
+    "tagFor": { "new": "Proposal", "existing": "Modified" },
+    "_tagFor_why": "MIRRORED FROM seat.tagFor so checks/delivery.mjs has one place to read the tagged vocabulary. It is the seat axis and nothing else; stage never appears here, because stage is never a tag."
+  }
+}

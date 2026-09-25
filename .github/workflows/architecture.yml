@@ -1,0 +1,114 @@
+# CONFIGURE PER REPO: the `paths:` lists below name this repo's source folders (the same ones as
+# SOURCES in architecture/drift.mjs), and DRAWING_OFFICE_REF pins a Drawing Office commit — take the
+# current one with `git -C ../drawing-office rev-parse HEAD`. Enable Pages once:
+#   gh api -X POST repos/<owner>/<repo>/pages -f build_type=workflow
+#
+# Render the architecture model on every push, and refuse a model Drawing Office would refuse.
+#
+# The DSL is the source; the site is derived and never tracked. So the only way a reader sees the
+# current model is for something to rebuild it — this job, on every push that touches the model.
+# Pull requests get the same build and checks without the deploy, so a broken model fails the PR.
+#
+# DRAWING OFFICE IS PINNED to a commit, not main: a check that changes under us would turn a green
+# model red with no change in this repo. Bump DRAWING_OFFICE_REF on purpose.
+name: architecture
+
+#
+# CODE PUSHES RUN IT TOO. A change to veto/ can leave the model describing parts that no
+# longer exist, so architecture/drift.mjs compares the two first and fails the run on any mismatch.
+on:
+  push:
+    branches: [main]
+    paths: ["architecture/**", "veto/**", ".github/workflows/architecture.yml"]
+  pull_request:
+    paths: ["architecture/**", "veto/**", ".github/workflows/architecture.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: architecture-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DRAWING_OFFICE_REF: 1d71562a330c1fee835bc5a3e91d54f2487b2e75
+  STRUCTURIZR_CLI: v2025.11.09
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          path: veto-repo
+
+      - uses: actions/checkout@v4
+        with:
+          repository: devpath56/drawing-office
+          ref: ${{ env.DRAWING_OFFICE_REF }}
+          path: drawing-office
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Graphviz and structurizr-cli
+        run: |
+          sudo apt-get update -q && sudo apt-get install -y -q graphviz
+          curl -fsSL -o /tmp/cli.zip "https://github.com/structurizr/cli/releases/download/${STRUCTURIZR_CLI}/structurizr-cli.zip"
+          mkdir -p "$HOME/structurizr" && unzip -q /tmp/cli.zip -d "$HOME/structurizr"
+          chmod +x "$HOME/structurizr/structurizr.sh"
+          mkdir -p "$HOME/bin"
+          printf '#!/bin/sh\nexec "%s/structurizr/structurizr.sh" "$@"\n' "$HOME" > "$HOME/bin/structurizr-cli"
+          chmod +x "$HOME/bin/structurizr-cli"
+          echo "$HOME/bin" >> "$GITHUB_PATH"
+
+      - name: Model and code agree
+        run: |
+          node veto-repo/architecture/drift.mjs --negative
+          node veto-repo/architecture/drift.mjs
+
+      - name: Build the model
+        run: node drawing-office/tools/build.mjs --root veto-repo
+
+      - name: Check the model
+        run: |
+          fails=0
+          for c in diagram-contrast palette-claim legibility model projects derived delivery stage \
+                   element-state pubsub perspectives hop-examples decisions diagram-key site-fresh \
+                   named-controls test-viewer; do
+            echo "::group::$c"
+            node "drawing-office/checks/$c.mjs" --root veto-repo || { fails=$((fails+1)); echo "::error::$c refused the model"; }
+            echo "::endgroup::"
+          done
+          echo "checks failing: $fails of 17"
+          test "$fails" -eq 0
+
+      - name: Stage the site
+        run: |
+          mkdir -p _site
+          cp -R veto-repo/architecture _site/architecture
+          printf '<!doctype html><meta http-equiv="refresh" content="0; url=architecture/viewer.html"><title>Veto architecture</title><a href="architecture/viewer.html">Veto architecture</a>\n' > _site/index.html
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -1,0 +1,27 @@
+# Bridge slide — where Veto sits against Nimble's trust stack. Top row is Nimble's own sequence from
+# the Sep 23 2026 Trust post (source control → grounding → confidence, evaluated "before the run is
+# complete"). Bottom row is veto/gate.ts: pin → reason → revalidate → ship or refuse. Re-read against
+# gate.py once Phase 2 lands. The Reason box is veto/agent.ts (Liquid LFM2.5, template fallback): it
+# proposes, the gate disposes, so the box stays generic and the model is never named on stage.
+...@theme.d2
+grid-rows: 2
+grid-columns: 4
+horizontal-gap: 150
+vertical-gap: 170
+
+src: "Source control\nfetch time" {class: box}
+ground: "Grounding\nwrite time" {class: box}
+conf: "Confidence\nwrite time" {class: box}
+done: "run complete\nNimble's last check" {class: box}
+pin: "Pin\nsha256 + fetched_at" {class: hot}
+reason: "Reason\non pins, not pages" {class: hot}
+reval: "Revalidate\nre-fetch · re-hash" {class: hot}
+verdict: "Ship, or REFUSE\nre-base · ship" {class: good}
+
+src -> ground {class: flow}
+ground -> conf {class: flow}
+conf -> done {class: flow}
+done -> reval: "hours later" {class: flow-hot}
+pin -> reason {class: flow-hot}
+reason -> reval {class: flow-hot}
+reval -> verdict {class: flow-hot}

@@ -24,7 +24,7 @@ fi
 rm -f pins.db receipts.jsonl runs.jsonl ships.jsonl mcp-trace.jsonl plan.json report.md report.draft.md   # deterministic: counts never accumulate
 
 bar() { printf '\n\033[1m━━ %s ━━\033[0m\n' "$1"; }
-bar "PINNED EVIDENCE VAULT — adapter: ${VETO_ADAPTER:-mock}"
+bar "VETO — adapter: ${VETO_ADAPTER:-mock}"
 if [ "$2" = "--night2" ] || [ "$1" = "--night2" ]; then c=0; else   # --night2: run only the villain night (fits a 3-min slot live)
 bar "Night 1 — a competitor page goes dark at 18:00 (simulated); no price injected"
 $NODE scenario.ts --clean --rebase --lose-page; c=$?

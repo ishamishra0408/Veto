@@ -1,0 +1,30 @@
+{
+  "source": "https://www.nimbleway.com/pricing",
+  "scheme": "dark",
+  "read_at": "2026-09-25",
+  "bg": "#FFFFFF",
+  "text": "#0B0B0B",
+  "accent": "#9eabff",
+  "accentHi": "#9eabff",
+  "accentSoft": null,
+  "accentGlow": null,
+  "font": "Dm Sans",
+  "vars": {
+    "--nimble-primary": "#7c8dff",
+    "--primary-light": "#9eabff",
+    "--_v2---primary--grey-blue": "#717bbc",
+    "--_v2---primary--950": "#1e1b4b",
+    "--_v2---primary--400": "#818cf8",
+    "--_v2---primary--900": "#312e81",
+    "--_v2---primary--500": "#6366f1",
+    "--_v2---primary--50": "#eef2ff",
+    "--_v2---primary-color": "#7082ff",
+    "--_v2---primary--light-purple-2": "#d9deff",
+    "--_v2---primary--300": "#a5b4fc",
+    "--_v2---primary--100": "#e0e7ff",
+    "--_v2---primary--grey-600": "#4b5563",
+    "--_v2---primary--200": "#c7d2fe",
+    "--_v2---primary--grey-blue-200": "#d5d9eb",
+    "--_v2---primary--grey-500": "#6b7280"
+  }
+}
